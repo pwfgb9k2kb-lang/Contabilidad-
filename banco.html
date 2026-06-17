@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conciliación Bancaria · Portal Contable</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --sage:#7a8c7e;--sage-light:#e8ede9;--sage-dark:#4a5c4e;
+  --cream:#faf9f6;--white:#fff;--ink:#1c1f1d;--muted:#5a6360;--hint:#9aa5a1;
+  --border:#e4e8e5;--border2:#d2d9d5;
+  --ok-bg:#edf5ef;--ok-text:#2d6b3a;--ok-border:#b8d9bf;
+  --diff-bg:#fdf5e8;--diff-text:#7a5200;--diff-border:#f0d49a;
+  --sub-bg:#fdeef0;--sub-text:#7a1f2a;--sub-border:#f0b8bf;
+  --arca-bg:#eeedf8;--arca-text:#3b3399;--arca-border:#c2bfee;
+  --r:12px;--rs:8px;
+  --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --sh2:0 4px 12px rgba(0,0,0,.08);
+  --mono:'SF Mono','Fira Code','Consolas',monospace;
+}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--cream);color:var(--ink);font-size:14px;line-height:1.55;min-height:100vh;}
+header{background:var(--sage-dark);padding:0 2.5rem;height:64px;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:100;}
+.logo-mark{width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.logo-mark svg{width:18px;height:18px;stroke:#fff;fill:none;}
+.logo-text{font-family:'DM Serif Display',serif;font-size:19px;color:#fff;}
+.logo-sub{font-size:11px;color:rgba(255,255,255,.45);margin-left:auto;letter-spacing:.03em;}
+.page{max-width:1080px;margin:0 auto;padding:2.5rem 2rem;}
+.steps{display:flex;margin-bottom:2.5rem;background:var(--white);border:1px solid var(--border);border-radius:50px;padding:5px;width:fit-content;box-shadow:var(--sh);}
+.step-btn{display:flex;align-items:center;gap:8px;padding:7px 18px;border:none;background:none;font-size:13px;font-weight:500;color:var(--hint);border-radius:50px;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.step-btn svg{width:14px;height:14px;}
+.step-btn:hover{color:var(--muted);}
+.step-btn.active{background:var(--sage-dark);color:#fff;}
+.step-btn:disabled{opacity:.35;cursor:not-allowed;}
+.section{display:none;}.section.active{display:block;}
+.upload-hero{text-align:center;margin-bottom:2rem;}
+.upload-hero h1{font-family:'DM Serif Display',serif;font-size:28px;font-weight:400;margin-bottom:8px;letter-spacing:-.01em;}
+.upload-hero p{font-size:14px;color:var(--muted);max-width:480px;margin:0 auto;line-height:1.6;}
+.rule-badge{display:inline-flex;align-items:center;gap:6px;background:var(--sage-light);color:var(--sage-dark);font-size:12px;font-weight:500;padding:5px 12px;border-radius:50px;margin-top:12px;border:1px solid rgba(122,140,126,.25);}
+.file-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem;}
+@media(max-width:620px){.file-grid{grid-template-columns:1fr;}}
+.file-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;box-shadow:var(--sh);transition:box-shadow .2s;}
+.file-card:hover{box-shadow:var(--sh2);}
+.file-card-header{display:flex;align-items:center;gap:10px;margin-bottom:1rem;}
+.file-icon{width:36px;height:36px;background:var(--sage-light);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.file-icon svg{width:18px;height:18px;stroke:var(--sage-dark);fill:none;}
+.file-card-title{font-size:14px;font-weight:600;}
+.file-card-sub{font-size:12px;color:var(--hint);}
+.file-status{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;color:var(--hint);margin-bottom:6px;min-height:20px;}
+.file-status.ok{color:var(--ok-text);}.file-status.err{color:var(--sub-text);}
+.file-status svg{width:14px;height:14px;flex-shrink:0;}
+.file-count{font-size:11.5px;color:var(--hint);margin-bottom:12px;padding-left:20px;}
+.upload-zone{border:1.5px dashed var(--border2);border-radius:var(--rs);padding:16px;text-align:center;cursor:pointer;transition:all .2s;background:var(--cream);display:block;}
+.upload-zone:hover{border-color:var(--sage);background:var(--sage-light);}
+.upload-zone input[type=file]{display:none;}
+.upload-zone-icon svg{width:20px;height:20px;stroke:var(--hint);margin-bottom:5px;}
+.upload-zone-title{font-size:13px;font-weight:500;}
+.upload-zone-sub{font-size:11px;color:var(--hint);margin-top:2px;}
+.format-hint{margin-top:10px;padding:10px 12px;background:var(--cream);border-radius:var(--rs);font-size:11.5px;color:var(--muted);line-height:1.7;border:1px solid var(--border);}
+.format-hint code{font-family:var(--mono);font-size:10.5px;background:var(--border);padding:1px 5px;border-radius:4px;}
+.cta-wrap{display:flex;justify-content:center;margin-top:.5rem;}
+.btn-main{background:var(--sage-dark);color:#fff;border:none;border-radius:50px;padding:13px 36px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s;box-shadow:0 2px 8px rgba(74,92,78,.3);}
+.btn-main svg{width:16px;height:16px;}
+.btn-main:hover{opacity:.88;transform:translateY(-1px);}
+.btn-main:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none;}
+.results-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;}
+.results-title{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;}
+.results-sub{font-size:12.5px;color:var(--hint);margin-top:2px;}
+.export-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--white);border:1px solid var(--border2);border-radius:var(--rs);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;box-shadow:var(--sh);}
+.export-btn svg{width:14px;height:14px;}
+.export-btn:hover{background:var(--sage-light);border-color:var(--sage);color:var(--sage-dark);}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem;}
+@media(max-width:620px){.metrics{grid-template-columns:repeat(2,1fr);}}
+.metric{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem 1.25rem 1rem;box-shadow:var(--sh);position:relative;overflow:hidden;}
+.metric::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.metric.ok::before{background:var(--ok-text);}.metric.diff::before{background:var(--diff-text);}
+.metric.sub::before{background:var(--sub-text);}.metric.arca::before{background:var(--arca-text);}
+.metric-val{font-size:28px;font-weight:300;letter-spacing:-.03em;line-height:1;margin-bottom:6px;}
+.metric.ok .metric-val{color:var(--ok-text);}.metric.diff .metric-val{color:var(--diff-text);}
+.metric.sub .metric-val{color:var(--sub-text);}.metric.arca .metric-val{color:var(--arca-text);}
+.metric-label{font-size:11.5px;color:var(--hint);font-weight:500;text-transform:uppercase;letter-spacing:.05em;}
+.metric-amount{font-size:11px;color:var(--hint);margin-top:4px;font-family:var(--mono);}
+.filter-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
+.filter-btn{padding:6px 13px;border:1px solid var(--border2);border-radius:50px;font-size:12px;font-weight:500;cursor:pointer;background:var(--white);color:var(--muted);transition:all .15s;white-space:nowrap;}
+.filter-btn:hover{border-color:var(--sage);color:var(--sage-dark);}
+.filter-btn.active{background:var(--sage-dark);color:#fff;border-color:var(--sage-dark);}
+.search-wrap{flex:1;min-width:200px;position:relative;}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:13px;height:13px;stroke:var(--hint);pointer-events:none;}
+.search-input{width:100%;padding:7px 10px 7px 30px;border:1px solid var(--border2);border-radius:var(--rs);font-size:13px;font-family:inherit;background:var(--white);color:var(--ink);outline:none;transition:border-color .15s;}
+.search-input:focus{border-color:var(--sage);}
+.search-input::placeholder{color:var(--hint);}
+.table-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{padding:10px 14px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--hint);background:var(--cream);border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:12.5px;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:#f8faf8;}
+td.num{text-align:right;font-family:var(--mono);font-size:12px;}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:50px;font-size:11px;font-weight:600;border:1px solid transparent;white-space:nowrap;}
+.badge-ok{background:var(--ok-bg);color:var(--ok-text);border-color:var(--ok-border);}
+.badge-fecha{background:var(--diff-bg);color:var(--diff-text);border-color:var(--diff-border);}
+.badge-banco{background:var(--sub-bg);color:var(--sub-text);border-color:var(--sub-border);}
+.badge-libro{background:var(--arca-bg);color:var(--arca-text);border-color:var(--arca-border);}
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--border);font-size:12px;color:var(--hint);background:var(--cream);}
+.page-btns{display:flex;gap:3px;}
+.page-btn{padding:4px 10px;border:1px solid var(--border2);border-radius:6px;background:var(--white);font-size:12px;cursor:pointer;color:var(--ink);transition:all .12s;}
+.page-btn:hover:not(:disabled){background:var(--sage-light);border-color:var(--sage);}
+.page-btn:disabled{opacity:.3;cursor:not-allowed;}
+.page-btn.current{background:var(--sage-dark);color:#fff;border-color:var(--sage-dark);}
+.empty-state{text-align:center;padding:3rem;color:var(--hint);}
+.back-link{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--hint);cursor:pointer;border:none;background:none;margin-top:1.25rem;transition:color .15s;font-family:inherit;}
+.back-link:hover{color:var(--sage-dark);}
+.back-link svg{width:13px;height:13px;}
+</style>
+</head>
+<body>
+<header>
+  <a href="index.html" style="display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.6);font-size:12px;text-decoration:none;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.6)'">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:13px;height:13px"><path d="M10 4L6 8l4 4"/></svg>Portal
+  </a>
+  <div style="width:1px;height:18px;background:rgba(255,255,255,.2);margin:0 4px"></div>
+  <div class="logo-mark"><svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg></div>
+  <div class="logo-text">Conciliación Bancaria</div>
+  <div class="logo-sub" id="header-empresa"></div>
+</header>
+
+<div class="page">
+  <div class="steps">
+    <button class="step-btn active" onclick="switchTab('upload')" id="tab-upload">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 10V3M5 6l3-3 3 3M3 13h10"/></svg>Cargar archivos
+    </button>
+    <button class="step-btn" onclick="switchTab('result')" id="tab-result" disabled>
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 5h5M2 8h5M2 11h5M9 5h5M9 8h5M9 11h5"/></svg>Ver conciliación
+    </button>
+  </div>
+
+  <div class="section active" id="sec-upload">
+    <div class="upload-hero">
+      <h1>Conciliación Bancaria</h1>
+      <p>Cruzá el resumen del banco con el libro banco contable para detectar partidas pendientes y diferencias.</p>
+      <div class="rule-badge">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:12px;height:12px"><path d="M8 2l1.5 3 3.5.5-2.5 2.5.6 3.5L8 10l-3.1 1.5.6-3.5L3 5.5l3.5-.5z"/></svg>
+        Emparejamiento por monto · Tolerancia 5 días de fecha
+      </div>
+    </div>
+
+    <div class="file-grid">
+      <div class="file-card">
+        <div class="file-card-header">
+          <div class="file-icon"><svg viewBox="0 0 24 24" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div>
+          <div><div class="file-card-title">Resumen del Banco</div><div class="file-card-sub">CSV / Excel exportado de Credicoop Home Banking</div></div>
+        </div>
+        <div class="file-status" id="banco-status">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 10.5v.5"/></svg>Sin cargar
+        </div>
+        <div class="file-count" id="banco-count"></div>
+        <label class="upload-zone">
+          <div class="upload-zone-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V5M7 8l3-3 3 3M4 15h12"/></svg></div>
+          <div class="upload-zone-title">Elegir archivo del banco</div>
+          <div class="upload-zone-sub">CSV o Excel del resumen de cuenta</div>
+          <input type="file" id="file-banco" accept=".csv,.txt,.xlsx,.xls" onchange="loadBanco(event)">
+        </label>
+        <div class="format-hint">
+          Columnas: <code>Fecha</code> · <code>Descripción</code> · <code>Débito</code> · <code>Crédito</code> (o Importe con signo)
+        </div>
+      </div>
+
+      <div class="file-card">
+        <div class="file-card-header">
+          <div class="file-icon"><svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8"/></svg></div>
+          <div><div class="file-card-title">Libro Banco (Contabilidad)</div><div class="file-card-sub">CSV / Excel exportado de OneSoft u otro sistema</div></div>
+        </div>
+        <div class="file-status" id="libro-status">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 10.5v.5"/></svg>Sin cargar
+        </div>
+        <div class="file-count" id="libro-count"></div>
+        <label class="upload-zone">
+          <div class="upload-zone-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V5M7 8l3-3 3 3M4 15h12"/></svg></div>
+          <div class="upload-zone-title">Elegir libro banco</div>
+          <div class="upload-zone-sub">CSV o Excel del libro banco contable</div>
+          <input type="file" id="file-libro" accept=".csv,.txt,.xlsx,.xls" onchange="loadLibro(event)">
+        </label>
+        <div class="format-hint">
+          Columnas: <code>Fecha</code> · <code>Descripción</code> · <code>Debe</code> · <code>Haber</code>
+        </div>
+      </div>
+    </div>
+
+    <div class="cta-wrap">
+      <button class="btn-main" id="btn-conciliar" onclick="conciliar()" disabled>
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8h10M9 5l4 3-4 3"/></svg>Conciliar
+      </button>
+    </div>
+  </div>
+
+  <div class="section" id="sec-result">
+    <div class="results-header">
+      <div><div class="results-title">Resultado</div><div class="results-sub" id="results-sub">—</div></div>
+      <button class="export-btn" onclick="exportCSV()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 3v7M5 7l3 3 3-3M3 13h10"/></svg>Exportar CSV
+      </button>
+    </div>
+    <div class="metrics">
+      <div class="metric ok"><div class="metric-val" id="m-ok">0</div><div class="metric-label">Coinciden</div><div class="metric-amount" id="m-ok-amt"></div></div>
+      <div class="metric diff"><div class="metric-val" id="m-fecha">0</div><div class="metric-label">Dif. fecha</div><div class="metric-amount" id="m-fecha-amt"></div></div>
+      <div class="metric sub"><div class="metric-val" id="m-banco">0</div><div class="metric-label">Solo banco</div><div class="metric-amount" id="m-banco-amt"></div></div>
+      <div class="metric arca"><div class="metric-val" id="m-libro">0</div><div class="metric-label">Solo libro</div><div class="metric-amount" id="m-libro-amt"></div></div>
+    </div>
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setFilter('all',this)">Todos</button>
+      <button class="filter-btn" onclick="setFilter('ok',this)">✓ Coinciden</button>
+      <button class="filter-btn" onclick="setFilter('fecha',this)">⚠ Dif. fecha</button>
+      <button class="filter-btn" onclick="setFilter('banco',this)">Solo banco</button>
+      <button class="filter-btn" onclick="setFilter('libro',this)">Solo libro</button>
+      <div class="search-wrap">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3 3"/></svg>
+        <input type="text" class="search-input" placeholder="Buscar descripción o monto…" oninput="setSearch(this.value)">
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th style="width:90px">Fecha banco</th>
+            <th style="width:90px">Fecha libro</th>
+            <th>Descripción banco</th>
+            <th>Descripción libro</th>
+            <th style="width:110px;text-align:right">Monto</th>
+            <th style="width:70px">Tipo</th>
+            <th style="width:110px">Estado</th>
+          </tr></thead>
+          <tbody id="tbl-body"></tbody>
+        </table>
+      </div>
+      <div class="pagination"><span id="pg-info"></span><div class="page-btns" id="pg-btns"></div></div>
+    </div>
+    <button class="back-link" onclick="switchTab('upload')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 4L6 8l4 4"/></svg>Volver
+    </button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+var bancoRows=[],libroRows=[],results=[];
+var currentFilter='all',currentSearch='',currentPage=1;
+var PAGE_SIZE=40, TOLE_DIAS=5, TOLE_MONTO=1;
+
+function switchTab(t){
+  ['upload','result'].forEach(function(id){document.getElementById('sec-'+id).classList.remove('active');document.getElementById('tab-'+id).classList.remove('active');});
+  document.getElementById('sec-'+t).classList.add('active');document.getElementById('tab-'+t).classList.add('active');
+}
+
+function setStatus(id,msg,state){
+  var el=document.getElementById(id);
+  var ic={
+    wait:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 10.5v.5"/></svg>',
+    ok:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><path d="M3 8l3.5 3.5L13 5"/></svg>',
+    err:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><path d="M5 5l6 6M11 5l-6 6"/></svg>'
+  };
+  el.innerHTML=(ic[state]||ic.wait)+' '+msg;
+  el.className='file-status'+(state==='ok'?' ok':state==='err'?' err':'');
+}
+
+function parseFecha(s){
+  if(!s) return null;
+  s=s.toString().trim();
+  // Try DD/MM/YYYY or DD-MM-YYYY
+  var m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
+  if(m){var y=m[3].length===2?'20'+m[3]:m[3];return new Date(y,parseInt(m[2])-1,parseInt(m[1]));}
+  // Excel serial
+  if(/^\d+$/.test(s)){var d=new Date(1899,11,30);d.setDate(d.getDate()+parseInt(s));return d;}
+  // Try native
+  var d=new Date(s);
+  return isNaN(d)?null:d;
+}
+
+function parseMonto(s){
+  if(s===null||s===undefined||s==='') return 0;
+  var n=parseFloat(s.toString().replace(/\./g,'').replace(',','.').replace(/[^0-9.\-]/g,''));
+  return isNaN(n)?0:n;
+}
+
+function diasDif(a,b){
+  if(!a||!b) return 9999;
+  return Math.abs((a-b)/(1000*60*60*24));
+}
+
+function detectCols(headers){
+  var h=headers.map(function(x){return (x||'').toString().toLowerCase().trim();});
+  var find=function(opts){for(var i=0;i<h.length;i++){for(var j=0;j<opts.length;j++){if(h[i].indexOf(opts[j])>=0)return i;}}return -1;};
+  return{
+    fecha: find(['fecha','date','f.','día','dia']),
+    desc:  find(['desc','concepto','detalle','glosa','movim','obs','referencia']),
+    debe:  find(['debe','debito','débito','egreso','salida','cargo']),
+    haber: find(['haber','credito','crédito','ingreso','entrada','abono']),
+    importe: find(['importe','monto','amount','total','saldo mov']),
+  };
+}
+
+function parseFile(ev, target, cb){
+  var file=ev.target.files[0]; if(!file) return;
+  var isXlsx=/\.(xlsx|xls)$/i.test(file.name);
+
+  if(isXlsx){
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
+      cb(file.name, raw);
+    };
+    reader.readAsArrayBuffer(file);
+  } else {
+    var reader=new FileReader();
+    reader.onload=function(e){
+      var lines=e.target.result.trim().split(/\r?\n/).filter(function(l){return l.trim();});
+      var raw=lines.map(function(l){
+        var res=[],cur='',inQ=false;
+        for(var i=0;i<l.length;i++){
+          var c=l[i];
+          if(c==='"'){inQ=!inQ;}
+          else if((c===','||c===';'||c==='\t')&&!inQ){res.push(cur);cur='';}
+          else cur+=c;
+        }
+        res.push(cur);
+        return res.map(function(x){return x.replace(/^"|"$/g,'').trim();});
+      });
+      cb(file.name, raw);
+    };
+    reader.readAsText(file,'UTF-8');
+  }
+}
+
+function rawToRows(raw){
+  if(!raw||raw.length<2) return [];
+  var headers=raw[0];
+  var cols=detectCols(headers);
+  var rows=[];
+  for(var i=1;i<raw.length;i++){
+    var r=raw[i];
+    if(!r||r.every(function(x){return !x;})) continue;
+    var fecha=parseFecha(cols.fecha>=0?r[cols.fecha]:'');
+    var desc=cols.desc>=0?r[cols.desc].toString().trim():'';
+    var monto=0;
+    if(cols.importe>=0){
+      monto=parseMonto(r[cols.importe]);
+    } else {
+      var debe=cols.debe>=0?parseMonto(r[cols.debe]):0;
+      var haber=cols.haber>=0?parseMonto(r[cols.haber]):0;
+      monto=haber-debe; // positive = ingress, negative = egress
+    }
+    if(monto===0&&!fecha) continue;
+    rows.push({fecha:fecha,desc:desc,monto:monto,used:false});
+  }
+  return rows;
+}
+
+function loadBanco(ev){
+  parseFile(ev,'banco',function(name,raw){
+    bancoRows=rawToRows(raw);
+    setStatus('banco-status',name,'ok');
+    document.getElementById('banco-count').textContent=bancoRows.length+' movimientos';
+    checkReady();
+  });
+}
+
+function loadLibro(ev){
+  parseFile(ev,'libro',function(name,raw){
+    libroRows=rawToRows(raw);
+    setStatus('libro-status',name,'ok');
+    document.getElementById('libro-count').textContent=libroRows.length+' movimientos';
+    checkReady();
+  });
+}
+
+function checkReady(){
+  document.getElementById('btn-conciliar').disabled=!(bancoRows.length&&libroRows.length);
+}
+
+function conciliar(){
+  // Reset used flags
+  bancoRows.forEach(function(r){r.used=false;});
+  libroRows.forEach(function(r){r.used=false;});
+  results=[];
+
+  // Match banco vs libro by monto (±TOLE_MONTO) and date (±TOLE_DIAS)
+  bancoRows.forEach(function(b){
+    var bestMatch=null, bestDias=9999;
+    libroRows.forEach(function(l){
+      if(l.used) return;
+      if(Math.abs(Math.abs(b.monto)-Math.abs(l.monto))>TOLE_MONTO) return;
+      if(Math.sign(b.monto)!==Math.sign(l.monto)&&b.monto!==0&&l.monto!==0) return;
+      var d=diasDif(b.fecha,l.fecha);
+      if(d<bestDias){bestDias=d;bestMatch=l;}
+    });
+    if(bestMatch&&bestDias<=TOLE_DIAS){
+      bestMatch.used=true;
+      results.push({status:bestDias===0?'ok':'fecha',fechaBanco:b.fecha,fechaLibro:bestMatch.fecha,descBanco:b.desc,descLibro:bestMatch.desc,monto:b.monto,diasDif:Math.round(bestDias)});
+    } else {
+      results.push({status:'banco',fechaBanco:b.fecha,fechaLibro:null,descBanco:b.desc,descLibro:'',monto:b.monto,diasDif:null});
+    }
+  });
+  libroRows.forEach(function(l){
+    if(!l.used) results.push({status:'libro',fechaBanco:null,fechaLibro:l.fecha,descBanco:'',descLibro:l.desc,monto:l.monto,diasDif:null});
+  });
+
+  var ok=results.filter(function(r){return r.status==='ok';});
+  var fecha=results.filter(function(r){return r.status==='fecha';});
+  var banco=results.filter(function(r){return r.status==='banco';});
+  var libro=results.filter(function(r){return r.status==='libro';});
+
+  document.getElementById('m-ok').textContent=ok.length;
+  document.getElementById('m-fecha').textContent=fecha.length;
+  document.getElementById('m-banco').textContent=banco.length;
+  document.getElementById('m-libro').textContent=libro.length;
+  document.getElementById('m-ok-amt').textContent=fmtAmt(ok.reduce(function(s,r){return s+Math.abs(r.monto);},0));
+  document.getElementById('m-fecha-amt').textContent=fmtAmt(fecha.reduce(function(s,r){return s+Math.abs(r.monto);},0));
+  document.getElementById('m-banco-amt').textContent=fmtAmt(banco.reduce(function(s,r){return s+Math.abs(r.monto);},0));
+  document.getElementById('m-libro-amt').textContent=fmtAmt(libro.reduce(function(s,r){return s+Math.abs(r.monto);},0));
+  document.getElementById('results-sub').textContent=results.length+' movimientos procesados · '+new Date().toLocaleDateString('es-AR');
+
+  currentFilter='all';currentSearch='';currentPage=1;
+  document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});
+  document.querySelector('.filter-btn').classList.add('active');
+  document.querySelector('.search-input').value='';
+  document.getElementById('tab-result').disabled=false;
+  renderTable();switchTab('result');
+}
+
+function fmtDate(d){if(!d) return '—';return d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'});}
+function fmt(n){if(n===null||n===undefined) return '—';return n.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtAmt(n){return '$'+Math.round(n/1000)+'k';}
+
+function getFiltered(){
+  return results.filter(function(r){
+    if(currentFilter!=='all'&&r.status!==currentFilter) return false;
+    if(currentSearch){
+      var q=currentSearch.toLowerCase();
+      if((r.descBanco||'').toLowerCase().indexOf(q)<0&&(r.descLibro||'').toLowerCase().indexOf(q)<0&&fmt(r.monto).indexOf(q)<0) return false;
+    }
+    return true;
+  });
+}
+
+function renderTable(){
+  var filtered=getFiltered(),total=filtered.length,pages=Math.ceil(total/PAGE_SIZE)||1;
+  if(currentPage>pages) currentPage=pages;
+  var slice=filtered.slice((currentPage-1)*PAGE_SIZE,currentPage*PAGE_SIZE);
+  var tbody=document.getElementById('tbl-body');
+  if(!slice.length){
+    tbody.innerHTML='<tr><td colspan="7"><div class="empty-state"><p>Sin resultados</p></div></td></tr>';
+  } else {
+    tbody.innerHTML=slice.map(function(r){
+      var badge=r.status==='ok'?'<span class="badge badge-ok">✓ Coincide</span>'
+               :r.status==='fecha'?'<span class="badge badge-fecha">⚠ '+r.diasDif+'d dif.</span>'
+               :r.status==='banco'?'<span class="badge badge-banco">Solo banco</span>'
+               :'<span class="badge badge-libro">Solo libro</span>';
+      var tipo=r.monto>0?'<span style="color:var(--ok-text);font-size:11px">↑ Ingreso</span>':'<span style="color:var(--sub-text);font-size:11px">↓ Egreso</span>';
+      return '<tr>'
+        +'<td style="font-size:12px">'+fmtDate(r.fechaBanco)+'</td>'
+        +'<td style="font-size:12px">'+fmtDate(r.fechaLibro)+'</td>'
+        +'<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="'+(r.descBanco||'')+'">'+(r.descBanco||'—')+'</td>'
+        +'<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="'+(r.descLibro||'')+'">'+(r.descLibro||'—')+'</td>'
+        +'<td class="num">'+fmt(r.monto)+'</td>'
+        +'<td>'+tipo+'</td>'
+        +'<td>'+badge+'</td>'
+        +'</tr>';
+    }).join('');
+  }
+  document.getElementById('pg-info').textContent=total+' registros · pág. '+currentPage+' de '+pages;
+  var btns='<button class="page-btn" onclick="goPage('+(currentPage-1)+')" '+(currentPage===1?'disabled':'')+'>‹</button>';
+  var start=Math.max(1,currentPage-2),end=Math.min(pages,currentPage+2);
+  for(var p=start;p<=end;p++) btns+='<button class="page-btn'+(p===currentPage?' current':'')+'" onclick="goPage('+p+')">'+p+'</button>';
+  btns+='<button class="page-btn" onclick="goPage('+(currentPage+1)+')" '+(currentPage===pages?'disabled':'')+'>›</button>';
+  document.getElementById('pg-btns').innerHTML=btns;
+}
+
+function goPage(p){currentPage=p;renderTable();}
+function setFilter(f,el){currentFilter=f;currentPage=1;document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});el.classList.add('active');renderTable();}
+function setSearch(v){currentSearch=v;currentPage=1;renderTable();}
+
+function exportCSV(){
+  var filtered=getFiltered();
+  var labels={ok:'Coincide',fecha:'Dif. fecha',banco:'Solo banco',libro:'Solo libro'};
+  var headers=['Estado','Fecha Banco','Fecha Libro','Descripción Banco','Descripción Libro','Monto','Días Diferencia'];
+  var rows=filtered.map(function(r){return[labels[r.status]||r.status,fmtDate(r.fechaBanco),fmtDate(r.fechaLibro),r.descBanco,r.descLibro,r.monto!==null?r.monto.toFixed(2):'',r.diasDif!==null?r.diasDif:''];});
+  var csv=[headers].concat(rows).map(function(row){return row.map(function(c){return'"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='conciliacion_banco_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
+
+// Init
+(function(){
+  if(window.APP_CONFIG){
+    var emp=document.getElementById('header-empresa');
+    if(emp) emp.textContent=window.APP_CONFIG.EMPRESA||'';
+  }
+})();
+</script>
+</body>
+</html>

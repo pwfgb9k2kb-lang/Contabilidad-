@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal Contable</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --sage:#7a8c7e;--sage-light:#e8ede9;--sage-dark:#4a5c4e;
+  --cream:#faf9f6;--white:#fff;--ink:#1c1f1d;--muted:#5a6360;--hint:#9aa5a1;
+  --border:#e4e8e5;--border2:#d2d9d5;
+  --r:12px;--rs:8px;
+  --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --sh2:0 8px 24px rgba(0,0,0,.10),0 2px 6px rgba(0,0,0,.06);
+}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;}
+
+/* Access denied */
+#access-denied{display:none;min-height:100vh;align-items:center;justify-content:center;flex-direction:column;gap:1rem;text-align:center;padding:2rem;}
+#access-denied h1{font-family:'DM Serif Display',serif;font-size:32px;font-weight:400;color:var(--ink);}
+#access-denied p{color:var(--muted);font-size:14px;}
+
+/* App */
+#app{display:none;}
+
+header{
+  background:var(--sage-dark);
+  padding:0 2.5rem;
+  height:64px;
+  display:flex;align-items:center;gap:1rem;
+  position:sticky;top:0;z-index:100;
+}
+.logo-mark{width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:9px;display:flex;align-items:center;justify-content:center;}
+.logo-mark svg{width:18px;height:18px;stroke:#fff;fill:none;}
+.logo-text{font-family:'DM Serif Display',serif;font-size:19px;color:#fff;letter-spacing:.01em;}
+.logo-empresa{font-size:12px;color:rgba(255,255,255,.45);margin-left:auto;letter-spacing:.03em;}
+
+.page{max-width:960px;margin:0 auto;padding:3rem 2rem;}
+
+.page-title{
+  font-family:'DM Serif Display',serif;
+  font-size:32px;font-weight:400;
+  margin-bottom:8px;letter-spacing:-.01em;
+}
+.page-sub{font-size:14px;color:var(--muted);margin-bottom:2.5rem;line-height:1.6;}
+
+/* Module grid */
+.modules{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.25rem;margin-bottom:3rem;}
+
+.module-card{
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:1.75rem;
+  cursor:pointer;
+  transition:all .2s;
+  box-shadow:var(--sh);
+  text-decoration:none;
+  display:block;
+  position:relative;
+  overflow:hidden;
+}
+.module-card::before{
+  content:'';
+  position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--sage-dark);
+  transform:scaleX(0);transform-origin:left;
+  transition:transform .2s;
+}
+.module-card:hover{box-shadow:var(--sh2);transform:translateY(-2px);}
+.module-card:hover::before{transform:scaleX(1);}
+
+.module-icon{
+  width:44px;height:44px;
+  background:var(--sage-light);
+  border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:1rem;
+}
+.module-icon svg{width:22px;height:22px;stroke:var(--sage-dark);fill:none;}
+
+.module-title{font-size:15px;font-weight:600;margin-bottom:6px;}
+.module-desc{font-size:12.5px;color:var(--muted);line-height:1.55;}
+.module-badge{
+  display:inline-block;margin-top:10px;
+  padding:3px 9px;border-radius:20px;
+  font-size:11px;font-weight:500;
+  background:var(--sage-light);color:var(--sage-dark);
+  border:1px solid rgba(122,140,126,.2);
+}
+
+/* Coming soon card */
+.module-card.soon{opacity:.6;cursor:default;}
+.module-card.soon:hover{box-shadow:var(--sh);transform:none;}
+.module-card.soon::before{display:none;}
+.badge-soon{background:#f2f2ef;color:var(--hint);border-color:var(--border);}
+
+/* Claude chat widget */
+.claude-bar{
+  background:var(--white);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:1.25rem 1.5rem;
+  box-shadow:var(--sh);
+}
+.claude-bar-header{
+  display:flex;align-items:center;gap:10px;
+  margin-bottom:1rem;
+}
+.claude-avatar{
+  width:32px;height:32px;
+  background:var(--sage-dark);
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.claude-avatar svg{width:16px;height:16px;stroke:#fff;fill:none;}
+.claude-label{font-size:13px;font-weight:600;}
+.claude-sublabel{font-size:11.5px;color:var(--hint);}
+
+.claude-messages{
+  max-height:280px;overflow-y:auto;
+  margin-bottom:1rem;
+  display:flex;flex-direction:column;gap:10px;
+}
+.msg{display:flex;gap:8px;align-items:flex-start;}
+.msg-bubble{
+  padding:9px 13px;border-radius:10px;
+  font-size:13px;line-height:1.55;
+  max-width:85%;
+}
+.msg.user{flex-direction:row-reverse;}
+.msg.user .msg-bubble{background:var(--sage-dark);color:#fff;border-radius:10px 10px 2px 10px;}
+.msg.assistant .msg-bubble{background:var(--sage-light);color:var(--ink);border-radius:10px 10px 10px 2px;}
+.msg-avatar{width:26px;height:26px;border-radius:6px;background:var(--sage-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.msg-avatar svg{width:13px;height:13px;stroke:#fff;}
+.msg-avatar.user-av{background:var(--border2);}
+.msg-avatar.user-av svg{stroke:var(--muted);}
+
+.claude-input-wrap{display:flex;gap:8px;}
+.claude-input{
+  flex:1;padding:9px 14px;
+  border:1px solid var(--border2);border-radius:var(--rs);
+  font-size:13px;font-family:inherit;
+  background:var(--white);color:var(--ink);
+  outline:none;transition:border-color .15s;
+  resize:none;
+}
+.claude-input:focus{border-color:var(--sage);}
+.claude-input::placeholder{color:var(--hint);}
+.claude-send{
+  padding:9px 18px;
+  background:var(--sage-dark);color:#fff;
+  border:none;border-radius:var(--rs);
+  font-size:13px;font-weight:500;
+  cursor:pointer;transition:opacity .15s;
+  white-space:nowrap;
+}
+.claude-send:hover{opacity:.85;}
+.claude-send:disabled{opacity:.4;cursor:not-allowed;}
+.typing{display:flex;gap:4px;padding:9px 13px;background:var(--sage-light);border-radius:10px 10px 10px 2px;width:fit-content;}
+.dot{width:6px;height:6px;background:var(--sage);border-radius:50%;animation:bounce .9s infinite;}
+.dot:nth-child(2){animation-delay:.15s;}
+.dot:nth-child(3){animation-delay:.3s;}
+@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
+
+/* Scrollbar */
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+</style>
+</head>
+<body>
+
+<!-- Access denied -->
+<div id="access-denied" style="display:flex">
+  <div>
+    <div style="font-size:48px;margin-bottom:1rem">🔒</div>
+    <h1>Acceso restringido</h1>
+    <p>Este portal es de uso interno.<br>Si tenés el link correcto, usalo directamente.</p>
+  </div>
+</div>
+
+<!-- App -->
+<div id="app">
+  <header>
+    <div class="logo-mark">
+      <svg viewBox="0 0 20 20" stroke-width="1.5"><rect x="2" y="3" width="16" height="14" rx="2"/><path d="M6 7h8M6 10h8M6 13h4"/></svg>
+    </div>
+    <div class="logo-text">Portal Contable</div>
+    <div class="logo-empresa" id="header-empresa"></div>
+  </header>
+
+  <div class="page">
+    <div class="page-title">¿Qué querés hacer hoy?</div>
+    <div class="page-sub">Seleccioná un módulo para comenzar. Todos los archivos se procesan localmente en tu navegador.</div>
+
+    <div class="modules">
+
+      <!-- Conciliación Banco -->
+      <a href="banco.html" class="module-card">
+        <div class="module-icon">
+          <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
+        </div>
+        <div class="module-title">Conciliación Bancaria</div>
+        <div class="module-desc">Cruzá el resumen del banco con el libro banco. Detecta diferencias, partidas pendientes y errores.</div>
+        <span class="module-badge">Credicoop · CSV / Excel</span>
+      </a>
+
+      <!-- Conciliación IVA -->
+      <a href="iva.html" class="module-card">
+        <div class="module-icon">
+          <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
+        </div>
+        <div class="module-title">Conciliación IVA Compras</div>
+        <div class="module-desc">Cruzá el Subdiario IVA en PDF con los comprobantes de ARCA en Excel. Triple verificación por CUIT + N° + monto.</div>
+        <span class="module-badge">PDF + Excel · ARCA</span>
+      </a>
+
+      <!-- Retenciones (próximamente) -->
+      <div class="module-card soon">
+        <div class="module-icon">
+          <svg viewBox="0 0 24 24" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        </div>
+        <div class="module-title">Retenciones AFIP</div>
+        <div class="module-desc">Conciliación de retenciones SICORE / SIRCAR contra registros propios.</div>
+        <span class="module-badge badge-soon">Próximamente</span>
+      </div>
+
+      <!-- Más módulos -->
+      <div class="module-card soon">
+        <div class="module-icon">
+          <svg viewBox="0 0 24 24" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+        </div>
+        <div class="module-title">Más módulos</div>
+        <div class="module-desc">Declaraciones juradas, IVA ventas, sueldos y más. Pedí el módulo que necesitás.</div>
+        <span class="module-badge badge-soon">A pedido</span>
+      </div>
+
+    </div>
+
+    <!-- Claude assistant -->
+    <div class="claude-bar">
+      <div class="claude-bar-header">
+        <div class="claude-avatar">
+          <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M12 2a10 10 0 110 20A10 10 0 0112 2z"/><path d="M8 12h8M12 8v8"/></svg>
+        </div>
+        <div>
+          <div class="claude-label">Asistente contable</div>
+          <div class="claude-sublabel">Powered by Claude · Preguntá lo que necesitás</div>
+        </div>
+      </div>
+
+      <div class="claude-messages" id="chat-messages">
+        <div class="msg assistant">
+          <div class="msg-avatar"><svg viewBox="0 0 24 24" stroke-width="1.5" fill="none"><circle cx="12" cy="12" r="5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div>
+          <div class="msg-bubble">Hola, soy tu asistente contable. Puedo ayudarte con consultas sobre IVA, retenciones, conciliaciones, vencimientos de AFIP o cualquier duda contable. ¿En qué te ayudo?</div>
+        </div>
+      </div>
+
+      <div class="claude-input-wrap">
+        <textarea class="claude-input" id="chat-input" rows="1" placeholder="Preguntá algo... ej: ¿Cuándo vence el IVA de mayo?" onkeydown="handleKey(event)"></textarea>
+        <button class="claude-send" id="chat-send" onclick="sendMessage()">Enviar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Access control ──
+function checkAccess(){
+  var cfg=window.APP_CONFIG;
+  if(!cfg){document.getElementById('app').style.display='none';document.getElementById('access-denied').style.display='flex';return false;}
+  var path=window.location.href;
+  if(cfg.SECRET_PATH&&path.indexOf(cfg.SECRET_PATH)<0){
+    document.getElementById('app').style.display='none';
+    document.getElementById('access-denied').style.display='flex';
+    return false;
+  }
+  document.getElementById('access-denied').style.display='none';
+  document.getElementById('app').style.display='block';
+  document.getElementById('header-empresa').textContent=cfg.EMPRESA||'';
+  return true;
+}
+
+// ── Claude chat ──
+var chatHistory=[];
+
+async function sendMessage(){
+  if(!checkAccess()) return;
+  var input=document.getElementById('chat-input');
+  var msg=input.value.trim();
+  if(!msg) return;
+  input.value='';
+  input.style.height='auto';
+
+  appendMsg('user',msg);
+  chatHistory.push({role:'user',content:msg});
+
+  var send=document.getElementById('chat-send');
+  send.disabled=true;
+  var typingId=appendTyping();
+
+  try{
+    var res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':window.APP_CONFIG.CLAUDE_API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({
+        model:'claude-sonnet-4-6',
+        max_tokens:1000,
+        system:'Sos un asistente contable experto en legislación impositiva argentina. Respondés de forma clara y concisa. Cuando hay vencimientos o fechas, siempre aclarás que pueden cambiar y recomendás verificar en AFIP.',
+        messages:chatHistory
+      })
+    });
+    var data=await res.json();
+    removeTyping(typingId);
+    var reply=data.content&&data.content[0]?data.content[0].text:'No pude procesar la respuesta.';
+    appendMsg('assistant',reply);
+    chatHistory.push({role:'assistant',content:reply});
+  }catch(e){
+    removeTyping(typingId);
+    appendMsg('assistant','Hubo un error conectando con el asistente. Verificá tu API key en config.js.');
+  }
+  send.disabled=false;
+}
+
+function appendMsg(role,text){
+  var container=document.getElementById('chat-messages');
+  var div=document.createElement('div');
+  div.className='msg '+role;
+  var avClass=role==='user'?'user-av':'';
+  var avIcon=role==='user'
+    ?'<svg viewBox="0 0 24 24" stroke-width="1.5" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>'
+    :'<svg viewBox="0 0 24 24" stroke-width="1.5" fill="none"><circle cx="12" cy="12" r="5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>';
+  div.innerHTML='<div class="msg-avatar '+avClass+'">'+avIcon+'</div><div class="msg-bubble">'+escHtml(text)+'</div>';
+  container.appendChild(div);
+  container.scrollTop=container.scrollHeight;
+  return div;
+}
+
+function appendTyping(){
+  var container=document.getElementById('chat-messages');
+  var div=document.createElement('div');
+  div.className='msg assistant';
+  var id='typing-'+Date.now();
+  div.id=id;
+  div.innerHTML='<div class="msg-avatar"><svg viewBox="0 0 24 24" stroke-width="1.5" fill="none"><circle cx="12" cy="12" r="5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div><div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
+  container.appendChild(div);
+  container.scrollTop=container.scrollHeight;
+  return id;
+}
+
+function removeTyping(id){
+  var el=document.getElementById(id);
+  if(el) el.remove();
+}
+
+function escHtml(s){
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
+
+function handleKey(e){
+  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}
+  // Auto-resize textarea
+  var ta=document.getElementById('chat-input');
+  ta.style.height='auto';
+  ta.style.height=Math.min(ta.scrollHeight,120)+'px';
+}
+
+// Init
+checkAccess();
+</script>
+</body>
+</html>

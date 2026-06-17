@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Conciliación IVA · Portal Contable</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<script src="config.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --sage:#7a8c7e;--sage-light:#e8ede9;--sage-dark:#4a5c4e;
+  --cream:#faf9f6;--white:#fff;--ink:#1c1f1d;--muted:#5a6360;--hint:#9aa5a1;
+  --border:#e4e8e5;--border2:#d2d9d5;
+  --ok-bg:#edf5ef;--ok-text:#2d6b3a;--ok-border:#b8d9bf;
+  --diff-bg:#fdf5e8;--diff-text:#7a5200;--diff-border:#f0d49a;
+  --sub-bg:#fdeef0;--sub-text:#7a1f2a;--sub-border:#f0b8bf;
+  --arca-bg:#eeedf8;--arca-text:#3b3399;--arca-border:#c2bfee;
+  --r:12px;--rs:8px;
+  --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
+  --sh2:0 4px 12px rgba(0,0,0,.08),0 1px 3px rgba(0,0,0,.05);
+  --mono:'SF Mono','Fira Code','Consolas',monospace;
+}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--cream);color:var(--ink);font-size:14px;line-height:1.55;min-height:100vh;}
+header{background:var(--sage-dark);padding:0 2.5rem;height:60px;display:flex;align-items:center;gap:1rem;}
+.logo-mark{width:32px;height:32px;background:rgba(255,255,255,.15);border-radius:8px;display:flex;align-items:center;justify-content:center;}
+.logo-mark svg{width:18px;height:18px;stroke:#fff;}
+.logo-text{font-family:'DM Serif Display',Georgia,serif;font-size:18px;color:#fff;}
+.logo-sub{font-size:11px;color:rgba(255,255,255,.5);margin-left:auto;letter-spacing:.04em;}
+.page{max-width:1080px;margin:0 auto;padding:2.5rem 2rem;}
+.steps{display:flex;margin-bottom:2.5rem;background:var(--white);border:1px solid var(--border);border-radius:50px;padding:5px;width:fit-content;box-shadow:var(--sh);}
+.step-btn{display:flex;align-items:center;gap:8px;padding:7px 18px;border:none;background:none;font-size:13px;font-weight:500;color:var(--hint);border-radius:50px;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.step-btn svg{width:14px;height:14px;}
+.step-btn:hover{color:var(--muted);}
+.step-btn.active{background:var(--sage-dark);color:#fff;box-shadow:var(--sh);}
+.step-btn:disabled{opacity:.35;cursor:not-allowed;}
+.section{display:none;}.section.active{display:block;}
+.upload-hero{text-align:center;margin-bottom:2rem;}
+.upload-hero h1{font-family:'DM Serif Display',Georgia,serif;font-size:28px;font-weight:400;margin-bottom:8px;letter-spacing:-.01em;}
+.upload-hero p{font-size:14px;color:var(--muted);max-width:500px;margin:0 auto;line-height:1.6;}
+.rule-badge{display:inline-flex;align-items:center;gap:6px;background:var(--sage-light);color:var(--sage-dark);font-size:12px;font-weight:500;padding:5px 12px;border-radius:50px;margin-top:12px;border:1px solid rgba(122,140,126,.25);}
+.file-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem;}
+@media(max-width:620px){.file-grid{grid-template-columns:1fr;}}
+.file-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;box-shadow:var(--sh);transition:box-shadow .2s;}
+.file-card:hover{box-shadow:var(--sh2);}
+.file-card-header{display:flex;align-items:center;gap:10px;margin-bottom:1rem;}
+.file-icon{width:36px;height:36px;background:var(--sage-light);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.file-icon svg{width:18px;height:18px;stroke:var(--sage-dark);}
+.file-card-title{font-size:14px;font-weight:600;}
+.file-card-sub{font-size:12px;color:var(--hint);}
+.file-status{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;color:var(--hint);margin-bottom:6px;min-height:20px;}
+.file-status.ok{color:var(--ok-text);}.file-status.err{color:var(--sub-text);}
+.file-status svg{width:14px;height:14px;flex-shrink:0;}
+.file-count{font-size:11.5px;color:var(--hint);margin-bottom:12px;padding-left:20px;}
+.prog-wrap{margin-bottom:10px;display:none;}
+.prog-bar{height:4px;background:var(--border);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--sage-dark);border-radius:4px;width:0%;transition:width .2s;}
+.prog-label{font-size:11px;color:var(--hint);margin-top:4px;}
+.upload-zone{border:1.5px dashed var(--border2);border-radius:var(--rs);padding:16px;text-align:center;cursor:pointer;transition:all .2s;background:var(--cream);display:block;}
+.upload-zone:hover{border-color:var(--sage);background:var(--sage-light);}
+.upload-zone input[type=file]{display:none;}
+.upload-zone-icon svg{width:20px;height:20px;stroke:var(--hint);margin-bottom:5px;}
+.upload-zone-title{font-size:13px;font-weight:500;}
+.upload-zone-sub{font-size:11px;color:var(--hint);margin-top:2px;}
+.format-hint{margin-top:10px;padding:10px 12px;background:var(--cream);border-radius:var(--rs);font-size:11.5px;color:var(--muted);line-height:1.7;border:1px solid var(--border);}
+.format-hint code{font-family:var(--mono);font-size:10.5px;background:var(--border);padding:1px 5px;border-radius:4px;}
+.cta-wrap{display:flex;justify-content:center;margin-top:.5rem;}
+.btn-conciliar{background:var(--sage-dark);color:#fff;border:none;border-radius:50px;padding:13px 36px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s;box-shadow:0 2px 8px rgba(74,92,78,.3);}
+.btn-conciliar svg{width:16px;height:16px;}
+.btn-conciliar:hover{opacity:.88;transform:translateY(-1px);}
+.btn-conciliar:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none;}
+.results-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;}
+.results-title{font-family:'DM Serif Display',Georgia,serif;font-size:22px;font-weight:400;}
+.results-sub{font-size:12.5px;color:var(--hint);margin-top:2px;}
+.export-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--white);border:1px solid var(--border2);border-radius:var(--rs);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;box-shadow:var(--sh);}
+.export-btn svg{width:14px;height:14px;}
+.export-btn:hover{background:var(--sage-light);border-color:var(--sage);color:var(--sage-dark);}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem;}
+@media(max-width:620px){.metrics{grid-template-columns:repeat(2,1fr);}}
+.metric{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem 1.25rem 1rem;box-shadow:var(--sh);position:relative;overflow:hidden;}
+.metric::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.metric.ok::before{background:var(--ok-text);}.metric.diff::before{background:var(--diff-text);}
+.metric.sub::before{background:var(--sub-text);}.metric.arca::before{background:var(--arca-text);}
+.metric-val{font-size:32px;font-weight:300;letter-spacing:-.03em;line-height:1;margin-bottom:6px;}
+.metric.ok .metric-val{color:var(--ok-text);}.metric.diff .metric-val{color:var(--diff-text);}
+.metric.sub .metric-val{color:var(--sub-text);}.metric.arca .metric-val{color:var(--arca-text);}
+.metric-label{font-size:11.5px;color:var(--hint);font-weight:500;text-transform:uppercase;letter-spacing:.05em;}
+.filter-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
+.filter-btn{padding:6px 13px;border:1px solid var(--border2);border-radius:50px;font-size:12px;font-weight:500;cursor:pointer;background:var(--white);color:var(--muted);transition:all .15s;white-space:nowrap;}
+.filter-btn:hover{border-color:var(--sage);color:var(--sage-dark);}
+.filter-btn.active{background:var(--sage-dark);color:#fff;border-color:var(--sage-dark);}
+.search-wrap{flex:1;min-width:200px;position:relative;}
+.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:13px;height:13px;stroke:var(--hint);pointer-events:none;}
+.search-input{width:100%;padding:7px 10px 7px 30px;border:1px solid var(--border2);border-radius:var(--rs);font-size:13px;font-family:inherit;background:var(--white);color:var(--ink);outline:none;transition:border-color .15s;}
+.search-input:focus{border-color:var(--sage);}
+.search-input::placeholder{color:var(--hint);}
+.table-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;}
+thead th{padding:10px 14px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--hint);background:var(--cream);border-bottom:1px solid var(--border);white-space:nowrap;}
+tbody td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:12.5px;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:#f8faf8;}
+td.num{text-align:right;font-family:var(--mono);font-size:12px;}
+td.cuit-cell{font-family:var(--mono);font-size:11px;color:var(--muted);}
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:50px;font-size:11px;font-weight:600;border:1px solid transparent;white-space:nowrap;}
+.badge-ok{background:var(--ok-bg);color:var(--ok-text);border-color:var(--ok-border);}
+.badge-diff{background:var(--diff-bg);color:var(--diff-text);border-color:var(--diff-border);}
+.badge-sub{background:var(--sub-bg);color:var(--sub-text);border-color:var(--sub-border);}
+.badge-arca{background:var(--arca-bg);color:var(--arca-text);border-color:var(--arca-border);}
+.pagination{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--border);font-size:12px;color:var(--hint);background:var(--cream);}
+.page-btns{display:flex;gap:3px;}
+.page-btn{padding:4px 10px;border:1px solid var(--border2);border-radius:6px;background:var(--white);font-size:12px;cursor:pointer;color:var(--ink);transition:all .12s;}
+.page-btn:hover:not(:disabled){background:var(--sage-light);border-color:var(--sage);}
+.page-btn:disabled{opacity:.3;cursor:not-allowed;}
+.page-btn.current{background:var(--sage-dark);color:#fff;border-color:var(--sage-dark);}
+.legend{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:1rem;font-size:11.5px;align-items:center;color:var(--muted);}
+.empty-state{text-align:center;padding:3rem;color:var(--hint);}
+.empty-state svg{width:32px;height:32px;margin-bottom:10px;stroke:var(--border2);}
+.back-link{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--hint);cursor:pointer;border:none;background:none;margin-top:1.25rem;transition:color .15s;font-family:inherit;}
+.back-link:hover{color:var(--sage-dark);}
+.back-link svg{width:13px;height:13px;}
+</style>
+</head>
+<body>
+<header>
+  <a href="index.html" style="display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.6);font-size:12px;text-decoration:none;transition:color .15s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.6)'">
+    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:13px;height:13px"><path d="M10 4L6 8l4 4"/></svg>Portal
+  </a>
+  <div style="width:1px;height:18px;background:rgba(255,255,255,.2);margin:0 4px"></div>
+  <div class="logo-mark"><svg viewBox="0 0 20 20" fill="none" stroke-width="1.5"><rect x="2" y="3" width="16" height="14" rx="2"/><path d="M6 7h8M6 10h8M6 13h4"/></svg></div>
+  <div class="logo-text">Conciliación IVA</div>
+  <div class="logo-sub" id="header-empresa-iva"></div>
+</header>
+
+<div class="page">
+  <div class="steps">
+    <button class="step-btn active" onclick="switchTab('upload')" id="tab-upload">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 10V3M5 6l3-3 3 3M3 13h10"/></svg>Cargar archivos
+    </button>
+    <button class="step-btn" onclick="switchTab('result')" id="tab-result" disabled>
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 5h5M2 8h5M2 11h5M9 5h5M9 8h5M9 11h5"/></svg>Ver conciliación
+    </button>
+  </div>
+
+  <div class="section active" id="sec-upload">
+    <div class="upload-hero">
+      <h1>Verificación de comprobantes</h1>
+      <p>Subí el Subdiario IVA en PDF y el reporte de ARCA en Excel para cruzarlos automáticamente.</p>
+      <div class="rule-badge">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 2l1.5 3 3.5.5-2.5 2.5.6 3.5L8 10l-3.1 1.5.6-3.5L3 5.5l3.5-.5z"/></svg>
+        Cruce: CUIT + Punto de venta + N° · Tolerancia $100
+      </div>
+    </div>
+
+    <div class="file-grid">
+      <div class="file-card">
+        <div class="file-card-header">
+          <div class="file-icon"><svg viewBox="0 0 20 20" fill="none" stroke-width="1.5"><rect x="3" y="2" width="14" height="16" rx="2"/><path d="M6 6h8M6 9h8M6 12h5"/></svg></div>
+          <div><div class="file-card-title">Subdiario IVA Compras</div><div class="file-card-sub">Archivo PDF · OneSoft</div></div>
+        </div>
+        <div class="file-status" id="sub-status">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 10.5v.5"/></svg>Sin cargar
+        </div>
+        <div class="file-count" id="sub-count"></div>
+        <div class="prog-wrap" id="sub-prog">
+          <div class="prog-bar"><div class="prog-fill" id="sub-fill"></div></div>
+          <div class="prog-label" id="sub-label">Procesando…</div>
+        </div>
+        <label class="upload-zone">
+          <div class="upload-zone-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V5M7 8l3-3 3 3M4 15h12"/></svg></div>
+          <div class="upload-zone-title">Elegir PDF del Subdiario</div>
+          <div class="upload-zone-sub">Exportado de OneSoft</div>
+          <input type="file" id="file-sub" accept=".pdf" onchange="loadSubPDF(event)">
+        </label>
+        <div class="format-hint">PDF con texto seleccionable (no escaneo). Si no aparecen coincidencias, usá el botón de debug para ver qué extrae el sistema.</div>
+        <button onclick="debugPDF()" id="btn-debug" style="display:none;margin-top:8px;padding:5px 12px;border:1px solid var(--border2);border-radius:var(--rs);background:var(--cream);font-size:11px;cursor:pointer;color:var(--muted);">🔍 Ver debug (1ra página)</button>
+        <pre id="debug-out" style="display:none;margin-top:8px;font-size:10px;background:var(--cream);border:1px solid var(--border);border-radius:var(--rs);padding:8px;max-height:180px;overflow:auto;white-space:pre-wrap;color:var(--ink)"></pre>
+      </div>
+
+      <div class="file-card">
+        <div class="file-card-header">
+          <div class="file-icon"><svg viewBox="0 0 20 20" fill="none" stroke-width="1.5"><rect x="2" y="5" width="16" height="12" rx="2"/><path d="M5 5V4a1 1 0 011-1h8a1 1 0 011 1v1M7 9h6M7 12h4"/></svg></div>
+          <div><div class="file-card-title">Comprobantes ARCA</div><div class="file-card-sub">Archivo Excel (.xlsx) · AFIP</div></div>
+        </div>
+        <div class="file-status" id="arca-status">
+          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 10.5v.5"/></svg>Sin cargar
+        </div>
+        <div class="file-count" id="arca-count"></div>
+        <label class="upload-zone">
+          <div class="upload-zone-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V5M7 8l3-3 3 3M4 15h12"/></svg></div>
+          <div class="upload-zone-title">Elegir Excel de ARCA</div>
+          <div class="upload-zone-sub">Exportado directamente de ARCA/AFIP</div>
+          <input type="file" id="file-arca" accept=".xlsx,.xls" onchange="loadExcel(event)">
+        </label>
+        <div class="format-hint">Columnas detectadas automáticamente: <code>Nro. Doc. Vendedor</code> · <code>Punto de Venta</code> · <code>Número de Comprobante</code> · <code>Importe Total</code></div>
+      </div>
+    </div>
+
+    <div class="cta-wrap">
+      <button class="btn-conciliar" id="btn-conciliar" onclick="conciliar()" disabled>
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8h10M9 5l4 3-4 3"/></svg>Conciliar ahora
+      </button>
+    </div>
+  </div>
+
+  <div class="section" id="sec-result">
+    <div class="results-header">
+      <div><div class="results-title">Resultado de la conciliación</div><div class="results-sub" id="results-sub">—</div></div>
+      <button class="export-btn" onclick="exportCSV()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 3v7M5 7l3 3 3-3M3 13h10"/></svg>Exportar CSV
+      </button>
+    </div>
+    <div class="metrics">
+      <div class="metric ok"><div class="metric-val" id="m-ok">0</div><div class="metric-label">Coinciden</div></div>
+      <div class="metric diff"><div class="metric-val" id="m-diff">0</div><div class="metric-label">Dif. de monto</div></div>
+      <div class="metric sub"><div class="metric-val" id="m-sub">0</div><div class="metric-label">Solo Subdiario</div></div>
+      <div class="metric arca"><div class="metric-val" id="m-arca">0</div><div class="metric-label">Solo en ARCA</div></div>
+    </div>
+    <div class="filter-bar">
+      <button class="filter-btn active" onclick="setFilter('all',this)">Todos</button>
+      <button class="filter-btn" onclick="setFilter('ok',this)">✓ Coinciden</button>
+      <button class="filter-btn" onclick="setFilter('diff',this)">⚠ Dif. monto</button>
+      <button class="filter-btn" onclick="setFilter('sub',this)">Solo Subdiario</button>
+      <button class="filter-btn" onclick="setFilter('arca',this)">Solo ARCA</button>
+      <div class="search-wrap">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3 3"/></svg>
+        <input type="text" class="search-input" placeholder="Buscar CUIT, proveedor o comprobante…" oninput="setSearch(this.value)">
+      </div>
+    </div>
+    <div class="legend">
+      <span style="color:var(--hint);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.04em">Leyenda:</span>
+      <span><span class="badge badge-ok">✓ Coincide</span></span>
+      <span><span class="badge badge-diff">⚠ Dif. monto</span> &gt;$100</span>
+      <span><span class="badge badge-sub">Solo Subdiario</span></span>
+      <span><span class="badge badge-arca">Solo ARCA</span></span>
+    </div>
+    <div class="table-card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th style="width:100px">CUIT</th><th style="width:175px">Proveedor</th>
+            <th style="width:115px">Comprobante</th><th style="width:65px">Tipo</th>
+            <th style="width:110px;text-align:right">Total Subdiario</th>
+            <th style="width:110px;text-align:right">Total ARCA</th>
+            <th style="width:85px;text-align:right">Diferencia</th>
+            <th style="width:120px">Estado</th>
+          </tr></thead>
+          <tbody id="tbl-body"></tbody>
+        </table>
+      </div>
+      <div class="pagination"><span id="pg-info"></span><div class="page-btns" id="pg-btns"></div></div>
+    </div>
+    <button class="back-link" onclick="switchTab('upload')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 4L6 8l4 4"/></svg>Volver a cargar archivos
+    </button>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+var subRows=[],arcaRows=[],results=[];
+var currentFilter='all',currentSearch='',currentPage=1;
+var PAGE_SIZE=30, TOLE=100;
+
+function switchTab(t){
+  ['upload','result'].forEach(function(id){
+    document.getElementById('sec-'+id).classList.remove('active');
+    document.getElementById('tab-'+id).classList.remove('active');
+  });
+  document.getElementById('sec-'+t).classList.add('active');
+  document.getElementById('tab-'+t).classList.add('active');
+}
+
+function normCuit(s){ return (s||'').toString().replace(/[-.\s]/g,''); }
+function normNro(s){ return (s||'').toString().replace(/[-\/\s]/g,'').replace(/^0+/,'')||'0'; }
+
+function parseMonto(s){
+  s=(s||'').toString().replace(/[^\d.,-]/g,'').trim();
+  if(!s) return 0;
+  if(s.indexOf(',')>-1&&s.indexOf('.')>-1){
+    if(s.lastIndexOf(',')>s.lastIndexOf('.')){s=s.replace(/\./g,'').replace(',','.');}
+    else{s=s.replace(/,/g,'');}
+  } else if(s.indexOf(',')>-1){
+    var p=s.split(',');
+    if(p.length===2&&p[1].length<=2) s=s.replace(',','.');
+    else s=s.replace(/,/g,'');
+  }
+  return parseFloat(s)||0;
+}
+
+function setStatus(id,msg,state){
+  var el=document.getElementById(id);
+  var ic={
+    wait:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 10.5v.5"/></svg>',
+    ok:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><path d="M3 8l3.5 3.5L13 5"/></svg>',
+    err:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><path d="M5 5l6 6M11 5l-6 6"/></svg>'
+  };
+  el.innerHTML=(ic[state]||ic.wait)+' '+msg;
+  el.className='file-status'+(state==='ok'?' ok':state==='err'?' err':'');
+}
+
+// ─────────────────────────────────────────────
+// PDF PARSER — detección por patrones (no por posición X)
+// Funciona sin importar la escala que use PDF.js
+// ─────────────────────────────────────────────
+
+async function loadSubPDF(ev){
+  var file=ev.target.files[0]; if(!file) return;
+  setStatus('sub-status','Leyendo PDF…','wait');
+  document.getElementById('sub-count').textContent='';
+  document.getElementById('sub-prog').style.display='block';
+  document.getElementById('sub-fill').style.width='0%';
+  document.getElementById('sub-label').textContent='Iniciando…';
+
+  try{
+    var ab=await file.arrayBuffer();
+    var pdf=await pdfjsLib.getDocument({data:ab}).promise;
+    var nPages=pdf.numPages;
+    subRows=[];
+
+    for(var pi=0;pi<nPages;pi++){
+      document.getElementById('sub-fill').style.width=Math.round(((pi+1)/nPages)*100)+'%';
+      document.getElementById('sub-label').textContent='Página '+(pi+1)+' de '+nPages;
+      var page=await pdf.getPage(pi+1);
+      var tc=await page.getTextContent();
+
+      // Collect words with positions
+      var words=[];
+      tc.items.forEach(function(item){
+        if(!item.str.trim()) return;
+        words.push({x:item.transform[4], y:item.transform[5], str:item.str.trim()});
+      });
+
+      // Group by Y row (PDF.js Y grows upward, group with 1pt tolerance)
+      var byY={};
+      words.forEach(function(w){
+        var yk=Math.round(w.y);
+        if(!byY[yk]) byY[yk]=[];
+        byY[yk].push(w);
+      });
+
+      Object.keys(byY).forEach(function(yk){
+        var ws=byY[yk].sort(function(a,b){return a.x-b.x;});
+        var lineStr=ws.map(function(w){return w.str;}).join(' ');
+
+        // Skip header/footer/total lines
+        if(/F\.\s*Comp|Neto\s*Gravado|SULFOQUIMICA|SUB\s*DIARIO|Nicolas\s*Boulanger|Pág\./i.test(lineStr)) return;
+        if(/^\s*[\d.,]+\s+[\d.,]+\s+[\d.,]+/.test(lineStr)&&!/\d{10,11}/.test(lineStr)) return;
+
+        // Find Nro: pattern XXXX-XXXXXXXX (punto de venta - numero)
+        var nroMatch=lineStr.match(/\b(\d{1,4})-(\d{5,8})\b/);
+        if(!nroMatch) return;
+        var pv=parseInt(nroMatch[1])||0;
+        var nro=normNro(nroMatch[2]);
+
+        // Find CUIT: 10-11 consecutive digits (may have dashes like 30-71567040-9)
+        // Look for patterns: 11 digits, or XX-XXXXXXXX-X
+        var cuitMatch=lineStr.match(/\b(\d{2}-\d{8}-\d|\d{11})\b/);
+        if(!cuitMatch){
+          // Try without dashes: find 11-digit sequence
+          cuitMatch=lineStr.match(/\b(\d{10,11})\b/);
+        }
+        if(!cuitMatch) return;
+        var cuit=normCuit(cuitMatch[1]);
+        if(cuit.length<10) return;
+
+        // Find Tipo: FACT./N.C./N.D. followed by letter A/B/C
+        var tipoMatch=lineStr.match(/\b(FACT\.|N\.C\.|N\.D\.)\s+([ABC])\b/);
+        var tipo=tipoMatch?(tipoMatch[1]+' '+tipoMatch[2]):'';
+
+        // Find Total: it's the last large number on the line before province name
+        // Pattern: number that may be concatenated with province (e.g. "8.035.752,78CAPITAL" or "8.035.752,78 CAPITAL")
+        // Strategy: find all numbers in line, the Total is the last one with decimals (after all the 0,00 zeros)
+        var allNums=[];
+        var numRe=/(-?[\d]{1,3}(?:\.[\d]{3})*,\d{2})/g;
+        var nm;
+        while((nm=numRe.exec(lineStr))!==null){
+          var v=parseMonto(nm[1]);
+          allNums.push({v:v, idx:nm.index});
+        }
+        // Also catch numbers concatenated with text like "8.035.752,78CAPITAL"
+        var concatRe=/(-?[\d]{1,3}(?:\.[\d]{3})*,\d{2})(?=[A-Z])/g;
+        while((nm=concatRe.exec(lineStr))!==null){
+          var v2=parseMonto(nm[1]);
+          // Replace existing entry at same position or add
+          var found=false;
+          for(var ai=0;ai<allNums.length;ai++){
+            if(Math.abs(allNums[ai].idx-nm.index)<3){found=true;break;}
+          }
+          if(!found) allNums.push({v:v2,idx:nm.index});
+        }
+
+        if(!allNums.length) return;
+
+        // Sort by position in string
+        allNums.sort(function(a,b){return a.idx-b.idx;});
+
+        // The Total is the last significant number (not 0,00)
+        // In this PDF layout: Neto Gravado, No Gravado, IVA, Perc IIBB, Perc Otras, IVA, Ret, Otros, TOTAL
+        // So the last non-trivial number is Total
+        // But many fields are 0,00 — find the last number that appears after at least 5 other numbers
+        var total=0;
+        if(allNums.length>=2){
+          // Take the last number overall — it's always Total in this layout
+          total=allNums[allNums.length-1].v;
+        } else if(allNums.length===1){
+          total=allNums[0].v;
+        }
+
+        // Find Proveedor: text between Nro and CUIT-like pattern
+        var provMatch=lineStr.match(/\d{1,4}-\d{5,8}\s+(.+?)\s+(?:RI-A|MO[N]?|EXT[O]?|CF|RI)\b/i);
+        var prov=provMatch?provMatch[1].trim():'';
+
+        subRows.push({
+          cuit:cuit,pv:pv,nro:nro,tipo:tipo.trim(),prov:prov,
+          total:total,key:cuit+'|'+pv+'|'+nro
+        });
+      });
+    }
+
+    document.getElementById('sub-prog').style.display='none';
+    document.getElementById('btn-debug').style.display='inline-block';
+    setStatus('sub-status',file.name,'ok');
+    document.getElementById('sub-count').textContent=subRows.length+' comprobantes detectados';
+    checkReady();
+  }catch(e){
+    document.getElementById('sub-prog').style.display='none';
+    setStatus('sub-status','Error: '+e.message,'err');
+    console.error(e);
+  }
+}
+
+// Debug: show raw text from first data page so user can share it
+var _debugFile=null;
+async function debugPDF(){
+  var inp=document.getElementById('file-sub');
+  if(!inp.files[0]) return;
+  var ab=await inp.files[0].arrayBuffer();
+  var pdf=await pdfjsLib.getDocument({data:ab}).promise;
+  var page=await pdf.getPage(1);
+  var tc=await page.getTextContent();
+  var words=[];
+  tc.items.forEach(function(item){
+    if(!item.str.trim()) return;
+    words.push('x='+Math.round(item.transform[4])+' y='+Math.round(item.transform[5])+' "'+item.str.trim()+'"');
+  });
+  var out=document.getElementById('debug-out');
+  out.style.display='block';
+  out.textContent='=== PRIMERAS 60 PALABRAS (página 1) ===\n'+words.slice(0,60).join('\n')+'\n\n=== SUB ROWS EXTRAÍDOS (primeros 5) ===\n'+
+    JSON.stringify(subRows.slice(0,5),null,2);
+}
+
+// ── EXCEL ARCA ──
+function loadExcel(ev){
+  var file=ev.target.files[0]; if(!file) return;
+  setStatus('arca-status','Leyendo…','wait');
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var raw=XLSX.utils.sheet_to_json(ws,{defval:''});
+      arcaRows=raw.map(function(r){
+        var cuit=normCuit(r['Nro. Doc. Vendedor']||r['NroDocVendedor']||r['CUIT']||r['cuit']||r['Nro Doc Vendedor']||'');
+        var pv=parseInt(r['Punto de Venta']||r['PuntoDeVenta']||r['Punto Venta']||0)||0;
+        var nroRaw=(r['Número de Comprobante']||r['NumeroDeComprobante']||r['Numero de Comprobante']||r['Nro']||'').toString();
+        var nro=normNro(nroRaw);
+        var tipo=(r['Tipo de Comprobante']||r['TipoDeComprobante']||r['Tipo']||'').toString();
+        var total=parseFloat(r['Importe Total']||r['ImporteTotal']||r['Total']||0)||0;
+        var prov=(r['Denominación Vendedor']||r['DenominacionVendedor']||r['Denominacion Vendedor']||r['Proveedor']||'').toString();
+        return{cuit:cuit,pv:pv,nro:nro,tipo:tipo,total:total,prov:prov,key:cuit+'|'+pv+'|'+nro};
+      }).filter(function(r){return r.cuit&&r.cuit.length>=10;});
+      setStatus('arca-status',file.name,'ok');
+      document.getElementById('arca-count').textContent=arcaRows.length+' registros cargados';
+      checkReady();
+    }catch(err){setStatus('arca-status','Error: '+err.message,'err');console.error(err);}
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function checkReady(){
+  document.getElementById('btn-conciliar').disabled=!(subRows.length&&arcaRows.length);
+}
+
+function conciliar(){
+  var arcaMap={};
+  arcaRows.forEach(function(r){arcaMap[r.key]=arcaMap[r.key]||[];arcaMap[r.key].push({row:r,used:false});});
+  results=[];
+  subRows.forEach(function(sub){
+    var cands=arcaMap[sub.key]||[];
+    var matched=null;
+    for(var i=0;i<cands.length;i++){if(!cands[i].used){matched=cands[i];break;}}
+    if(matched){
+      matched.used=true;
+      var dif=matched.row.total-sub.total;
+      results.push({status:Math.abs(dif)<=TOLE?'ok':'diff',cuit:sub.cuit,prov:sub.prov||matched.row.prov,comp:sub.pv+'-'+sub.nro,tipo:sub.tipo,totalSub:sub.total,totalArca:matched.row.total,dif:dif});
+    } else {
+      results.push({status:'sub',cuit:sub.cuit,prov:sub.prov,comp:sub.pv+'-'+sub.nro,tipo:sub.tipo,totalSub:sub.total,totalArca:null,dif:null});
+    }
+  });
+  Object.keys(arcaMap).forEach(function(key){
+    arcaMap[key].forEach(function(c){
+      if(!c.used) results.push({status:'arca',cuit:c.row.cuit,prov:c.row.prov,comp:c.row.pv+'-'+c.row.nro,tipo:c.row.tipo,totalSub:null,totalArca:c.row.total,dif:null});
+    });
+  });
+  document.getElementById('m-ok').textContent=results.filter(function(r){return r.status==='ok';}).length;
+  document.getElementById('m-diff').textContent=results.filter(function(r){return r.status==='diff';}).length;
+  document.getElementById('m-sub').textContent=results.filter(function(r){return r.status==='sub';}).length;
+  document.getElementById('m-arca').textContent=results.filter(function(r){return r.status==='arca';}).length;
+  document.getElementById('results-sub').textContent=results.length+' comprobantes · '+new Date().toLocaleDateString('es-AR');
+  currentFilter='all';currentSearch='';currentPage=1;
+  document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});
+  document.querySelector('.filter-btn').classList.add('active');
+  document.querySelector('.search-input').value='';
+  document.getElementById('tab-result').disabled=false;
+  renderTable();switchTab('result');
+}
+
+function getFiltered(){
+  return results.filter(function(r){
+    if(currentFilter!=='all'&&r.status!==currentFilter) return false;
+    if(currentSearch){var q=currentSearch.toLowerCase();if(r.cuit.indexOf(q)<0&&(r.prov||'').toLowerCase().indexOf(q)<0&&r.comp.indexOf(q)<0) return false;}
+    return true;
+  });
+}
+function fmt(n){if(n===null||n===undefined) return '—';return n.toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+
+function renderTable(){
+  var filtered=getFiltered(),total=filtered.length,pages=Math.ceil(total/PAGE_SIZE)||1;
+  if(currentPage>pages) currentPage=pages;
+  var slice=filtered.slice((currentPage-1)*PAGE_SIZE,currentPage*PAGE_SIZE);
+  var tbody=document.getElementById('tbl-body');
+  if(!slice.length){
+    tbody.innerHTML='<tr><td colspan="8"><div class="empty-state"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 10.5v.5"/></svg><p>Sin resultados</p></div></td></tr>';
+  } else {
+    tbody.innerHTML=slice.map(function(r){
+      var badge=r.status==='ok'?'<span class="badge badge-ok">✓ Coincide</span>':r.status==='diff'?'<span class="badge badge-diff">⚠ Dif. monto</span>':r.status==='sub'?'<span class="badge badge-sub">Solo Subdiario</span>':'<span class="badge badge-arca">Solo ARCA</span>';
+      var difStr=r.dif!==null?(Math.abs(r.dif)<0.005?'$0':(r.dif>=0?'+':'')+fmt(r.dif)):'—';
+      var difColor=r.dif!==null&&Math.abs(r.dif)>TOLE?'color:var(--diff-text);font-weight:600':'';
+      return '<tr><td class="cuit-cell">'+r.cuit+'</td><td style="max-width:175px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+(r.prov||'')+'">'+(r.prov||'—')+'</td><td style="font-family:var(--mono);font-size:11px">'+r.comp+'</td><td style="font-size:11px;color:var(--muted)">'+r.tipo+'</td><td class="num">'+fmt(r.totalSub)+'</td><td class="num">'+fmt(r.totalArca)+'</td><td class="num" style="'+difColor+'">'+difStr+'</td><td>'+badge+'</td></tr>';
+    }).join('');
+  }
+  document.getElementById('pg-info').textContent=total+' registros · pág. '+currentPage+' de '+pages;
+  var btns='<button class="page-btn" onclick="goPage('+(currentPage-1)+')" '+(currentPage===1?'disabled':'')+'>‹</button>';
+  var start=Math.max(1,currentPage-2),end=Math.min(pages,currentPage+2);
+  if(start>1) btns+='<button class="page-btn" onclick="goPage(1)">1</button>'+(start>2?'<span style="padding:0 4px">…</span>':'');
+  for(var p=start;p<=end;p++) btns+='<button class="page-btn'+(p===currentPage?' current':'')+'" onclick="goPage('+p+')">'+p+'</button>';
+  if(end<pages) btns+=(end<pages-1?'<span style="padding:0 4px">…</span>':'')+'<button class="page-btn" onclick="goPage('+pages+')">'+pages+'</button>';
+  btns+='<button class="page-btn" onclick="goPage('+(currentPage+1)+')" '+(currentPage===pages?'disabled':'')+'>›</button>';
+  document.getElementById('pg-btns').innerHTML=btns;
+}
+function goPage(p){currentPage=p;renderTable();}
+function setFilter(f,el){currentFilter=f;currentPage=1;document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});el.classList.add('active');renderTable();}
+function setSearch(v){currentSearch=v;currentPage=1;renderTable();}
+function exportCSV(){
+  var filtered=getFiltered();
+  var labels={ok:'Coincide',diff:'Diferencia monto',sub:'Solo Subdiario',arca:'Solo ARCA'};
+  var headers=['Estado','CUIT','Proveedor','Comprobante','Tipo','Total Subdiario','Total ARCA','Diferencia'];
+  var rows=filtered.map(function(r){return[labels[r.status]||r.status,r.cuit,r.prov,r.comp,r.tipo,r.totalSub!==null?r.totalSub.toFixed(2):'',r.totalArca!==null?r.totalArca.toFixed(2):'',r.dif!==null?r.dif.toFixed(2):''];});
+  var csv=[headers].concat(rows).map(function(row){return row.map(function(c){return'"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='conciliacion_iva_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+}
+
+// Portal integration
+(function(){
+  if(window.APP_CONFIG){
+    var emp = document.getElementById('header-empresa-iva');
+    if(emp) emp.textContent = window.APP_CONFIG.EMPRESA || '';
+  }
+})();
+</script>
+</body>
+</html>

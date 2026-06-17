@@ -389,7 +389,7 @@ async function callClaude(system, user){
     headers:{'Content-Type':'application/json'},
     body:JSON.stringify({
       model:'claude-sonnet-4-6',
-      max_tokens:4000,
+      max_tokens:8000,
       system:system,
       messages:[{role:'user',content:user}]
     })
@@ -445,7 +445,7 @@ RESPONDER SOLO CON JSON, sin texto adicional:
   }
 }`;
 
-    var user='SUBDIARIO IVA COMPRAS (PDF):\n'+subText.substring(0,10000)+'\n\nCOMPROBANTES ARCA (Excel):\n'+arcaText.substring(0,8000)+'\n\nRealizá la conciliación completa y devolvé el JSON.';
+    var user='SUBDIARIO IVA COMPRAS (PDF):\n'+subText.substring(0,6000)+'\n\nCOMPROBANTES ARCA (Excel):\n'+arcaText.substring(0,6000)+'\n\nRealizá la conciliación completa y devolvé el JSON.';
 
     setStep(4);
     var response=await callClaude(system, user);

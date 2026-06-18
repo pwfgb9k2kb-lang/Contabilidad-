@@ -50,6 +50,10 @@ header{background:var(--sage-dark);padding:0 2.5rem;height:64px;display:flex;ali
 .file-status.ok{color:var(--ok-text);}.file-status.err{color:var(--sub-text);}
 .file-status svg{width:14px;height:14px;flex-shrink:0;}
 .file-count{font-size:11.5px;color:var(--hint);margin-bottom:12px;padding-left:20px;}
+.prog-wrap{margin-bottom:10px;display:none;}
+.prog-bar{height:4px;background:var(--border);border-radius:4px;overflow:hidden;}
+.prog-fill{height:100%;background:var(--sage-dark);border-radius:4px;width:0%;transition:width .2s;}
+.prog-label{font-size:11px;color:var(--hint);margin-top:4px;}
 .upload-zone{border:1.5px dashed var(--border2);border-radius:var(--rs);padding:16px;text-align:center;cursor:pointer;transition:all .2s;background:var(--cream);display:block;}
 .upload-zone:hover{border-color:var(--sage);background:var(--sage-light);}
 .upload-zone input[type=file]{display:none;}
@@ -152,10 +156,10 @@ td.cuit-cell{font-family:var(--mono);font-size:11px;color:var(--muted);}
   <div class="section active" id="sec-upload">
     <div class="upload-hero">
       <h1>Conciliación IVA Compras</h1>
-      <p>Subí el Subdiario IVA en PDF y los comprobantes de ARCA en Excel. Claude hace la conciliación completa.</p>
+      <p>Subí el Subdiario IVA en PDF y los comprobantes de ARCA en Excel. El sistema parsea todos los datos y Claude analiza el resultado completo.</p>
       <div class="rule-badge">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:12px;height:12px"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
-        Cruce por CUIT + N° comprobante · Tolerancia $100
+        CUIT + N° comprobante · Tolerancia $100 · Análisis IA
       </div>
     </div>
 
@@ -169,13 +173,17 @@ td.cuit-cell{font-family:var(--mono);font-size:11px;color:var(--muted);}
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 10.5v.5"/></svg>Sin cargar
         </div>
         <div class="file-count" id="sub-count"></div>
+        <div class="prog-wrap" id="sub-prog">
+          <div class="prog-bar"><div class="prog-fill" id="sub-fill"></div></div>
+          <div class="prog-label" id="sub-label">Procesando…</div>
+        </div>
         <label class="upload-zone">
           <div class="upload-zone-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V5M7 8l3-3 3 3M4 15h12"/></svg></div>
           <div class="upload-zone-title">Elegir PDF del Subdiario</div>
           <div class="upload-zone-sub">PDF exportado de OneSoft</div>
-          <input type="file" id="file-sub" accept=".pdf" onchange="loadFile(event,'sub')">
+          <input type="file" id="file-sub" accept=".pdf" onchange="loadSubPDF(event)">
         </label>
-        <div class="format-hint">PDF con texto seleccionable exportado de OneSoft. Claude lee el contenido directamente.</div>
+        <div class="format-hint">PDF con texto seleccionable de OneSoft. El sistema extrae todos los comprobantes automáticamente.</div>
       </div>
 
       <div class="file-card">
@@ -191,16 +199,16 @@ td.cuit-cell{font-family:var(--mono);font-size:11px;color:var(--muted);}
           <div class="upload-zone-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V5M7 8l3-3 3 3M4 15h12"/></svg></div>
           <div class="upload-zone-title">Elegir Excel de ARCA</div>
           <div class="upload-zone-sub">Excel de comprobantes de AFIP</div>
-          <input type="file" id="file-arca" accept=".xlsx,.xls" onchange="loadFile(event,'arca')">
+          <input type="file" id="file-arca" accept=".xlsx,.xls" onchange="loadExcel(event)">
         </label>
-        <div class="format-hint">Excel exportado de ARCA. Columnas detectadas automáticamente: <code>Nro. Doc. Vendedor</code> · <code>Punto de Venta</code> · <code>Número de Comprobante</code> · <code>Importe Total</code></div>
+        <div class="format-hint">Columnas detectadas automáticamente: <code>Nro. Doc. Vendedor</code> · <code>Punto de Venta</code> · <code>Número de Comprobante</code> · <code>Importe Total</code></div>
       </div>
     </div>
 
     <div class="cta-wrap">
       <button class="btn-main" id="btn-conciliar" onclick="conciliar()" disabled>
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
-        Analizar con IA
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8h10M9 5l4 3-4 3"/></svg>
+        Conciliar
       </button>
     </div>
   </div>
@@ -208,13 +216,13 @@ td.cuit-cell{font-family:var(--mono);font-size:11px;color:var(--muted);}
   <!-- PROCESSING -->
   <div class="processing-card" id="sec-processing">
     <div class="spinner"></div>
-    <div class="processing-title">Claude está analizando los comprobantes</div>
-    <div class="processing-sub">Leyendo el PDF y el Excel…</div>
+    <div class="processing-title" id="proc-title">Procesando archivos</div>
+    <div class="processing-sub" id="proc-sub">Por favor esperá…</div>
     <div class="processing-steps">
-      <div class="proc-step" id="step-1"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/></svg>Extrayendo texto del PDF</div>
+      <div class="proc-step" id="step-1"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/></svg>Extrayendo datos del PDF</div>
       <div class="proc-step" id="step-2"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/></svg>Leyendo comprobantes ARCA</div>
-      <div class="proc-step" id="step-3"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/></svg>Cruzando por CUIT y N°</div>
-      <div class="proc-step" id="step-4"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/></svg>Generando resultado</div>
+      <div class="proc-step" id="step-3"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/></svg>Cruzando todos los comprobantes</div>
+      <div class="proc-step" id="step-4"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/></svg>Analizando con Claude</div>
     </div>
   </div>
 
@@ -227,14 +235,12 @@ td.cuit-cell{font-family:var(--mono);font-size:11px;color:var(--muted);}
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 3v7M5 7l3 3 3-3M3 13h10"/></svg>Exportar CSV
       </button>
     </div>
-
     <div class="metrics">
       <div class="metric ok"><div class="metric-val" id="m-ok">0</div><div class="metric-label">Coinciden</div><div class="metric-amount" id="m-ok-amt"></div></div>
       <div class="metric diff"><div class="metric-val" id="m-diff">0</div><div class="metric-label">Dif. monto</div><div class="metric-amount" id="m-diff-amt"></div></div>
       <div class="metric sub"><div class="metric-val" id="m-sub">0</div><div class="metric-label">Solo Subdiario</div><div class="metric-amount" id="m-sub-amt"></div></div>
       <div class="metric arca"><div class="metric-val" id="m-arca">0</div><div class="metric-label">Solo ARCA</div><div class="metric-amount" id="m-arca-amt"></div></div>
     </div>
-
     <div class="ai-analysis" id="ai-analysis" style="display:none">
       <div class="ai-analysis-header">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
@@ -242,7 +248,6 @@ td.cuit-cell{font-family:var(--mono);font-size:11px;color:var(--muted);}
       </div>
       <div id="ai-analysis-text"></div>
     </div>
-
     <div class="filter-bar">
       <button class="filter-btn active" onclick="setFilter('all',this)">Todos</button>
       <button class="filter-btn" onclick="setFilter('ok',this)">✓ Coinciden</button>
@@ -254,7 +259,6 @@ td.cuit-cell{font-family:var(--mono);font-size:11px;color:var(--muted);}
         <input type="text" class="search-input" placeholder="Buscar CUIT, proveedor o comprobante…" oninput="setSearch(this.value)">
       </div>
     </div>
-
     <div class="table-card">
       <div class="table-wrap">
         <table>
@@ -273,7 +277,6 @@ td.cuit-cell{font-family:var(--mono);font-size:11px;color:var(--muted);}
       </div>
       <div class="pagination"><span id="pg-info"></span><div class="page-btns" id="pg-btns"></div></div>
     </div>
-
     <button class="back-link" onclick="resetAll()">
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 4L6 8l4 4"/></svg>Nueva conciliación
     </button>
@@ -285,12 +288,12 @@ td.cuit-cell{font-family:var(--mono);font-size:11px;color:var(--muted);}
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-var subText='', arcaText='', results=[];
-var currentFilter='all', currentSearch='', currentPage=1;
-var PAGE_SIZE=40;
+var subRows=[],arcaRows=[],results=[];
+var currentFilter='all',currentSearch='',currentPage=1;
+var PAGE_SIZE=40, TOLE=100;
 
 (function(){
-  if(window.APP_CONFIG && window.APP_CONFIG.EMPRESA)
+  if(window.APP_CONFIG&&window.APP_CONFIG.EMPRESA)
     document.getElementById('header-empresa').textContent=window.APP_CONFIG.EMPRESA;
 })();
 
@@ -323,83 +326,153 @@ function setStep(n){
   }
 }
 
-async function extractPDFText(file){
-  var ab=await file.arrayBuffer();
-  var pdf=await pdfjsLib.getDocument({data:ab}).promise;
-  var text='';
-  for(var i=1;i<=pdf.numPages;i++){
-    var page=await pdf.getPage(i);
-    var tc=await page.getTextContent();
-    var byY={};
-    tc.items.forEach(function(item){
-      if(!item.str.trim()) return;
-      var y=Math.round(item.transform[5]);
-      if(!byY[y]) byY[y]=[];
-      byY[y].push({x:item.transform[4],str:item.str});
-    });
-    Object.keys(byY).sort(function(a,b){return b-a;}).forEach(function(y){
-      var line=byY[y].sort(function(a,b){return a.x-b.x;}).map(function(w){return w.str;}).join(' ');
-      text+=line+'\n';
-    });
+function normCuit(s){return (s||'').toString().replace(/[-.\s]/g,'');}
+function normNro(s){return (s||'').toString().replace(/[-\/\s]/g,'').replace(/^0+/,'')||'0';}
+function parseMonto(s){
+  s=(s||'').toString().trim();
+  var m=s.match(/^(-?[\d.,]+)/); if(!m) return 0;
+  s=m[1];
+  if(s.indexOf(',')>-1&&s.indexOf('.')>-1){
+    if(s.lastIndexOf(',')>s.lastIndexOf('.')){s=s.replace(/\./g,'').replace(',','.');}
+    else{s=s.replace(/,/g,'');}
+  } else if(s.indexOf(',')>-1){
+    var p=s.split(',');
+    if(p.length===2&&p[1].length<=2) s=s.replace(',','.');
+    else s=s.replace(/,/g,'');
   }
-  return text;
+  return parseFloat(s)||0;
 }
 
-function extractExcelText(file){
-  return new Promise(function(resolve,reject){
-    var reader=new FileReader();
-    reader.onload=function(e){
-      try{
-        var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
-        var text='';
-        wb.SheetNames.forEach(function(name){
-          text+='=== '+name+' ===\n'+XLSX.utils.sheet_to_csv(wb.Sheets[name])+'\n\n';
-        });
-        resolve(text);
-      }catch(err){reject(err);}
-    };
-    reader.readAsArrayBuffer(file);
-  });
-}
-
-async function loadFile(ev, target){
+// ── PDF PARSER — pattern based ──
+async function loadSubPDF(ev){
   var file=ev.target.files[0]; if(!file) return;
-  setStatus(target+'-status','Leyendo…','wait');
+  setStatus('sub-status','Leyendo PDF…','wait');
+  document.getElementById('sub-count').textContent='';
+  document.getElementById('sub-prog').style.display='block';
+  document.getElementById('sub-fill').style.width='0%';
+  document.getElementById('sub-label').textContent='Iniciando…';
+
   try{
-    var text='';
-    if(/\.pdf$/i.test(file.name)) text=await extractPDFText(file);
-    else text=await extractExcelText(file);
-    if(target==='sub') subText=text;
-    else arcaText=text;
-    setStatus(target+'-status',file.name,'ok');
-    document.getElementById(target+'-count').textContent=Math.round(text.length/1000)+'k caracteres extraídos';
+    var ab=await file.arrayBuffer();
+    var pdf=await pdfjsLib.getDocument({data:ab}).promise;
+    var nPages=pdf.numPages;
+    subRows=[];
+
+    for(var pi=0;pi<nPages;pi++){
+      document.getElementById('sub-fill').style.width=Math.round(((pi+1)/nPages)*100)+'%';
+      document.getElementById('sub-label').textContent='Página '+(pi+1)+' de '+nPages;
+      var page=await pdf.getPage(pi+1);
+      var tc=await page.getTextContent();
+
+      // Group items by Y row
+      var words=[];
+      tc.items.forEach(function(item){
+        if(!item.str.trim()) return;
+        words.push({x:item.transform[4],y:item.transform[5],str:item.str.trim()});
+      });
+      var byY={};
+      words.forEach(function(w){
+        var yk=Math.round(w.y*2)/2;
+        if(!byY[yk]) byY[yk]=[];
+        byY[yk].push(w);
+      });
+
+      Object.keys(byY).forEach(function(yk){
+        var ws=byY[yk].sort(function(a,b){return a.x-b.x;});
+        var lineStr=ws.map(function(w){return w.str;}).join(' ');
+
+        // Skip headers/footers
+        if(/F\.\s*Comp|Neto\s*Gravado|SULFOQUIMICA|SUB\s*DIARIO|Nicolas|Pág\./i.test(lineStr)) return;
+
+        // Find Nro: XXXX-XXXXXXXX
+        var nroMatch=lineStr.match(/\b(\d{1,4})-(\d{5,8})\b/);
+        if(!nroMatch) return;
+        var pv=parseInt(nroMatch[1])||0;
+        var nro=normNro(nroMatch[2]);
+
+        // Find CUIT: 11 digits or XX-XXXXXXXX-X format
+        var cuitMatch=lineStr.match(/\b(\d{2}-\d{8}-\d|\d{11})\b/);
+        if(!cuitMatch) cuitMatch=lineStr.match(/\b(\d{10,11})\b/);
+        if(!cuitMatch) return;
+        var cuit=normCuit(cuitMatch[1]);
+        if(cuit.length<10) return;
+
+        // Find Tipo
+        var tipoMatch=lineStr.match(/\b(FACT\.|N\.C\.|N\.D\.)\s+([ABC])\b/);
+        var tipo=tipoMatch?(tipoMatch[1]+' '+tipoMatch[2]):'';
+
+        // Find Total: last number with decimals on the line (before province)
+        var allNums=[];
+        var numRe=/(-?[\d]{1,3}(?:\.[\d]{3})*,\d{2})/g;
+        var nm;
+        while((nm=numRe.exec(lineStr))!==null){
+          allNums.push({v:parseMonto(nm[1]),idx:nm.index});
+        }
+        // Also catch numbers concatenated with province name
+        var concatRe=/(-?[\d]{1,3}(?:\.[\d]{3})*,\d{2})(?=[A-Z])/g;
+        while((nm=concatRe.exec(lineStr))!==null){
+          var found=false;
+          for(var ai=0;ai<allNums.length;ai++){
+            if(Math.abs(allNums[ai].idx-nm.index)<3){found=true;break;}
+          }
+          if(!found) allNums.push({v:parseMonto(nm[1]),idx:nm.index});
+        }
+        if(!allNums.length) return;
+        allNums.sort(function(a,b){return a.idx-b.idx;});
+        var total=allNums[allNums.length-1].v;
+
+        // Proveedor
+        var provMatch=lineStr.match(/\d{1,4}-\d{5,8}\s+(.+?)\s+(?:RI-A|MO[N]?|EXT[O]?|CF|RI)\b/i);
+        var prov=provMatch?provMatch[1].trim():'';
+
+        subRows.push({cuit:cuit,pv:pv,nro:nro,tipo:tipo.trim(),prov:prov,total:total,key:cuit+'|'+pv+'|'+nro});
+      });
+    }
+
+    document.getElementById('sub-prog').style.display='none';
+    setStatus('sub-status',file.name,'ok');
+    document.getElementById('sub-count').textContent=subRows.length+' comprobantes detectados';
     checkReady();
   }catch(e){
-    setStatus(target+'-status','Error: '+e.message,'err');
+    document.getElementById('sub-prog').style.display='none';
+    setStatus('sub-status','Error: '+e.message,'err');
+    console.error(e);
   }
+}
+
+// ── EXCEL ARCA ──
+function loadExcel(ev){
+  var file=ev.target.files[0]; if(!file) return;
+  setStatus('arca-status','Leyendo…','wait');
+  var reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      var wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+      var ws=wb.Sheets[wb.SheetNames[0]];
+      var raw=XLSX.utils.sheet_to_json(ws,{defval:''});
+      arcaRows=raw.map(function(r){
+        var cuit=normCuit(r['Nro. Doc. Vendedor']||r['NroDocVendedor']||r['CUIT']||r['cuit']||r['Nro Doc Vendedor']||'');
+        var pv=parseInt(r['Punto de Venta']||r['PuntoDeVenta']||r['Punto Venta']||0)||0;
+        var nroRaw=(r['Número de Comprobante']||r['NumeroDeComprobante']||r['Numero de Comprobante']||r['Nro']||'').toString();
+        var nro=normNro(nroRaw);
+        var tipo=(r['Tipo de Comprobante']||r['TipoDeComprobante']||r['Tipo']||'').toString();
+        var total=parseFloat(r['Importe Total']||r['ImporteTotal']||r['Total']||0)||0;
+        var prov=(r['Denominación Vendedor']||r['DenominacionVendedor']||r['Denominacion Vendedor']||r['Proveedor']||'').toString();
+        return{cuit:cuit,pv:pv,nro:nro,tipo:tipo,total:total,prov:prov,key:cuit+'|'+pv+'|'+nro};
+      }).filter(function(r){return r.cuit&&r.cuit.length>=10;});
+      setStatus('arca-status',file.name,'ok');
+      document.getElementById('arca-count').textContent=arcaRows.length+' registros cargados';
+      checkReady();
+    }catch(err){setStatus('arca-status','Error: '+err.message,'err');}
+  };
+  reader.readAsArrayBuffer(file);
 }
 
 function checkReady(){
-  document.getElementById('btn-conciliar').disabled=!(subText&&arcaText);
+  document.getElementById('btn-conciliar').disabled=!(subRows.length&&arcaRows.length);
 }
 
-async function callClaude(system, user){
-  var res=await fetch(window.APP_CONFIG.PROXY_URL,{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      model:'claude-sonnet-4-6',
-      max_tokens:8000,
-      system:system,
-      messages:[{role:'user',content:user}]
-    })
-  });
-  if(!res.ok) throw new Error('Error del servidor: '+res.status);
-  var data=await res.json();
-  if(data.error) throw new Error(data.error.message||'Error de API');
-  return data.content[0].text;
-}
-
+// ── CONCILIAR: JS hace el cruce, Claude analiza el resultado ──
 async function conciliar(){
   document.getElementById('sec-upload').classList.remove('active');
   document.getElementById('sec-processing').style.display='block';
@@ -407,78 +480,93 @@ async function conciliar(){
 
   try{
     setStep(1);
-    await sleep(200);
+    await sleep(100);
     setStep(2);
-    await sleep(200);
+    await sleep(100);
     setStep(3);
 
-    var system=`Sos un experto contable argentino. Tu tarea es conciliar el Subdiario IVA Compras contra los comprobantes de ARCA/AFIP.
+    // JS cross-match — complete, all rows
+    var arcaMap={};
+    arcaRows.forEach(function(r){
+      arcaMap[r.key]=arcaMap[r.key]||[];
+      arcaMap[r.key].push({row:r,used:false});
+    });
 
-REGLAS DE CRUCE:
-- Clave de match: CUIT + Punto de Venta + Número de comprobante (ignorar barras, guiones y ceros a la izquierda)
-- Si coincide CUIT + N° y la diferencia de monto es <= $100: estado "ok"
-- Si coincide CUIT + N° y la diferencia de monto es > $100: estado "diff"  
-- Si está en el Subdiario pero no en ARCA: estado "sub"
-- Si está en ARCA pero no en el Subdiario: estado "arca"
+    results=[];
+    subRows.forEach(function(sub){
+      var cands=arcaMap[sub.key]||[];
+      var matched=null;
+      for(var i=0;i<cands.length;i++){if(!cands[i].used){matched=cands[i];break;}}
+      if(matched){
+        matched.used=true;
+        var dif=matched.row.total-sub.total;
+        results.push({
+          estado:Math.abs(dif)<=TOLE?'ok':'diff',
+          cuit:sub.cuit,prov:sub.prov||matched.row.prov,
+          comp:sub.pv+'-'+sub.nro,tipo:sub.tipo,
+          total_sub:sub.total,total_arca:matched.row.total,diferencia:dif
+        });
+      } else {
+        results.push({estado:'sub',cuit:sub.cuit,prov:sub.prov,comp:sub.pv+'-'+sub.nro,tipo:sub.tipo,total_sub:sub.total,total_arca:null,diferencia:null});
+      }
+    });
+    Object.keys(arcaMap).forEach(function(key){
+      arcaMap[key].forEach(function(c){
+        if(!c.used) results.push({estado:'arca',cuit:c.row.cuit,prov:c.row.prov,comp:c.row.pv+'-'+c.row.nro,tipo:c.row.tipo,total_sub:null,total_arca:c.row.total,diferencia:null});
+      });
+    });
 
-El Subdiario tiene formato: FACT. A XXXX-XXXXXXXX PROVEEDOR RI-A CUIT ... TOTAL
-ARCA tiene columnas: Punto de Venta, Número de Comprobante, Nro. Doc. Vendedor (CUIT), Importe Total
+    // Update metrics
+    var ok=results.filter(function(r){return r.estado==='ok';});
+    var diff=results.filter(function(r){return r.estado==='diff';});
+    var sub=results.filter(function(r){return r.estado==='sub';});
+    var arca=results.filter(function(r){return r.estado==='arca';});
 
-RESPONDER SOLO CON JSON, sin texto adicional:
-{
-  "resumen": "2-3 oraciones con análisis general",
-  "movimientos": [
-    {
-      "estado": "ok|diff|sub|arca",
-      "cuit": "30711000662",
-      "proveedor": "TEAM MANAGEMENT",
-      "comprobante": "6-11290",
-      "tipo": "FACT. A",
-      "total_sub": 8035752.78,
-      "total_arca": 8035752.78,
-      "diferencia": 0
-    }
-  ],
-  "totales": {
-    "ok": 0, "diff": 0, "sub": 0, "arca": 0,
-    "monto_ok": 0, "monto_diff": 0, "monto_sub": 0, "monto_arca": 0
-  }
-}`;
-
-    var user='SUBDIARIO IVA COMPRAS (PDF):\n'+subText.substring(0,6000)+'\n\nCOMPROBANTES ARCA (Excel):\n'+arcaText.substring(0,6000)+'\n\nRealizá la conciliación completa y devolvé el JSON.';
-
-    setStep(4);
-    var response=await callClaude(system, user);
-
-    var jsonMatch=response.match(/\{[\s\S]*\}/);
-    if(!jsonMatch) throw new Error('Respuesta inválida de Claude. Intentá de nuevo.');
-    var data=JSON.parse(jsonMatch[0]);
-
-    results=data.movimientos||[];
-    var tot=data.totales||{};
-
-    document.getElementById('m-ok').textContent=tot.ok||results.filter(function(r){return r.estado==='ok';}).length;
-    document.getElementById('m-diff').textContent=tot.diff||results.filter(function(r){return r.estado==='diff';}).length;
-    document.getElementById('m-sub').textContent=tot.sub||results.filter(function(r){return r.estado==='sub';}).length;
-    document.getElementById('m-arca').textContent=tot.arca||results.filter(function(r){return r.estado==='arca';}).length;
-    document.getElementById('m-ok-amt').textContent=fmtAmt(tot.monto_ok||0);
-    document.getElementById('m-diff-amt').textContent=fmtAmt(tot.monto_diff||0);
-    document.getElementById('m-sub-amt').textContent=fmtAmt(tot.monto_sub||0);
-    document.getElementById('m-arca-amt').textContent=fmtAmt(tot.monto_arca||0);
+    document.getElementById('m-ok').textContent=ok.length;
+    document.getElementById('m-diff').textContent=diff.length;
+    document.getElementById('m-sub').textContent=sub.length;
+    document.getElementById('m-arca').textContent=arca.length;
+    document.getElementById('m-ok-amt').textContent=fmtAmt(ok.reduce(function(s,r){return s+Math.abs(r.total_sub||0);},0));
+    document.getElementById('m-diff-amt').textContent=fmtAmt(diff.reduce(function(s,r){return s+Math.abs(r.diferencia||0);},0));
+    document.getElementById('m-sub-amt').textContent=fmtAmt(sub.reduce(function(s,r){return s+Math.abs(r.total_sub||0);},0));
+    document.getElementById('m-arca-amt').textContent=fmtAmt(arca.reduce(function(s,r){return s+Math.abs(r.total_arca||0);},0));
     document.getElementById('results-sub').textContent=results.length+' comprobantes · '+new Date().toLocaleDateString('es-AR');
 
-    if(data.resumen){
-      document.getElementById('ai-analysis').style.display='block';
-      document.getElementById('ai-analysis-text').textContent=data.resumen;
-    }
-
+    // Show table immediately
     currentFilter='all';currentSearch='';currentPage=1;
     document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});
     document.querySelector('.filter-btn').classList.add('active');
     document.querySelector('.search-input').value='';
+    document.getElementById('tab-result').disabled=false;
+
+    // Now ask Claude for analysis of the summary (compact data)
+    setStep(4);
+    document.getElementById('proc-title').textContent='Claude está analizando el resultado';
+    document.getElementById('proc-sub').textContent='Generando análisis…';
+
+    try{
+      var summary={
+        total:results.length,
+        sub_rows:subRows.length,
+        arca_rows:arcaRows.length,
+        ok:ok.length,diff:diff.length,solo_sub:sub.length,solo_arca:arca.length,
+        diffs_detalle:diff.slice(0,10).map(function(r){return{comp:r.comp,prov:r.prov,sub:r.total_sub,arca:r.total_arca,dif:r.diferencia};}),
+        solo_sub_sample:sub.slice(0,10).map(function(r){return{comp:r.comp,prov:r.prov,monto:r.total_sub};}),
+        solo_arca_sample:arca.slice(0,10).map(function(r){return{comp:r.comp,prov:r.prov,monto:r.total_arca};}),
+      };
+
+      var response=await callClaude(
+        'Sos un experto contable argentino. Analizá el resultado de una conciliación IVA Compras y escribí un análisis claro y útil en 3-5 oraciones. Destacá las diferencias más importantes, posibles causas de los ítems no conciliados, y si el resultado es normal o hay algo a revisar.',
+        'Resultado de la conciliación IVA Compras:\n'+JSON.stringify(summary,null,2)
+      );
+      document.getElementById('ai-analysis').style.display='block';
+      document.getElementById('ai-analysis-text').textContent=response;
+    }catch(e){
+      // Analysis failed but results are ready — show them anyway
+      console.error('Claude analysis failed:',e);
+    }
 
     document.getElementById('sec-processing').style.display='none';
-    document.getElementById('tab-result').disabled=false;
     switchTab('result');
     renderTable();
 
@@ -493,27 +581,26 @@ RESPONDER SOLO CON JSON, sin texto adicional:
   }
 }
 
-function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
+async function callClaude(system,user){
+  var res=await fetch(window.APP_CONFIG.PROXY_URL,{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:system,messages:[{role:'user',content:user}]})
+  });
+  if(!res.ok) throw new Error('Error '+res.status);
+  var data=await res.json();
+  if(data.error) throw new Error(data.error.message||'Error de API');
+  return data.content[0].text;
+}
 
-function fmt(n){
-  if(n===null||n===undefined) return '—';
-  return Number(n).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});
-}
-function fmtAmt(n){
-  if(!n) return '';
-  var abs=Math.abs(n);
-  if(abs>=1000000) return '$'+(abs/1000000).toFixed(1)+'M';
-  if(abs>=1000) return '$'+Math.round(abs/1000)+'k';
-  return '$'+Math.round(abs);
-}
+function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
+function fmt(n){if(n===null||n===undefined) return '—';return Number(n).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtAmt(n){if(!n) return '';var abs=Math.abs(n);if(abs>=1000000) return '$'+(abs/1000000).toFixed(1)+'M';if(abs>=1000) return '$'+Math.round(abs/1000)+'k';return '$'+Math.round(abs);}
 
 function getFiltered(){
   return results.filter(function(r){
     if(currentFilter!=='all'&&r.estado!==currentFilter) return false;
-    if(currentSearch){
-      var q=currentSearch.toLowerCase();
-      if((r.cuit||'').indexOf(q)<0&&(r.proveedor||'').toLowerCase().indexOf(q)<0&&(r.comprobante||'').indexOf(q)<0) return false;
-    }
+    if(currentSearch){var q=currentSearch.toLowerCase();if((r.cuit||'').indexOf(q)<0&&(r.prov||'').toLowerCase().indexOf(q)<0&&(r.comp||'').indexOf(q)<0) return false;}
     return true;
   });
 }
@@ -532,12 +619,12 @@ function renderTable(){
                :r.estado==='sub'?'<span class="badge badge-sub">Solo Subdiario</span>'
                :'<span class="badge badge-arca">Solo ARCA</span>';
       var dif=r.diferencia;
-      var difStr=dif!==null&&dif!==undefined?(Math.abs(dif)<0.005?'$0':(dif>=0?'+':'')+fmt(dif)):'—';
-      var difColor=dif&&Math.abs(dif)>100?'color:var(--diff-text);font-weight:600':'';
+      var difStr=dif!=null?(Math.abs(dif)<0.005?'$0':(dif>=0?'+':'')+fmt(dif)):'—';
+      var difColor=dif&&Math.abs(dif)>TOLE?'color:var(--diff-text);font-weight:600':'';
       return '<tr>'
         +'<td class="cuit-cell">'+(r.cuit||'—')+'</td>'
-        +'<td style="max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="'+(r.proveedor||'')+'">'+(r.proveedor||'—')+'</td>'
-        +'<td style="font-family:var(--mono);font-size:11px">'+(r.comprobante||'—')+'</td>'
+        +'<td style="max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="'+(r.prov||'')+'">'+(r.prov||'—')+'</td>'
+        +'<td style="font-family:var(--mono);font-size:11px">'+(r.comp||'—')+'</td>'
         +'<td style="font-size:11px;color:var(--muted)">'+(r.tipo||'')+'</td>'
         +'<td class="num">'+fmt(r.total_sub)+'</td>'
         +'<td class="num">'+fmt(r.total_arca)+'</td>'
@@ -559,15 +646,18 @@ function setFilter(f,el){currentFilter=f;currentPage=1;document.querySelectorAll
 function setSearch(v){currentSearch=v;currentPage=1;renderTable();}
 
 function resetAll(){
-  subText='';arcaText='';results=[];
+  subRows=[];arcaRows=[];results=[];
   ['sub','arca'].forEach(function(t){
     document.getElementById(t+'-status').innerHTML='Sin cargar';
     document.getElementById(t+'-count').textContent='';
     document.getElementById('file-'+t).value='';
   });
+  document.getElementById('sub-prog').style.display='none';
   document.getElementById('btn-conciliar').disabled=true;
   document.getElementById('tab-result').disabled=true;
   document.getElementById('ai-analysis').style.display='none';
+  document.getElementById('proc-title').textContent='Procesando archivos';
+  document.getElementById('proc-sub').textContent='Por favor esperá…';
   switchTab('upload');
 }
 
@@ -575,7 +665,7 @@ function exportCSV(){
   var filtered=getFiltered();
   var labels={ok:'Coincide',diff:'Diferencia monto',sub:'Solo Subdiario',arca:'Solo ARCA'};
   var headers=['Estado','CUIT','Proveedor','Comprobante','Tipo','Total Subdiario','Total ARCA','Diferencia'];
-  var rows=filtered.map(function(r){return[labels[r.estado]||r.estado,r.cuit,r.proveedor,r.comprobante,r.tipo,r.total_sub||'',r.total_arca||'',r.diferencia||''];});
+  var rows=filtered.map(function(r){return[labels[r.estado]||r.estado,r.cuit,r.prov,r.comp,r.tipo,r.total_sub!=null?r.total_sub.toFixed(2):'',r.total_arca!=null?r.total_arca.toFixed(2):'',r.diferencia!=null?r.diferencia.toFixed(2):''];});
   var csv=[headers].concat(rows).map(function(row){return row.map(function(c){return'"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');
   var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
   var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='conciliacion_iva_'+new Date().toISOString().slice(0,10)+'.csv';a.click();

@@ -248,7 +248,7 @@ td.cuit-cell{font-family:var(--mono);font-size:11px;color:var(--muted);}
     <div class="filter-bar">
       <button class="filter-btn active" onclick="setFilter('all',this)">Todos</button>
       <button class="filter-btn" onclick="setFilter('ok',this)">✓ Coinciden</button>
-      <button class="filter-btn" onclick="setFilter('pv',this)">⚠ Revisar PV</button>
+      <button class="filter-btn" onclick="setFilter('revisar',this)">⚠ Revisar carga</button>
       <button class="filter-btn" onclick="setFilter('diff',this)">⚠ Dif. monto</button>
       <button class="filter-btn" onclick="setFilter('sub',this)">Solo Subdiario</button>
       <button class="filter-btn" onclick="setFilter('arca',this)">Solo ARCA</button>
@@ -482,17 +482,31 @@ async function conciliar(){
       }
     });
 
-    // ── RESCATE: mismo CUIT + número + monto pero distinto Punto de Venta ──
-    // (error de carga del PV, ej CENCOSUD 4541 vs 14541). Se cuenta como coincidencia con alerta.
+    // ── RESCATE: detecta errores de carga (mismo comprobante mal tipeado) ──
+    // Caso A: mismo CUIT + número + monto, distinto Punto de Venta (ej CENCOSUD 4541 vs 14541)
+    // Caso B: mismo CUIT + monto exacto + número casi igual (1 díg distinto, mismo largo) (ej TARDITI 3396 vs 3386)
+    function numParecido(a,b){
+      if(a===b) return false;
+      if(a.length!==b.length) return false;
+      var diffs=0;
+      for(var i=0;i<a.length;i++){if(a[i]!==b[i]) diffs++;}
+      return diffs===1;
+    }
     subSinMatch.forEach(function(sub){
-      var rescatado=null;
+      var rescatado=null, motivo='';
       Object.keys(arcaMap).forEach(function(k){
         if(rescatado) return;
         arcaMap[k].forEach(function(c){
           if(rescatado||c.used) return;
           var a=c.row;
-          if(a.cuit===sub.cuit && a.nro===sub.nro && a.pv!==sub.pv && Math.abs(a.total-sub.total)<=TOLE){
-            rescatado=c;
+          if(a.cuit!==sub.cuit) return;
+          // Caso A: distinto PV, mismo número, monto dentro de tolerancia
+          if(a.nro===sub.nro && a.pv!==sub.pv && Math.abs(a.total-sub.total)<=TOLE){
+            rescatado=c; motivo='pv'; return;
+          }
+          // Caso B: número casi igual (error de tipeo), monto exacto
+          if(numParecido(a.nro,sub.nro) && Math.abs(a.total-sub.total)<1){
+            rescatado=c; motivo='nro'; return;
           }
         });
       });
@@ -500,11 +514,11 @@ async function conciliar(){
         rescatado.used=true;
         var dif=rescatado.row.total-sub.total;
         results.push({
-          estado:'pv',
+          estado:motivo,
           cuit:sub.cuit,prov:sub.prov||rescatado.row.prov,
           comp:sub.pv+'-'+sub.nro,tipo:sub.tipo,
           total_sub:sub.total,total_arca:rescatado.row.total,diferencia:dif,
-          pvArca:rescatado.row.pv
+          pvArca:rescatado.row.pv,nroArca:rescatado.row.nro
         });
       } else {
         results.push({estado:'sub',cuit:sub.cuit,prov:sub.prov,comp:sub.pv+'-'+sub.nro,tipo:sub.tipo,total_sub:sub.total,total_arca:null,diferencia:null});
@@ -558,11 +572,11 @@ async function conciliar(){
     results=results.filter(function(r){return !r._anulado;});
 
     // Update metrics
-    var ok=results.filter(function(r){return r.estado==='ok'||r.estado==='pv';});
+    var ok=results.filter(function(r){return r.estado==='ok'||r.estado==='pv'||r.estado==='nro';});
     var diff=results.filter(function(r){return r.estado==='diff';});
     var sub=results.filter(function(r){return r.estado==='sub';});
     var arca=results.filter(function(r){return r.estado==='arca';});
-    var pvCount=results.filter(function(r){return r.estado==='pv';}).length;
+    var pvCount=results.filter(function(r){return r.estado==='pv'||r.estado==='nro';}).length;
 
     document.getElementById('m-ok').textContent=ok.length;
     document.getElementById('m-diff').textContent=diff.length;
@@ -593,7 +607,7 @@ async function conciliar(){
         arca_rows:arcaRows.length,
         ok:ok.length,diff:diff.length,solo_sub:sub.length,solo_arca:arca.length,
         revisar_pv:pvCount,
-        pv_detalle:results.filter(function(r){return r.estado==='pv';}).map(function(r){return{prov:r.prov,comp_sub:r.comp,pv_arca:r.pvArca,monto:r.total_sub};}),
+        pv_detalle:results.filter(function(r){return r.estado==='pv'||r.estado==='nro';}).map(function(r){return{prov:r.prov,tipo_error:r.estado==='pv'?'punto de venta':'numero',comp_sub:r.comp,pv_arca:r.pvArca,nro_arca:r.nroArca,monto:r.total_sub};}),
         diffs_detalle:diff.slice(0,10).map(function(r){return{comp:r.comp,prov:r.prov,sub:r.total_sub,arca:r.total_arca,dif:r.diferencia};}),
         solo_sub_sample:sub.slice(0,10).map(function(r){return{comp:r.comp,prov:r.prov,monto:r.total_sub};}),
         solo_arca_sample:arca.slice(0,10).map(function(r){return{comp:r.comp,prov:r.prov,monto:r.total_arca};}),
@@ -648,7 +662,8 @@ function fmtAmt(n){if(!n) return '';var abs=Math.abs(n);if(abs>=1000000) return 
 
 function getFiltered(){
   return results.filter(function(r){
-    if(currentFilter!=='all'&&r.estado!==currentFilter) return false;
+    if(currentFilter==='revisar'){if(r.estado!=='pv'&&r.estado!=='nro') return false;}
+    else if(currentFilter!=='all'&&r.estado!==currentFilter) return false;
     if(currentSearch){var q=currentSearch.toLowerCase();if((r.cuit||'').indexOf(q)<0&&(r.prov||'').toLowerCase().indexOf(q)<0&&(r.comp||'').indexOf(q)<0) return false;}
     return true;
   });
@@ -665,6 +680,7 @@ function renderTable(){
     tbody.innerHTML=slice.map(function(r){
       var badge=r.estado==='ok'?'<span class="badge badge-ok">✓ Coincide</span>'
                :r.estado==='pv'?'<span class="badge badge-pv">⚠ Revisar PV</span>'
+               :r.estado==='nro'?'<span class="badge badge-pv">⚠ Revisar N°</span>'
                :r.estado==='diff'?'<span class="badge badge-diff">⚠ Dif. monto</span>'
                :r.estado==='sub'?'<span class="badge badge-sub">Solo Subdiario</span>'
                :'<span class="badge badge-arca">Solo ARCA</span>';
@@ -674,6 +690,8 @@ function renderTable(){
       var compCell=(r.comp||'—');
       if(r.estado==='pv'&&r.pvArca!=null){
         compCell=(r.comp||'—')+'<br><span style="color:var(--diff-text);font-size:10px">ARCA: '+r.pvArca+'-'+(r.comp||'').split('-')[1]+'</span>';
+      } else if(r.estado==='nro'&&r.nroArca!=null){
+        compCell=(r.comp||'—')+'<br><span style="color:var(--diff-text);font-size:10px">ARCA: '+(r.comp||'').split('-')[0]+'-'+r.nroArca+'</span>';
       }
       return '<tr>'
         +'<td class="cuit-cell">'+(r.cuit||'—')+'</td>'
@@ -717,7 +735,7 @@ function resetAll(){
 
 function exportCSV(){
   var filtered=getFiltered();
-  var labels={ok:'Coincide',pv:'Coincide - revisar PV',diff:'Diferencia monto',sub:'Solo Subdiario',arca:'Solo ARCA'};
+  var labels={ok:'Coincide',pv:'Coincide - revisar PV',nro:'Coincide - revisar N°',diff:'Diferencia monto',sub:'Solo Subdiario',arca:'Solo ARCA'};
   var headers=['Estado','CUIT','Proveedor','Comprobante','Tipo','Total Subdiario','Total ARCA','Diferencia'];
   var rows=filtered.map(function(r){return[labels[r.estado]||r.estado,r.cuit,r.prov,r.comp,r.tipo,r.total_sub!=null?r.total_sub.toFixed(2):'',r.total_arca!=null?r.total_arca.toFixed(2):'',r.diferencia!=null?r.diferencia.toFixed(2):''];});
   var csv=[headers].concat(rows).map(function(row){return row.map(function(c){return'"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');

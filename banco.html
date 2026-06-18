@@ -148,7 +148,10 @@ td.num{text-align:right;font-family:var(--mono);font-size:12px;}
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 10V3M5 6l3-3 3 3M3 13h10"/></svg>Cargar archivos
     </button>
     <button class="step-btn" id="tab-result" onclick="switchTab('result')" disabled>
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 5h5M2 8h5M2 11h5M9 5h5M9 8h5M9 11h5"/></svg>Resultado
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 5h5M2 8h5M2 11h5M9 5h5M9 8h5M9 11h5"/></svg>Conciliación
+    </button>
+    <button class="step-btn" id="tab-cargos" onclick="switchTab('cargos')" disabled>
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h12M2 12h8"/></svg>Cargos bancarios
     </button>
   </div>
 
@@ -158,7 +161,7 @@ td.num{text-align:right;font-family:var(--mono);font-size:12px;}
       <p>Subí el extracto de Credicoop (PDF) y el libro banco de OneSoft (CSV). El sistema cruza todos los movimientos y Claude marca los puntos de atención.</p>
       <div class="rule-badge">
         <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:12px;height:12px"><path d="M8 2l1.5 3 3.5.5-2.5 2.5.6 3.5L8 10l-3.1 1.5.6-3.5L3 5.5l3.5-.5z"/></svg>
-        Cruce por monto (±$1) y fecha (3-5 días)
+        Cruce por monto (±$1) y fecha (hasta 5 días)
       </div>
     </div>
 
@@ -278,13 +281,55 @@ td.num{text-align:right;font-family:var(--mono);font-size:12px;}
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 4L6 8l4 4"/></svg>Nueva conciliación
     </button>
   </div>
+
+  <!-- CARGOS BANCARIOS -->
+  <div class="section" id="sec-cargos">
+    <div class="results-header">
+      <div><div class="results-title">Cargos bancarios e impuestos</div><div class="results-sub" id="cargos-sub">Comisiones, IVA, percepciones, ARBA, sellos e impuestos — solo aparecen en el extracto</div></div>
+      <button class="export-btn" onclick="exportCargos()">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 3v7M5 7l3 3 3-3M3 13h10"/></svg>Exportar CSV
+      </button>
+    </div>
+    <div class="metrics" style="grid-template-columns:repeat(3,1fr)">
+      <div class="metric sub"><div class="metric-val" id="c-total">0</div><div class="metric-label">Cantidad</div></div>
+      <div class="metric diff"><div class="metric-val" id="c-monto" style="font-size:22px">$0</div><div class="metric-label">Total cargos</div></div>
+      <div class="metric arca"><div class="metric-val" id="c-tipos">0</div><div class="metric-label">Categorías</div></div>
+    </div>
+    <div class="ai-analysis" id="cargos-resumen" style="display:none;background:var(--cream);border-color:var(--border)">
+      <div class="ai-analysis-header" style="color:var(--muted)">Resumen por categoría</div>
+      <div id="cargos-resumen-text"></div>
+    </div>
+    <div class="filter-bar">
+      <div class="search-wrap">
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3 3"/></svg>
+        <input type="text" class="search-input" placeholder="Buscar cargo…" oninput="setSearchCargos(this.value)">
+      </div>
+    </div>
+    <div class="table-card">
+      <div class="table-wrap">
+        <table>
+          <thead><tr>
+            <th style="width:90px">Fecha</th>
+            <th>Descripción</th>
+            <th style="width:130px;text-align:right">Monto</th>
+          </tr></thead>
+          <tbody id="cargos-body"></tbody>
+        </table>
+      </div>
+      <div class="pagination"><span id="cargos-pg-info"></span><div class="page-btns" id="cargos-pg-btns"></div></div>
+    </div>
+    <button class="back-link" onclick="switchTab('result')">
+      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 4L6 8l4 4"/></svg>Volver a la conciliación
+    </button>
+  </div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-var bancoRows=[],libroRows=[],results=[];
+var bancoRows=[],libroRows=[],cargoRows=[],results=[];
+var cargoPage=1,cargoSearch='';
 var currentFilter='all',currentSearch='',currentPage=1;
 var PAGE_SIZE=40;
 
@@ -302,7 +347,7 @@ var PAGE_SIZE=40;
 })();
 
 function switchTab(t){
-  ['upload','result'].forEach(function(id){
+  ['upload','result','cargos'].forEach(function(id){
     document.getElementById('sec-'+id).classList.remove('active');
     document.getElementById('tab-'+id).classList.remove('active');
   });
@@ -348,6 +393,16 @@ function parseFecha(s){
   return new Date(y,parseInt(m[2])-1,parseInt(m[1]));
 }
 
+// Detecta si un movimiento es cargo bancario / impuesto (solo aparece en banco)
+var CARGO_PATTERNS=['Comision','Comisión','I.V.A.','IVA -','Percepcion IVA','Percepción IVA','Percep Ingr Brutos','Percep Ingresos','Recaudacion ARBA','Recaudación ARBA','Impuesto Ley 25','Impuesto de Sellos','ECHQ','Intereses por Saldo','Ajuste p/'];
+function esCargo(desc){
+  desc=desc||'';
+  for(var i=0;i<CARGO_PATTERNS.length;i++){
+    if(desc.toLowerCase().indexOf(CARGO_PATTERNS[i].toLowerCase())>=0) return true;
+  }
+  return false;
+}
+
 function diasDif(a,b){
   if(!a||!b) return 9999;
   return Math.abs((a-b)/(86400000));
@@ -368,6 +423,7 @@ async function loadBancoPDF(ev){
     var pdf=await pdfjsLib.getDocument({data:ab}).promise;
     var nPages=pdf.numPages;
     bancoRows=[];
+    cargoRows=[];
     var amountRe=/^-?\d{1,3}(?:\.\d{3})*,\d{2}$/;
     var dateRe=/^\d{2}\/\d{2}\/\d{2}$/;
 
@@ -414,13 +470,15 @@ async function loadBancoPDF(ev){
         }
         var desc=descParts.join(' ');
         var monto=credito-debito; // positive=ingreso, negative=egreso
-        bancoRows.push({fecha:fecha,comp:comp,desc:desc,monto:monto,used:false});
+        var row={fecha:fecha,comp:comp,desc:desc,monto:monto,used:false};
+        if(esCargo(desc)) cargoRows.push(row);
+        else bancoRows.push(row);
       });
     }
 
     document.getElementById('banco-prog').style.display='none';
     setStatus('banco-status',file.name,'ok');
-    document.getElementById('banco-count').textContent=bancoRows.length+' movimientos detectados';
+    document.getElementById('banco-count').textContent=bancoRows.length+' movimientos + '+cargoRows.length+' cargos bancarios';
     checkReady();
   }catch(e){
     document.getElementById('banco-prog').style.display='none';
@@ -495,7 +553,7 @@ async function conciliar(){
         if((b.monto>0)!==(l.monto>0)&&b.monto!==0&&l.monto!==0) continue;
         if(!b.fecha||!l.fecha) continue;
         var dias=diasDif(b.fecha,l.fecha);
-        var tol=dm<0.005?5:3;
+        var tol=5;
         if(dias<=tol&&dias<bestDias){best=l;bestDias=dias;}
       }
       if(best){
@@ -529,6 +587,8 @@ async function conciliar(){
     document.querySelector('.filter-btn').classList.add('active');
     document.querySelector('.search-input').value='';
     document.getElementById('tab-result').disabled=false;
+    document.getElementById('tab-cargos').disabled=false;
+    renderCargos();
 
     setStep(4);
     document.getElementById('proc-title').textContent='Claude analizando el resultado';
@@ -632,7 +692,7 @@ function setFilter(f,el){currentFilter=f;currentPage=1;document.querySelectorAll
 function setSearch(v){currentSearch=v;currentPage=1;renderTable();}
 
 function resetAll(){
-  bancoRows=[];libroRows=[];results=[];
+  bancoRows=[];libroRows=[];cargoRows=[];results=[];
   ['banco','libro'].forEach(function(t){
     document.getElementById(t+'-status').innerHTML='Sin cargar';
     document.getElementById(t+'-count').textContent='';
@@ -641,10 +701,90 @@ function resetAll(){
   document.getElementById('banco-prog').style.display='none';
   document.getElementById('btn-conciliar').disabled=true;
   document.getElementById('tab-result').disabled=true;
+  document.getElementById('tab-cargos').disabled=true;
   document.getElementById('ai-analysis').style.display='none';
   document.getElementById('proc-title').textContent='Procesando archivos';
   document.getElementById('proc-sub').textContent='Por favor esperá…';
   switchTab('upload');
+}
+
+
+// ── CARGOS BANCARIOS ──
+function renderCargos(){
+  document.getElementById('c-total').textContent=cargoRows.length;
+  var totalMonto=cargoRows.reduce(function(s,r){return s+Math.abs(r.monto);},0);
+  document.getElementById('c-monto').textContent=fmtAmt(totalMonto);
+
+  // Group by category
+  var cats={};
+  cargoRows.forEach(function(r){
+    var cat=categorizar(r.desc);
+    if(!cats[cat]) cats[cat]={count:0,monto:0};
+    cats[cat].count++;
+    cats[cat].monto+=Math.abs(r.monto);
+  });
+  document.getElementById('c-tipos').textContent=Object.keys(cats).length;
+
+  var resumenHtml=Object.keys(cats).sort(function(a,b){return cats[b].monto-cats[a].monto;}).map(function(cat){
+    return '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:12.5px"><span>'+cat+' <span style="color:var(--hint)">('+cats[cat].count+')</span></span><span style="font-family:var(--mono);font-weight:500">$'+fmt(cats[cat].monto)+'</span></div>';
+  }).join('');
+  document.getElementById('cargos-resumen').style.display='block';
+  document.getElementById('cargos-resumen-text').innerHTML=resumenHtml;
+
+  renderCargosTable();
+}
+
+function categorizar(desc){
+  desc=(desc||'').toLowerCase();
+  if(desc.indexOf('comision')>=0||desc.indexOf('comisión')>=0) return 'Comisiones';
+  if(desc.indexOf('i.v.a.')>=0||desc.indexOf('iva -')>=0) return 'IVA';
+  if(desc.indexOf('percepcion iva')>=0||desc.indexOf('percepción iva')>=0) return 'Percepción IVA';
+  if(desc.indexOf('ingr brutos')>=0||desc.indexOf('ingresos brutos')>=0) return 'Ingresos Brutos';
+  if(desc.indexOf('arba')>=0) return 'Recaudación ARBA';
+  if(desc.indexOf('ley 25')>=0) return 'Impuesto Ley 25.413';
+  if(desc.indexOf('sellos')>=0) return 'Impuesto de Sellos';
+  if(desc.indexOf('echq')>=0) return 'Comisiones cheques';
+  if(desc.indexOf('interes')>=0) return 'Intereses';
+  return 'Otros cargos';
+}
+
+function getCargosFiltered(){
+  return cargoRows.filter(function(r){
+    if(cargoSearch){var q=cargoSearch.toLowerCase();if((r.desc||'').toLowerCase().indexOf(q)<0&&String(r.monto||'').indexOf(q)<0) return false;}
+    return true;
+  });
+}
+
+function renderCargosTable(){
+  var filtered=getCargosFiltered(),total=filtered.length,pages=Math.ceil(total/PAGE_SIZE)||1;
+  if(cargoPage>pages) cargoPage=pages;
+  var slice=filtered.slice((cargoPage-1)*PAGE_SIZE,cargoPage*PAGE_SIZE);
+  var tbody=document.getElementById('cargos-body');
+  if(!slice.length){
+    tbody.innerHTML='<tr><td colspan="3"><div class="empty-state"><p>Sin cargos</p></div></td></tr>';
+  } else {
+    tbody.innerHTML=slice.map(function(r){
+      return '<tr><td style="font-size:12px">'+fmtDate(r.fecha)+'</td><td style="font-size:12px">'+(r.desc||'—')+'</td><td class="num" style="color:var(--sub-text)">'+fmt(r.monto)+'</td></tr>';
+    }).join('');
+  }
+  document.getElementById('cargos-pg-info').textContent=total+' cargos · pág. '+cargoPage+' de '+pages;
+  var btns='<button class="page-btn" onclick="goCargoPage('+(cargoPage-1)+')" '+(cargoPage===1?'disabled':'')+'>‹</button>';
+  var start=Math.max(1,cargoPage-2),end=Math.min(pages,cargoPage+2);
+  for(var p=start;p<=end;p++) btns+='<button class="page-btn'+(p===cargoPage?' current':'')+'" onclick="goCargoPage('+p+')">'+p+'</button>';
+  btns+='<button class="page-btn" onclick="goCargoPage('+(cargoPage+1)+')" '+(cargoPage===pages?'disabled':'')+'>›</button>';
+  document.getElementById('cargos-pg-btns').innerHTML=btns;
+}
+
+function goCargoPage(p){cargoPage=p;renderCargosTable();}
+function setSearchCargos(v){cargoSearch=v;cargoPage=1;renderCargosTable();}
+
+function exportCargos(){
+  var filtered=getCargosFiltered();
+  var headers=['Fecha','Categoría','Descripción','Monto'];
+  var rows=filtered.map(function(r){return[fmtDate(r.fecha),categorizar(r.desc),r.desc,r.monto!=null?r.monto.toFixed(2):''];});
+  var csv=[headers].concat(rows).map(function(row){return row.map(function(c){return'"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cargos_bancarios_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
 }
 
 function exportCSV(){

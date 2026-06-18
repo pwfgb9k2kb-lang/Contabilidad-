@@ -216,8 +216,8 @@ header{
           <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
         </div>
         <div class="module-title">Conciliación IVA Compras</div>
-        <div class="module-desc">Cruzá el Subdiario IVA en PDF con los comprobantes de ARCA en Excel. Triple verificación por CUIT + N° + monto.</div>
-        <span class="module-badge">PDF + Excel · ARCA</span>
+        <div class="module-desc">Cruzá el Subdiario IVA en CSV con los comprobantes de ARCA en Excel. Triple verificación por CUIT + N° + monto.</div>
+        <span class="module-badge">CSV + Excel · ARCA</span>
       </a>
 
       <!-- Retenciones (próximamente) -->
@@ -275,7 +275,14 @@ function checkAccess(){
   var cfg=window.APP_CONFIG;
   if(!cfg){document.getElementById('app').style.display='none';document.getElementById('access-denied').style.display='flex';return false;}
   var path=window.location.href;
-  if(cfg.SECRET_PATH&&path.indexOf(cfg.SECRET_PATH)<0){
+  var hasSecret=cfg.SECRET_PATH&&path.indexOf(cfg.SECRET_PATH)>=0;
+  // Remember access for the session once granted
+  var remembered=false;
+  try{ remembered=sessionStorage.getItem('portal_access')===cfg.SECRET_PATH; }catch(e){}
+  if(hasSecret){
+    try{ sessionStorage.setItem('portal_access',cfg.SECRET_PATH); }catch(e){}
+  }
+  if(cfg.SECRET_PATH && !hasSecret && !remembered){
     document.getElementById('app').style.display='none';
     document.getElementById('access-denied').style.display='flex';
     return false;

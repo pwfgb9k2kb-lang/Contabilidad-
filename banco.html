@@ -36,7 +36,7 @@ header{background:var(--sage-dark);padding:0 2.5rem;height:64px;display:flex;ali
 .section{display:none;}.section.active{display:block;}
 .upload-hero{text-align:center;margin-bottom:2rem;}
 .upload-hero h1{font-family:'DM Serif Display',serif;font-size:28px;font-weight:400;margin-bottom:8px;}
-.upload-hero p{font-size:14px;color:var(--muted);max-width:480px;margin:0 auto;line-height:1.6;}
+.upload-hero p{font-size:14px;color:var(--muted);max-width:500px;margin:0 auto;line-height:1.6;}
 .rule-badge{display:inline-flex;align-items:center;gap:6px;background:var(--sage-light);color:var(--sage-dark);font-size:12px;font-weight:500;padding:5px 12px;border-radius:50px;margin-top:12px;border:1px solid rgba(122,140,126,.25);}
 .file-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem;}
 @media(max-width:620px){.file-grid{grid-template-columns:1fr;}}
@@ -72,7 +72,7 @@ header{background:var(--sage-dark);padding:0 2.5rem;height:64px;display:flex;ali
 @keyframes spin{to{transform:rotate(360deg)}}
 .processing-title{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;margin-bottom:6px;}
 .processing-sub{font-size:13px;color:var(--muted);}
-.processing-steps{margin-top:1.5rem;display:flex;flex-direction:column;gap:8px;text-align:left;max-width:360px;margin-left:auto;margin-right:auto;}
+.processing-steps{margin-top:1.5rem;display:flex;flex-direction:column;gap:8px;text-align:left;max-width:380px;margin-left:auto;margin-right:auto;}
 .proc-step{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--hint);}
 .proc-step.done{color:var(--ok-text);}
 .proc-step.active{color:var(--ink);font-weight:500;}
@@ -95,7 +95,7 @@ header{background:var(--sage-dark);padding:0 2.5rem;height:64px;display:flex;ali
 .metric-label{font-size:11.5px;color:var(--hint);font-weight:500;text-transform:uppercase;letter-spacing:.05em;}
 .metric-amount{font-size:11px;color:var(--hint);margin-top:3px;font-family:var(--mono);}
 .ai-analysis{background:var(--sage-light);border:1px solid rgba(122,140,126,.3);border-radius:var(--r);padding:1.25rem 1.5rem;margin-bottom:1.5rem;font-size:13px;line-height:1.65;color:var(--ink);}
-.ai-analysis-header{display:flex;align-items:center;gap:8px;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--sage-dark);margin-bottom:8px;}
+.ai-analysis-header{display:flex;align-items:center;gap:8px;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--sage-dark);margin-bottom:10px;}
 .ai-analysis-header svg{width:14px;height:14px;stroke:var(--sage-dark);}
 .filter-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
 .filter-btn{padding:6px 13px;border:1px solid var(--border2);border-radius:50px;font-size:12px;font-weight:500;cursor:pointer;background:var(--white);color:var(--muted);transition:all .15s;white-space:nowrap;}
@@ -155,10 +155,10 @@ td.num{text-align:right;font-family:var(--mono);font-size:12px;}
   <div class="section active" id="sec-upload">
     <div class="upload-hero">
       <h1>Conciliación Bancaria</h1>
-      <p>Subí el resumen del banco y el libro banco. El sistema cruza todos los movimientos y Claude analiza las diferencias.</p>
+      <p>Subí el extracto de Credicoop (PDF) y el libro banco de OneSoft (CSV). El sistema cruza todos los movimientos y Claude marca los puntos de atención.</p>
       <div class="rule-badge">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:12px;height:12px"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
-        Cruce por monto · Tolerancia 5 días · Análisis IA
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:12px;height:12px"><path d="M8 2l1.5 3 3.5.5-2.5 2.5.6 3.5L8 10l-3.1 1.5.6-3.5L3 5.5l3.5-.5z"/></svg>
+        Cruce por monto (±$1) y fecha (3-5 días)
       </div>
     </div>
 
@@ -166,41 +166,41 @@ td.num{text-align:right;font-family:var(--mono);font-size:12px;}
       <div class="file-card">
         <div class="file-card-header">
           <div class="file-icon"><svg viewBox="0 0 24 24" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div>
-          <div><div class="file-card-title">Resumen del Banco</div><div class="file-card-sub">CSV exportado de Credicoop</div></div>
+          <div><div class="file-card-title">Extracto del Banco</div><div class="file-card-sub">PDF del resumen de Credicoop</div></div>
         </div>
         <div class="file-status" id="banco-status">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 10.5v.5"/></svg>Sin cargar
         </div>
         <div class="file-count" id="banco-count"></div>
+        <div class="prog-wrap" id="banco-prog">
+          <div class="prog-bar"><div class="prog-fill" id="banco-fill"></div></div>
+          <div class="prog-label" id="banco-label">Procesando…</div>
+        </div>
         <label class="upload-zone">
           <div class="upload-zone-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V5M7 8l3-3 3 3M4 15h12"/></svg></div>
-          <div class="upload-zone-title">Elegir archivo del banco</div>
-          <div class="upload-zone-sub">CSV de Credicoop Home Banking</div>
-          <input type="file" id="file-banco" accept=".csv,.txt" onchange="loadCSV(event,'banco')">
+          <div class="upload-zone-title">Elegir PDF del extracto</div>
+          <div class="upload-zone-sub">Resumen de cuenta de Credicoop</div>
+          <input type="file" id="file-banco" accept=".pdf" onchange="loadBancoPDF(event)">
         </label>
-        <div class="format-hint">CSV exportado del Home Banking de Credicoop. Columnas: <code>Fecha</code> · <code>Descripción</code> · <code>Débito</code> · <code>Crédito</code></div>
+        <div class="format-hint">PDF del resumen de cuenta corriente de Credicoop. El sistema detecta automáticamente débitos, créditos y fechas.</div>
       </div>
 
       <div class="file-card">
         <div class="file-card-header">
           <div class="file-icon"><svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></div>
-          <div><div class="file-card-title">Libro Banco</div><div class="file-card-sub">PDF o Excel de OneSoft</div></div>
+          <div><div class="file-card-title">Libro Banco</div><div class="file-card-sub">CSV exportado de OneSoft</div></div>
         </div>
         <div class="file-status" id="libro-status">
           <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 10.5v.5"/></svg>Sin cargar
         </div>
         <div class="file-count" id="libro-count"></div>
-        <div class="prog-wrap" id="libro-prog">
-          <div class="prog-bar"><div class="prog-fill" id="libro-fill"></div></div>
-          <div class="prog-label" id="libro-label">Procesando…</div>
-        </div>
         <label class="upload-zone">
           <div class="upload-zone-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V5M7 8l3-3 3 3M4 15h12"/></svg></div>
-          <div class="upload-zone-title">Elegir libro banco</div>
-          <div class="upload-zone-sub">PDF o Excel exportado de OneSoft</div>
-          <input type="file" id="file-libro" accept=".csv,.txt,.xlsx,.xls,.pdf" onchange="loadLibro(event)">
+          <div class="upload-zone-title">Elegir CSV del libro banco</div>
+          <div class="upload-zone-sub">Libro mayor de la cuenta banco</div>
+          <input type="file" id="file-libro" accept=".csv,.txt" onchange="loadLibroCSV(event)">
         </label>
-        <div class="format-hint">PDF o Excel del libro banco contable de OneSoft. Columnas: <code>Fecha</code> · <code>Descripción</code> · <code>Debe</code> · <code>Haber</code></div>
+        <div class="format-hint">CSV del libro mayor de OneSoft (cuenta banco). Columnas: <code>Comprobante</code> · <code>Fecha</code> · <code>Concepto</code> · <code>Debe</code> · <code>Haber</code></div>
       </div>
     </div>
 
@@ -218,7 +218,7 @@ td.num{text-align:right;font-family:var(--mono);font-size:12px;}
     <div class="processing-title" id="proc-title">Procesando archivos</div>
     <div class="processing-sub" id="proc-sub">Por favor esperá…</div>
     <div class="processing-steps">
-      <div class="proc-step" id="step-1"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/></svg>Leyendo resumen del banco</div>
+      <div class="proc-step" id="step-1"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/></svg>Leyendo extracto del banco</div>
       <div class="proc-step" id="step-2"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/></svg>Leyendo libro banco</div>
       <div class="proc-step" id="step-3"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/></svg>Cruzando movimientos</div>
       <div class="proc-step" id="step-4"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/></svg>Analizando con Claude</div>
@@ -262,12 +262,12 @@ td.num{text-align:right;font-family:var(--mono);font-size:12px;}
       <div class="table-wrap">
         <table>
           <thead><tr>
-            <th style="width:90px">Fecha banco</th>
-            <th style="width:90px">Fecha libro</th>
+            <th style="width:85px">Fecha banco</th>
+            <th style="width:85px">Fecha libro</th>
             <th>Descripción banco</th>
-            <th>Descripción libro</th>
+            <th>Concepto libro</th>
             <th style="width:120px;text-align:right">Monto</th>
-            <th style="width:110px">Estado</th>
+            <th style="width:105px">Estado</th>
           </tr></thead>
           <tbody id="tbl-body"></tbody>
         </table>
@@ -281,18 +281,16 @@ td.num{text-align:right;font-family:var(--mono);font-size:12px;}
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 var bancoRows=[],libroRows=[],results=[];
 var currentFilter='all',currentSearch='',currentPage=1;
-var PAGE_SIZE=40, TOLE_DIAS=5, TOLE_MONTO=1;
+var PAGE_SIZE=40;
 
 (function(){
   if(window.APP_CONFIG&&window.APP_CONFIG.EMPRESA)
     document.getElementById('header-empresa').textContent=window.APP_CONFIG.EMPRESA;
-  // Keep the secret in the portal link so going back doesn't lock out
   try{
     var cfg=window.APP_CONFIG;
     if(cfg&&cfg.SECRET_PATH){
@@ -332,147 +330,146 @@ function setStep(n){
   }
 }
 
+function parseMonto(s){
+  s=(s||'').toString().trim();
+  if(!s) return 0;
+  s=s.replace(/\./g,'').replace(',','.');
+  var n=parseFloat(s.replace(/[^0-9.\-]/g,''));
+  return isNaN(n)?0:n;
+}
+
+// Parse DD/MM/YY or DD/MM/YYYY into Date
 function parseFecha(s){
   if(!s) return null;
   s=s.toString().trim();
-  var m=s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
-  if(m){var y=m[3].length===2?'20'+m[3]:m[3];return new Date(parseInt(y),parseInt(m[2])-1,parseInt(m[1]));}
-  if(/^\d+$/.test(s)&&parseInt(s)>40000){var d=new Date(1899,11,30);d.setDate(d.getDate()+parseInt(s));return d;}
-  var d2=new Date(s); return isNaN(d2)?null:d2;
-}
-
-function parseMonto(s){
-  if(s===null||s===undefined||s==='') return 0;
-  var n=parseFloat(s.toString().replace(/\./g,'').replace(',','.').replace(/[^0-9.\-]/g,''));
-  return isNaN(n)?0:n;
+  var m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+  if(!m) return null;
+  var y=m[3].length===2?2000+parseInt(m[3]):parseInt(m[3]);
+  return new Date(y,parseInt(m[2])-1,parseInt(m[1]));
 }
 
 function diasDif(a,b){
   if(!a||!b) return 9999;
-  return Math.abs((a-b)/(1000*60*60*24));
+  return Math.abs((a-b)/(86400000));
 }
 
-function splitLine(line){
-  var res=[],cur='',inQ=false;
-  for(var i=0;i<line.length;i++){
-    var c=line[i];
-    if(c==='"'){inQ=!inQ;}
-    else if((c===','||c===';'||c==='\t')&&!inQ){res.push(cur);cur='';}
-    else cur+=c;
-  }
-  res.push(cur); return res;
-}
-
-function detectCols(headers){
-  var h=headers.map(function(x){return (x||'').toString().toLowerCase().trim();});
-  var find=function(opts){for(var i=0;i<h.length;i++){for(var j=0;j<opts.length;j++){if(h[i].indexOf(opts[j])>=0)return i;}}return -1;};
-  return{
-    fecha:find(['fecha','date','f.','día','dia']),
-    desc:find(['desc','concepto','detalle','glosa','movim','obs','ref']),
-    debe:find(['debe','debito','débito','egreso','salida','cargo']),
-    haber:find(['haber','credito','crédito','ingreso','entrada','abono']),
-    importe:find(['importe','monto','amount']),
-  };
-}
-
-function rawToRows(raw){
-  if(!raw||raw.length<2) return [];
-  var headers=raw[0].map(function(h){return (h||'').toString();});
-  var cols=detectCols(headers);
-  var rows=[];
-  for(var i=1;i<raw.length;i++){
-    var r=raw[i];
-    if(!r||r.every(function(x){return !x;})) continue;
-    var fecha=parseFecha(cols.fecha>=0?r[cols.fecha]:'');
-    var desc=cols.desc>=0?(r[cols.desc]||'').toString().trim():'';
-    var monto=0;
-    if(cols.importe>=0){monto=parseMonto(r[cols.importe]);}
-    else{
-      var debe=cols.debe>=0?parseMonto(r[cols.debe]):0;
-      var haber=cols.haber>=0?parseMonto(r[cols.haber]):0;
-      monto=haber-debe;
-    }
-    if(monto===0&&!fecha) continue;
-    rows.push({fecha:fecha,desc:desc,monto:monto,used:false});
-  }
-  return rows;
-}
-
-function loadCSV(ev,target){
+// ── EXTRACTO CREDICOOP (PDF) ──
+// Columns by X right-edge: Débito ~411, Crédito ~506, Saldo ~601
+// Each movement line starts with DD/MM/YY
+async function loadBancoPDF(ev){
   var file=ev.target.files[0]; if(!file) return;
-  setStatus(target+'-status','Leyendo…','wait');
+  setStatus('banco-status','Leyendo PDF…','wait');
+  document.getElementById('banco-count').textContent='';
+  document.getElementById('banco-prog').style.display='block';
+  document.getElementById('banco-fill').style.width='0%';
+
+  try{
+    var ab=await file.arrayBuffer();
+    var pdf=await pdfjsLib.getDocument({data:ab}).promise;
+    var nPages=pdf.numPages;
+    bancoRows=[];
+    var amountRe=/^-?\d{1,3}(?:\.\d{3})*,\d{2}$/;
+    var dateRe=/^\d{2}\/\d{2}\/\d{2}$/;
+
+    for(var pi=0;pi<nPages;pi++){
+      document.getElementById('banco-fill').style.width=Math.round(((pi+1)/nPages)*100)+'%';
+      document.getElementById('banco-label').textContent='Página '+(pi+1)+' de '+nPages;
+      var page=await pdf.getPage(pi+1);
+      var tc=await page.getTextContent();
+
+      // Stop processing once we hit the annexes (after "SALDO AL")
+      // Group by Y line
+      var byY={};
+      tc.items.forEach(function(item){
+        if(!item.str.trim()) return;
+        // PDF.js: transform[4]=x, transform[5]=y; x1 = x + width
+        var y=Math.round(item.transform[5]);
+        if(!byY[y]) byY[y]=[];
+        byY[y].push({x0:item.transform[4],x1:item.transform[4]+item.width,str:item.str.trim()});
+      });
+
+      Object.keys(byY).sort(function(a,b){return b-a;}).forEach(function(y){
+        var ws=byY[y].sort(function(a,b){return a.x0-b.x0;});
+        if(!ws.length) return;
+        if(!dateRe.test(ws[0].str)) return;
+        var fecha=parseFecha(ws[0].str);
+        var debito=0,credito=0;
+        var descParts=[], comp='';
+        for(var i=1;i<ws.length;i++){
+          var w=ws[i];
+          if(amountRe.test(w.str)){
+            var val=parseMonto(w.str);
+            if(w.x1<430) debito=val;
+            else if(w.x1<530) credito=val;
+            // else saldo, ignore
+          } else {
+            descParts.push(w.str);
+          }
+        }
+        if(debito===0&&credito===0) return;
+        // First desc part may be comprobante (4-6 digits)
+        if(descParts.length&&/^\d{4,6}$/.test(descParts[0])){
+          comp=descParts[0];
+          descParts=descParts.slice(1);
+        }
+        var desc=descParts.join(' ');
+        var monto=credito-debito; // positive=ingreso, negative=egreso
+        bancoRows.push({fecha:fecha,comp:comp,desc:desc,monto:monto,used:false});
+      });
+    }
+
+    document.getElementById('banco-prog').style.display='none';
+    setStatus('banco-status',file.name,'ok');
+    document.getElementById('banco-count').textContent=bancoRows.length+' movimientos detectados';
+    checkReady();
+  }catch(e){
+    document.getElementById('banco-prog').style.display='none';
+    setStatus('banco-status','Error: '+e.message,'err');
+    console.error(e);
+  }
+}
+
+// ── LIBRO BANCO (CSV OneSoft) ──
+// Cols: Cuenta;Tipo;Comprobante;Fecha;Concepto;Debe;Haber;Saldo;...
+function loadLibroCSV(ev){
+  var file=ev.target.files[0]; if(!file) return;
+  setStatus('libro-status','Leyendo…','wait');
   var reader=new FileReader();
   reader.onload=function(e){
     try{
-      var lines=e.target.result.trim().split(/\r?\n/).filter(function(l){return l.trim();});
-      var raw=lines.map(function(l){return splitLine(l).map(function(x){return x.replace(/^"|"$/g,'').trim();});});
-      if(target==='banco') bancoRows=rawToRows(raw);
-      setStatus(target+'-status',file.name,'ok');
-      document.getElementById(target+'-count').textContent=(target==='banco'?bancoRows:libroRows).length+' movimientos';
+      var text=e.target.result;
+      var lines=text.split(/\r?\n/);
+      libroRows=[];
+      lines.forEach(function(line){
+        if(!line.trim()) return;
+        var cols=line.split(';');
+        if(cols.length<8) return;
+        var comp=(cols[2]||'').trim();
+        var fecha=parseFecha((cols[3]||'').trim());
+        if(!fecha) return; // skips header rows
+        var concepto=(cols[4]||'').trim();
+        var debe=parseMonto(cols[5]);
+        var haber=parseMonto(cols[6]);
+        var monto=debe-haber; // positive=ingreso
+        if(debe===0&&haber===0) return;
+        libroRows.push({comp:comp,fecha:fecha,concepto:concepto,monto:monto,used:false});
+      });
+      setStatus('libro-status',file.name,'ok');
+      document.getElementById('libro-count').textContent=libroRows.length+' movimientos cargados';
       checkReady();
-    }catch(err){setStatus(target+'-status','Error: '+err.message,'err');}
-  };
-  reader.readAsText(file,'UTF-8');
-}
-
-async function loadLibro(ev){
-  var file=ev.target.files[0]; if(!file) return;
-  setStatus('libro-status','Leyendo…','wait');
-
-  try{
-    var raw=[];
-    if(/\.pdf$/i.test(file.name)){
-      // PDF: extract text line by line
-      document.getElementById('libro-prog').style.display='block';
-      var ab=await file.arrayBuffer();
-      var pdf=await pdfjsLib.getDocument({data:ab}).promise;
-      var lines=[];
-      for(var pi=0;pi<pdf.numPages;pi++){
-        document.getElementById('libro-fill').style.width=Math.round(((pi+1)/pdf.numPages)*100)+'%';
-        document.getElementById('libro-label').textContent='Página '+(pi+1)+' de '+pdf.numPages;
-        var page=await pdf.getPage(pi+1);
-        var tc=await page.getTextContent();
-        var byY={};
-        tc.items.forEach(function(item){
-          if(!item.str.trim()) return;
-          var y=Math.round(item.transform[5]);
-          if(!byY[y]) byY[y]=[];
-          byY[y].push({x:item.transform[4],str:item.str.trim()});
-        });
-        Object.keys(byY).sort(function(a,b){return b-a;}).forEach(function(y){
-          var line=byY[y].sort(function(a,b){return a.x-b.x;}).map(function(w){return w.str;});
-          lines.push(line);
-        });
-      }
-      document.getElementById('libro-prog').style.display='none';
-      // Convert to raw table format
-      raw=lines;
-    } else if(/\.(xlsx|xls)$/i.test(file.name)){
-      var ab2=await file.arrayBuffer();
-      var wb=XLSX.read(new Uint8Array(ab2),{type:'array'});
-      var ws=wb.Sheets[wb.SheetNames[0]];
-      raw=XLSX.utils.sheet_to_json(ws,{header:1,defval:''});
-    } else {
-      // CSV
-      var text=await file.text();
-      var csvLines=text.trim().split(/\r?\n/).filter(function(l){return l.trim();});
-      raw=csvLines.map(function(l){return splitLine(l).map(function(x){return x.replace(/^"|"$/g,'').trim();});});
+    }catch(err){
+      setStatus('libro-status','Error: '+err.message,'err');
     }
-
-    libroRows=rawToRows(raw);
-    setStatus('libro-status',file.name,'ok');
-    document.getElementById('libro-count').textContent=libroRows.length+' movimientos';
-    checkReady();
-  }catch(err){
-    document.getElementById('libro-prog').style.display='none';
-    setStatus('libro-status','Error: '+err.message,'err');
-  }
+  };
+  reader.readAsText(file,'latin-1');
 }
 
 function checkReady(){
   document.getElementById('btn-conciliar').disabled=!(bancoRows.length&&libroRows.length);
 }
 
+// ── CONCILIAR ──
+// Monto ±1. Si monto exacto (dif<0.005): fecha hasta 5 días. Si no: hasta 3 días.
 async function conciliar(){
   document.getElementById('sec-upload').classList.remove('active');
   document.getElementById('sec-processing').style.display='block';
@@ -483,29 +480,33 @@ async function conciliar(){
     setStep(2);await sleep(100);
     setStep(3);
 
-    // JS cross-match
     bancoRows.forEach(function(r){r.used=false;});
     libroRows.forEach(function(r){r.used=false;});
     results=[];
 
     bancoRows.forEach(function(b){
-      var bestMatch=null,bestDias=9999;
-      libroRows.forEach(function(l){
-        if(l.used) return;
-        if(Math.abs(Math.abs(b.monto)-Math.abs(l.monto))>TOLE_MONTO) return;
-        if(Math.sign(b.monto)!==Math.sign(l.monto)&&b.monto!==0&&l.monto!==0) return;
-        var d=diasDif(b.fecha,l.fecha);
-        if(d<bestDias){bestDias=d;bestMatch=l;}
-      });
-      if(bestMatch&&bestDias<=TOLE_DIAS){
-        bestMatch.used=true;
-        results.push({status:bestDias<0.5?'ok':'fecha',fechaBanco:b.fecha,fechaLibro:bestMatch.fecha,descBanco:b.desc,descLibro:bestMatch.desc,monto:b.monto,diasDif:Math.round(bestDias)});
+      var best=null,bestDias=9999;
+      for(var i=0;i<libroRows.length;i++){
+        var l=libroRows[i];
+        if(l.used) continue;
+        var dm=Math.abs(Math.abs(b.monto)-Math.abs(l.monto));
+        if(dm>1) continue;
+        // same sign (ingreso/egreso)
+        if((b.monto>0)!==(l.monto>0)&&b.monto!==0&&l.monto!==0) continue;
+        if(!b.fecha||!l.fecha) continue;
+        var dias=diasDif(b.fecha,l.fecha);
+        var tol=dm<0.005?5:3;
+        if(dias<=tol&&dias<bestDias){best=l;bestDias=dias;}
+      }
+      if(best){
+        best.used=true;
+        results.push({status:bestDias<0.5?'ok':'fecha',fechaBanco:b.fecha,fechaLibro:best.fecha,descBanco:b.desc,descLibro:best.concepto,monto:b.monto,diasDif:Math.round(bestDias)});
       } else {
         results.push({status:'banco',fechaBanco:b.fecha,fechaLibro:null,descBanco:b.desc,descLibro:'',monto:b.monto,diasDif:null});
       }
     });
     libroRows.forEach(function(l){
-      if(!l.used) results.push({status:'libro',fechaBanco:null,fechaLibro:l.fecha,descBanco:'',descLibro:l.desc,monto:l.monto,diasDif:null});
+      if(!l.used) results.push({status:'libro',fechaBanco:null,fechaLibro:l.fecha,descBanco:'',descLibro:l.concepto,monto:l.monto,diasDif:null});
     });
 
     var ok=results.filter(function(r){return r.status==='ok';});
@@ -529,34 +530,32 @@ async function conciliar(){
     document.querySelector('.search-input').value='';
     document.getElementById('tab-result').disabled=false;
 
-    // Claude analysis of summary
     setStep(4);
     document.getElementById('proc-title').textContent='Claude analizando el resultado';
-    document.getElementById('proc-sub').textContent='Generando análisis…';
+    document.getElementById('proc-sub').textContent='Generando puntos de atención…';
 
     try{
       var summary={
         total_movimientos:results.length,
         banco_movs:bancoRows.length,libro_movs:libroRows.length,
         coinciden:ok.length,dif_fecha:fecha.length,solo_banco:banco.length,solo_libro:libro.length,
-        monto_no_conciliado_banco:banco.reduce(function(s,r){return s+Math.abs(r.monto);},0),
-        monto_no_conciliado_libro:libro.reduce(function(s,r){return s+Math.abs(r.monto);},0),
-        solo_banco_sample:banco.slice(0,8).map(function(r){return{fecha:fmtDate(r.fechaBanco),desc:r.descBanco,monto:r.monto};}),
-        solo_libro_sample:libro.slice(0,8).map(function(r){return{fecha:fmtDate(r.fechaLibro),desc:r.descLibro,monto:r.monto};}),
-        dif_fecha_sample:fecha.slice(0,5).map(function(r){return{desc:r.descBanco,monto:r.monto,dias:r.diasDif};})
+        monto_solo_banco:banco.reduce(function(s,r){return s+Math.abs(r.monto);},0),
+        monto_solo_libro:libro.reduce(function(s,r){return s+Math.abs(r.monto);},0),
+        solo_banco_top:banco.slice().sort(function(a,b){return Math.abs(b.monto)-Math.abs(a.monto);}).slice(0,8).map(function(r){return{desc:r.descBanco,monto:Math.round(r.monto)};}),
+        solo_libro_top:libro.slice().sort(function(a,b){return Math.abs(b.monto)-Math.abs(a.monto);}).slice(0,8).map(function(r){return{concepto:r.descLibro,monto:Math.round(r.monto)};})
       };
       var response=await callClaude(
-        'Sos un experto contable argentino. Devolvé ÚNICAMENTE entre 3 y 5 puntos de atención, uno por línea, empezando cada uno con "• ". Sin títulos, sin introducción, sin markdown, sin conclusión. Cada punto debe ser una alerta concreta y profesional con el dato y el monto exacto. Priorizá los movimientos de mayor monto sin conciliar de cada lado y las diferencias de fecha relevantes.',
+        'Sos un experto contable argentino. Devolvé ÚNICAMENTE entre 3 y 5 puntos de atención, uno por línea, empezando cada uno con "• ". Sin títulos, sin introducción, sin markdown, sin conclusión. Cada punto debe ser una alerta concreta con dato y monto. Considerá que las comisiones, IVA y percepciones suelen aparecer solo en el banco (es normal). Priorizá movimientos de mayor monto sin conciliar de cada lado.',
         'Resultado de la conciliación bancaria:\n'+JSON.stringify(summary,null,2)
       );
-      document.getElementById('ai-analysis').style.display='block';
       var puntos=response.split('\n').filter(function(l){return l.trim();});
       var htmlPuntos=puntos.map(function(p){
         p=p.replace(/^[•\-\*]\s*/,'').trim();
         return '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:6px;"><span style="color:var(--diff-text);flex-shrink:0;margin-top:1px;">▸</span><span>'+p+'</span></div>';
       }).join('');
+      document.getElementById('ai-analysis').style.display='block';
       document.getElementById('ai-analysis-text').innerHTML=htmlPuntos;
-    }catch(e){console.error('Claude analysis:',e);}
+    }catch(e){console.error('Claude:',e);}
 
     document.getElementById('sec-processing').style.display='none';
     switchTab('result');
@@ -613,9 +612,9 @@ function renderTable(){
       return '<tr>'
         +'<td style="font-size:12px">'+fmtDate(r.fechaBanco)+'</td>'
         +'<td style="font-size:12px">'+fmtDate(r.fechaLibro)+'</td>'
-        +'<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="'+(r.descBanco||'')+'">'+(r.descBanco||'—')+'</td>'
-        +'<td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="'+(r.descLibro||'')+'">'+(r.descLibro||'—')+'</td>'
-        +'<td class="num">'+fmt(r.monto)+'</td>'
+        +'<td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="'+(r.descBanco||'')+'">'+(r.descBanco||'—')+'</td>'
+        +'<td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="'+(r.descLibro||'')+'">'+(r.descLibro||'—')+'</td>'
+        +'<td class="num" style="'+(r.monto<0?'color:var(--sub-text)':'color:var(--ok-text)')+'">'+fmt(r.monto)+'</td>'
         +'<td>'+badge+'</td>'
         +'</tr>';
     }).join('');
@@ -639,7 +638,7 @@ function resetAll(){
     document.getElementById(t+'-count').textContent='';
     document.getElementById('file-'+t).value='';
   });
-  document.getElementById('libro-prog').style.display='none';
+  document.getElementById('banco-prog').style.display='none';
   document.getElementById('btn-conciliar').disabled=true;
   document.getElementById('tab-result').disabled=true;
   document.getElementById('ai-analysis').style.display='none';
@@ -651,7 +650,7 @@ function resetAll(){
 function exportCSV(){
   var filtered=getFiltered();
   var labels={ok:'Coincide',fecha:'Dif. fecha',banco:'Solo banco',libro:'Solo libro'};
-  var headers=['Estado','Fecha Banco','Fecha Libro','Descripción Banco','Descripción Libro','Monto','Días Diferencia'];
+  var headers=['Estado','Fecha Banco','Fecha Libro','Descripción Banco','Concepto Libro','Monto','Días Diferencia'];
   var rows=filtered.map(function(r){return[labels[r.status]||r.status,fmtDate(r.fechaBanco),fmtDate(r.fechaLibro),r.descBanco,r.descLibro,r.monto!=null?r.monto.toFixed(2):'',r.diasDif!=null?r.diasDif:''];});
   var csv=[headers].concat(rows).map(function(row){return row.map(function(c){return'"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');
   var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});

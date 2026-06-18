@@ -242,8 +242,8 @@ td.num{text-align:right;font-family:var(--mono);font-size:12px;}
     </div>
     <div class="ai-analysis" id="ai-analysis" style="display:none">
       <div class="ai-analysis-header">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/><path d="M8 5v3l2 2"/></svg>
-        Análisis de Claude
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5l1.8 3.6 4 .6-2.9 2.8.7 4L8 10.6 4.4 12.5l.7-4L2.2 5.7l4-.6z"/></svg>
+        Puntos de atención
       </div>
       <div id="ai-analysis-text"></div>
     </div>
@@ -537,11 +537,16 @@ async function conciliar(){
         dif_fecha_sample:fecha.slice(0,5).map(function(r){return{desc:r.descBanco,monto:r.monto,dias:r.diasDif};})
       };
       var response=await callClaude(
-        'Sos un experto contable argentino. Escribí un resumen MUY BREVE (máximo 3 oraciones, sin títulos ni listas ni markdown) del resultado de una conciliación bancaria. Mencioná solo lo más importante: cuántos movimientos quedaron sin conciliar de cada lado y el de mayor monto. Tono directo y conciso.',
+        'Sos un experto contable argentino. Devolvé ÚNICAMENTE entre 3 y 5 puntos de atención, uno por línea, empezando cada uno con "• ". Sin títulos, sin introducción, sin markdown, sin conclusión. Cada punto debe ser una alerta concreta y profesional con el dato y el monto exacto. Priorizá los movimientos de mayor monto sin conciliar de cada lado y las diferencias de fecha relevantes.',
         'Resultado de la conciliación bancaria:\n'+JSON.stringify(summary,null,2)
       );
       document.getElementById('ai-analysis').style.display='block';
-      document.getElementById('ai-analysis-text').textContent=response;
+      var puntos=response.split('\n').filter(function(l){return l.trim();});
+      var htmlPuntos=puntos.map(function(p){
+        p=p.replace(/^[•\-\*]\s*/,'').trim();
+        return '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:6px;"><span style="color:var(--diff-text);flex-shrink:0;margin-top:1px;">▸</span><span>'+p+'</span></div>';
+      }).join('');
+      document.getElementById('ai-analysis-text').innerHTML=htmlPuntos;
     }catch(e){console.error('Claude analysis:',e);}
 
     document.getElementById('sec-processing').style.display='none';

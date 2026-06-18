@@ -515,7 +515,7 @@ async function conciliar(){
       };
 
       var response=await callClaude(
-        'Sos un experto contable argentino. Analizá el resultado de una conciliación IVA Compras y escribí un análisis claro y útil en 3-5 oraciones. Destacá las diferencias más importantes, posibles causas de los ítems no conciliados, y si el resultado es normal o hay algo a revisar.',
+        'Sos un experto contable argentino. Escribí un resumen MUY BREVE (máximo 3 oraciones, sin títulos ni listas ni markdown) del resultado de una conciliación IVA Compras. Mencioná solo lo más importante: el ítem de mayor diferencia y cuántos comprobantes quedaron sin conciliar de cada lado. Tono directo y conciso.',
         'Resultado de la conciliación IVA Compras:\n'+JSON.stringify(summary,null,2)
       );
       document.getElementById('ai-analysis').style.display='block';
@@ -544,7 +544,7 @@ async function callClaude(system,user){
   var res=await fetch(window.APP_CONFIG.PROXY_URL,{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,system:system,messages:[{role:'user',content:user}]})
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,system:system,messages:[{role:'user',content:user}]})
   });
   if(!res.ok) throw new Error('Error '+res.status);
   var data=await res.json();

@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Conciliación Ingresos Brutos · Portal Contable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+* { box-sizing: border-box; }
+:root {
+  --blue: #284a78; --blue-2: #2f578c; --blue-3: #2f5a9e;
+  --tint-bg: #e2e9f4; --tint-line: #d2ddee; --cool: #f3f6fa; --paper: #ffffff;
+  --ink: #1c2530; --muted: #61708a; --hair: #e1e7f0;
+  --ok: #1f7a54; --ok-bg: #e3f1ea; --warn: #9a6a1e; --warn-bg: #f6edda; --bad: #a23a3a; --bad-bg: #f6e4e2;
+}
+html, body { margin: 0; }
+body { font-family: 'Hanken Grotesk', system-ui, sans-serif; color: var(--ink); background: var(--cool); min-height: 100vh; }
+.serif { font-family: 'Newsreader', Georgia, serif; }
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+.topbar { background: var(--blue); color: #eef2f9; display: flex; align-items: center; gap: 0; padding: 0 clamp(20px,4vw,52px); height: 76px; }
+.topbar .back { display: flex; align-items: center; gap: 7px; color: #c5d2e6; text-decoration: none; font-size: 15px; padding-right: 22px; transition: color .15s; }
+.topbar .back:hover { color: #fff; }
+.topbar .divide { width: 1px; height: 30px; background: rgba(255,255,255,.18); }
+.topbar .crumb { display: flex; align-items: center; gap: 16px; padding-left: 22px; }
+.topbar .crumb .mark { width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,.13); display: grid; place-items: center; flex: none; }
+.topbar .crumb .ttl { font-family: 'Newsreader', serif; font-size: 26px; font-weight: 600; letter-spacing: .2px; }
+.topbar .org { margin-left: auto; font-size: 15px; color: #bccbe2; }
+
+.wrap { max-width: 1280px; margin: 0 auto; padding: 44px clamp(20px,4vw,52px) 64px; }
+.stepper { display: inline-flex; align-items: center; gap: 4px; background: var(--paper); border: 1px solid var(--hair); border-radius: 999px; padding: 7px; box-shadow: 0 8px 24px -18px rgba(28,40,60,.4); }
+.step { display: flex; align-items: center; gap: 9px; padding: 11px 20px; border-radius: 999px; font-size: 15px; font-weight: 600; color: #9aa6ba; border: none; background: transparent; cursor: default; transition: background .15s, color .15s; }
+.step.on { background: var(--blue); color: #fff; }
+.step.done { color: var(--blue-2); cursor: pointer; }
+.step.done:hover { background: var(--tint-bg); }
+.step svg { flex: none; }
+
+.head { text-align: center; margin: 56px auto 0; max-width: 760px; }
+.head h1 { font-family: 'Newsreader', serif; font-weight: 500; font-size: clamp(38px,4.6vw,52px); margin: 0 0 18px; letter-spacing: -.5px; }
+.head p { font-size: 18px; color: var(--muted); line-height: 1.55; margin: 0 auto; max-width: 620px; }
+.rule-pill { display: inline-flex; align-items: center; gap: 9px; margin-top: 26px; background: var(--tint-bg); color: var(--blue-2); border: 1px solid var(--tint-line); border-radius: 999px; padding: 11px 20px; font-size: 15px; font-weight: 600; }
+
+.uploads { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 22px; margin-top: 52px; }
+@media (max-width: 980px){ .uploads { grid-template-columns: 1fr; } }
+.ucard { background: var(--paper); border: 1px solid var(--hair); border-radius: 20px; padding: 26px 26px; }
+.ucard .uhead { display: flex; align-items: flex-start; gap: 14px; }
+.ucard .uic { width: 44px; height: 44px; border-radius: 12px; background: var(--tint-bg); color: var(--blue-2); display: grid; place-items: center; flex: none; }
+.ucard h3 { font-size: 18px; margin: 2px 0 4px; font-weight: 700; }
+.ucard .sub { font-size: 13px; color: var(--muted); margin: 0; }
+.ustatus { display: flex; align-items: center; gap: 9px; font-size: 14px; color: var(--muted); margin: 18px 0 14px; }
+.ustatus.loaded { color: var(--ok); font-weight: 600; }
+.dropzone { border: 2px dashed var(--tint-line); border-radius: 16px; background: var(--cool); padding: 32px 16px; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; }
+.dropzone:hover { border-color: var(--blue-2); background: #eef3fb; }
+.dropzone .up { width: 30px; height: 30px; margin: 0 auto 12px; color: var(--blue-2); }
+.dropzone .big { font-size: 16px; font-weight: 700; }
+.dropzone .small { font-size: 13px; color: var(--muted); margin-top: 6px; }
+.dropzone.filled { border-style: solid; border-color: var(--ok); background: var(--ok-bg); }
+.dropzone.filled .up { color: var(--ok); }
+.dropzone.filled .big { color: var(--ok); }
+.fileinfo { background: var(--cool); border: 1px solid var(--hair); border-radius: 12px; padding: 14px 16px; margin-top: 16px; font-size: 13px; color: var(--muted); line-height: 1.6; }
+.chip { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 12px; background: var(--tint-bg); color: var(--blue-2); padding: 2px 8px; border-radius: 6px; }
+
+.actions { display: flex; justify-content: center; margin-top: 44px; }
+.btn { display: inline-flex; align-items: center; gap: 10px; border: none; border-radius: 999px; padding: 16px 38px; font: inherit; font-size: 17px; font-weight: 700; cursor: pointer; transition: background .15s, transform .12s, box-shadow .15s; }
+.btn.primary { background: var(--blue); color: #fff; box-shadow: 0 14px 30px -14px rgba(40,74,120,.7); }
+.btn.primary:hover:not(:disabled) { background: var(--blue-2); transform: translateY(-1px); }
+.btn.primary:disabled { background: #c4cfde; color: #fff; cursor: not-allowed; box-shadow: none; }
+.btn.ghost { background: var(--paper); color: var(--blue-2); border: 1px solid var(--tint-line); }
+.btn.ghost:hover { background: var(--tint-bg); }
+
+.summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 8px; }
+@media (max-width: 900px){ .summary { grid-template-columns: 1fr 1fr; } }
+.scard { background: var(--paper); border: 1px solid var(--hair); border-radius: 16px; padding: 22px 24px; }
+.scard .lbl { font-size: 13.5px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.scard b { font-family: 'Newsreader', serif; font-size: 38px; font-weight: 500; display: block; line-height: 1; margin-top: 12px; }
+.scard.ok b { color: var(--ok); } .scard.warn b { color: var(--warn); } .scard.bad b { color: var(--bad); }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.dot.ok { background: var(--ok); } .dot.warn { background: var(--warn); } .dot.bad { background: var(--bad); } .dot.blue { background: var(--blue-2); }
+
+.claude { display: flex; gap: 16px; background: var(--blue); color: #eef2f9; border-radius: 18px; padding: 22px 26px; margin-top: 26px; }
+.claude .av { width: 42px; height: 42px; border-radius: 11px; background: rgba(255,255,255,.14); display: grid; place-items: center; flex: none; }
+.claude h4 { margin: 2px 0 8px; font-size: 16px; }
+.claude p { margin: 0; font-size: 15px; line-height: 1.6; color: #d4ddec; }
+.claude p b { color: #fff; font-weight: 600; }
+
+.blockttl { font-family: 'Newsreader', serif; font-size: 25px; font-weight: 500; margin: 40px 0 4px; }
+.blockttl .sm { font-family: 'Hanken Grotesk', sans-serif; font-size: 13px; color: var(--muted); font-weight: 500; display: block; margin-top: 4px; }
+
+.tablewrap { background: var(--paper); border: 1px solid var(--hair); border-radius: 18px; overflow: hidden; margin-top: 18px; }
+.tablewrap .thead { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid var(--hair); flex-wrap: wrap; gap: 10px; }
+.tablewrap .thead h3 { font-size: 17px; margin: 0; font-weight: 700; }
+.filters { display: flex; gap: 7px; flex-wrap: wrap; }
+.fbtn { border: 1px solid var(--tint-line); background: var(--paper); color: var(--muted); font: inherit; font-size: 13px; font-weight: 600; padding: 7px 13px; border-radius: 999px; cursor: pointer; transition: all .14s; }
+.fbtn.on { background: var(--blue); color: #fff; border-color: var(--blue); }
+table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+thead th { text-align: left; font-size: 12px; letter-spacing: .6px; text-transform: uppercase; color: var(--muted); font-weight: 700; padding: 14px 24px; background: var(--cool); }
+thead th.r, td.r { text-align: right; font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', monospace; }
+tbody td { padding: 15px 24px; border-top: 1px solid var(--hair); }
+tbody tr:hover { background: #f7f9fc; }
+.badge { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; padding: 5px 11px; border-radius: 999px; }
+.badge.ok { background: var(--ok-bg); color: var(--ok); }
+.badge.warn { background: var(--warn-bg); color: var(--warn); }
+.badge.bad { background: var(--bad-bg); color: var(--bad); }
+.note { font-size: 13px; color: var(--muted); margin-top: 3px; }
+.hidden { display: none !important; }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="config.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <a class="back" href="index.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg> Portal</a>
+  <span class="divide"></span>
+  <div class="crumb">
+    <span class="mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#eef2f9" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg></span>
+    <span class="ttl serif">Ingresos Brutos</span>
+  </div>
+  <span class="org">Sulfoquímica SA</span>
+</header>
+
+<div class="wrap">
+  <div style="text-align:center;">
+    <div class="stepper">
+      <button class="step on" id="st1"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 20h14"/></svg> Cargar archivos</button>
+      <button class="step" id="st2"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg> Resultado</button>
+    </div>
+  </div>
+
+  <section id="panel1">
+    <div class="head">
+      <h1 class="serif">Ingresos Brutos</h1>
+      <p>Subí los Libros Mayores de IIBB en CSV (OneSoft) y el Excel de ARBA. Claude separa los recibos y las facturas, los cruza contra ARBA y analiza el resultado.</p>
+      <div><span class="rule-pill"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg> Recibos → Retenciones · Facturas → Percepciones · Los asientos se ignoran</span></div>
+    </div>
+
+    <div class="uploads">
+      <div class="ucard">
+        <div class="uhead">
+          <span class="uic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></span>
+          <div><h3>Retenciones IIBB</h3><p class="sub">CSV de OneSoft</p></div>
+        </div>
+        <div class="ustatus" id="stA"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><circle cx="12" cy="16" r=".5" fill="currentColor"/></svg> Sin cargar</div>
+        <div class="dropzone" id="dzA" data-which="A"><input type="file" id="fileA" accept=".csv,.txt" style="display:none">
+          <div class="up"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 20h14"/></svg></div>
+          <div class="big" id="bigA">Elegir CSV de Retenciones</div>
+          <div class="small" id="smallA">Recibos + egreso bancario</div>
+        </div>
+        <div class="fileinfo">Libro Mayor de RETENCIONES ING. BRUTOS. Tipos: <span class="chip">Recibo</span> y <span class="chip">Egreso Banco Caja</span></div>
+      </div>
+
+      <div class="ucard">
+        <div class="uhead">
+          <span class="uic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v14H4z"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></span>
+          <div><h3>Percepciones IIBB</h3><p class="sub">CSV de OneSoft</p></div>
+        </div>
+        <div class="ustatus" id="stB"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><circle cx="12" cy="16" r=".5" fill="currentColor"/></svg> Sin cargar</div>
+        <div class="dropzone" id="dzB" data-which="B"><input type="file" id="fileB" accept=".csv,.txt" style="display:none">
+          <div class="up"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 20h14"/></svg></div>
+          <div class="big" id="bigB">Elegir CSV de Percepciones</div>
+          <div class="small" id="smallB">Facturas de proveedor</div>
+        </div>
+        <div class="fileinfo">Libro Mayor de PERCEPCION INGRESOS BRUTOS. Tipo: <span class="chip">Factura De Proveedor</span> (las N.C. se restan)</div>
+      </div>
+
+      <div class="ucard">
+        <div class="uhead">
+          <span class="uic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span>
+          <div><h3>Deducciones ARBA</h3><p class="sub">Excel de ARBA</p></div>
+        </div>
+        <div class="ustatus" id="stC"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><circle cx="12" cy="16" r=".5" fill="currentColor"/></svg> Sin cargar</div>
+        <div class="dropzone" id="dzC" data-which="C"><input type="file" id="fileC" accept=".xlsx,.xls" style="display:none">
+          <div class="up"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 20h14"/></svg></div>
+          <div class="big" id="bigC">Elegir Excel de ARBA</div>
+          <div class="small" id="smallC">Solapas: Percepciones, Retenciones, Ret. bancarias</div>
+        </div>
+        <div class="fileinfo">Se leen las 3 primeras solapas: <span class="chip">Percepciones</span> · <span class="chip">Retenciones</span> · <span class="chip">Retenciones bancarias</span></div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" id="conciliar" disabled><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg> Conciliar</button>
+    </div>
+    <p style="text-align:center; color:var(--muted); font-size:13.5px; margin-top:16px;" id="hint">Cargá los tres archivos para habilitar la conciliación.</p>
+  </section>
+
+  <section id="panel2" class="hidden">
+    <div class="head" style="margin-top:40px;">
+      <h1 class="serif">Resultado de la conciliación</h1>
+      <p>Recibos de OneSoft cruzados contra las retenciones de ARBA, y Facturas de Proveedor contra las percepciones, por monto.</p>
+    </div>
+
+    <div class="summary" style="margin-top:36px;">
+      <div class="scard ok"><span class="lbl"><span class="dot ok"></span> Retenciones OK</span><b id="kpiRetOk">—</b></div>
+      <div class="scard warn"><span class="lbl"><span class="dot warn"></span> Retenc. sin cruzar</span><b id="kpiRetPend">—</b></div>
+      <div class="scard ok"><span class="lbl"><span class="dot ok"></span> Percepciones OK</span><b id="kpiPerOk">—</b></div>
+      <div class="scard warn"><span class="lbl"><span class="dot warn"></span> Percep. sin cruzar</span><b id="kpiPerPend">—</b></div>
+    </div>
+
+    <div class="claude">
+      <span class="av"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4z"/></svg></span>
+      <div>
+        <h4>Análisis de Claude</h4>
+        <p id="claudeBox">Analizando…</p>
+      </div>
+    </div>
+
+    <div class="blockttl serif">Retenciones <span class="sm">Recibos + egreso bancario OneSoft · Retenciones + Ret. bancarias ARBA</span></div>
+    <div class="tablewrap">
+      <div class="thead">
+        <h3>Comprobantes</h3>
+        <div class="filters" data-tabla="ret">
+          <button class="fbtn on" data-f="all">Todos</button>
+          <button class="fbtn" data-f="ok">Coinciden</button>
+          <button class="fbtn" data-f="sub">Solo OneSoft</button>
+          <button class="fbtn" data-f="arca">Solo ARBA</button>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>Comprobante</th><th>Proveedor / CUIT</th><th class="r">OneSoft</th><th class="r">ARBA</th><th>Estado</th></tr></thead>
+        <tbody id="rowsRet"></tbody>
+      </table>
+    </div>
+
+    <div class="blockttl serif">Percepciones <span class="sm">Facturas de Proveedor OneSoft · Percepciones ARBA</span></div>
+    <div class="tablewrap">
+      <div class="thead">
+        <h3>Comprobantes</h3>
+        <div class="filters" data-tabla="per">
+          <button class="fbtn on" data-f="all">Todos</button>
+          <button class="fbtn" data-f="ok">Coinciden</button>
+          <button class="fbtn" data-f="sub">Solo OneSoft</button>
+          <button class="fbtn" data-f="arca">Solo ARBA</button>
+        </div>
+      </div>
+      <table>
+        <thead><tr><th>Comprobante</th><th>Proveedor / CUIT</th><th class="r">OneSoft</th><th class="r">ARBA</th><th>Estado</th></tr></thead>
+        <tbody id="rowsPer"></tbody>
+      </table>
+    </div>
+
+    <div class="actions" style="gap:14px;">
+      <button class="btn ghost" id="volver"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg> Cargar otros archivos</button>
+      <button class="btn primary" id="exportar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M7 11l5 5 5-5"/><path d="M5 20h14"/></svg> Exportar a Excel</button>
+    </div>
+  </section>
+</div>
+
+<div id="toast" style="position:fixed;bottom:28px;left:50%;transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;box-shadow:0 12px 30px -10px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50;"></div>
+
+<script>
+function cfg(key,def){ try{var v=localStorage.getItem('cfg_'+key);return v!==null?v:def;}catch(e){return def;} }
+var TOLE = parseFloat(cfg('tol_iibb','1')) || 1;
+
+var rawRet=null, rawPer=null, arbaBuf=null;
+var resRet=[], resPer=[];
+var loaded={A:false,B:false,C:false};
+
+(function(){ try{ if(window.APP_CONFIG&&window.APP_CONFIG.EMPRESA) document.querySelectorAll('.org').forEach(function(e){e.textContent=window.APP_CONFIG.EMPRESA;}); }catch(e){} })();
+(function(){ try{ var c=window.APP_CONFIG; if(c&&c.SECRET_PATH){ sessionStorage.setItem('portal_access',c.SECRET_PATH); var b=document.querySelector('.back'); if(b) b.href='index.html?'+c.SECRET_PATH; } }catch(e){} })();
+
+var toast=document.getElementById('toast'); var tt;
+function showToast(m){toast.textContent=m;toast.style.opacity=1;toast.style.transform='translate(-50%,0)';clearTimeout(tt);tt=setTimeout(function(){toast.style.opacity=0;toast.style.transform='translate(-50%,20px)';},2400);}
+
+function parseMonto(s){
+  s=(s||'').toString().trim(); if(!s) return 0;
+  if(/,/.test(s)) s=s.replace(/\./g,'').replace(',','.');
+  var n=parseFloat(s.replace(/[^0-9.\-]/g,'')); return isNaN(n)?0:Math.round(n*100)/100;
+}
+function csvRows(text,d){ return text.split(/\r?\n/).filter(function(l){return l.trim()!=='';}).map(function(l){return l.split(d);}); }
+
+// ── OneSoft Retenciones: Recibo + Egreso Banco Caja (importe en Debe) ──
+function parseOSRet(text){
+  var rows=csvRows(text,';'), out=[];
+  rows.forEach(function(c){
+    if(c.length<8) return;
+    var tipo=(c[1]||'').trim();
+    if(tipo!=='Recibo' && tipo!=='Egreso Banco Caja') return;
+    var imp=parseMonto(c[5]); // Debe
+    if(imp<=0) return;
+    out.push({comp:(c[2]||'').trim(),imp:imp,prov:(c[14]||'').trim(),tipo:tipo});
+  });
+  return out;
+}
+// ── OneSoft Percepciones: Factura (Debe +) y Nota de Crédito (Haber, resta) ──
+function parseOSPer(text){
+  var rows=csvRows(text,';'), out=[];
+  rows.forEach(function(c){
+    if(c.length<8) return;
+    var tipo=(c[1]||'').trim();
+    var debe=parseMonto(c[5]), haber=parseMonto(c[7]);
+    if(tipo==='Factura De Proveedor' && debe>0) out.push({comp:(c[2]||'').trim(),imp:debe,prov:(c[14]||'').trim(),tipo:tipo});
+    else if(tipo==='Nota De Credito Proveedor' && haber>0) out.push({comp:(c[2]||'').trim(),imp:-haber,prov:(c[14]||'').trim(),tipo:tipo});
+  });
+  return out;
+}
+
+// ── ARBA Excel: lee 3 solapas. Toma "Importe ... agente" como monto ──
+function parseArba(buf){
+  var wb=XLSX.read(new Uint8Array(buf),{type:'array'});
+  function sheetRows(name){
+    var ws=wb.Sheets[name]; if(!ws) return [];
+    return XLSX.utils.sheet_to_json(ws,{defval:'',raw:false});
+  }
+  function pick(row,cands){
+    var keys=Object.keys(row);
+    for(var i=0;i<cands.length;i++){
+      for(var j=0;j<keys.length;j++){ if(keys[j].toLowerCase().indexOf(cands[i])>=0) return row[keys[j]]; }
+    }
+    return '';
+  }
+  // Retenciones (hoja "Retenciones") + Retenciones bancarias → bloque retenciones
+  var ret=[];
+  sheetRows('Retenciones').forEach(function(r){
+    var imp=parseMonto(pick(r,['importe retencion agen','importe retencion','importe']));
+    if(imp>0) ret.push({cuit:(pick(r,['cuit agente','cuit'])||'').toString().replace(/\D/g,''),comp:(pick(r,['emision','sucursal'])||'').toString(),imp:imp});
+  });
+  sheetRows('Retenciones bancarias').forEach(function(r){
+    var imp=parseMonto(pick(r,['importe retencion agen','importe retencion','importe']));
+    if(imp>0) ret.push({cuit:(pick(r,['cuit banco','cuit'])||'').toString().replace(/\D/g,''),comp:'Bancaria',imp:imp});
+  });
+  // Percepciones (hoja "Percepciones") → bloque percepciones
+  var per=[];
+  sheetRows('Percepciones').forEach(function(r){
+    var imp=parseMonto(pick(r,['importe percepcion age','importe percepcion','importe']));
+    if(imp>0) per.push({cuit:(pick(r,['cuit agente','cuit'])||'').toString().replace(/\D/g,''),comp:(pick(r,['emision','sucursal'])||'').toString(),imp:imp});
+  });
+  return {ret:ret, per:per};
+}
+
+function setLoaded(which,fname,detail){
+  loaded[which]=true;
+  document.getElementById('dz'+which).classList.add('filled');
+  document.getElementById('big'+which).textContent=fname;
+  document.getElementById('small'+which).textContent=detail;
+  var st=document.getElementById('st'+which);
+  st.classList.add('loaded');
+  st.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Cargado correctamente';
+  var ready=loaded.A&&loaded.B&&loaded.C;
+  document.getElementById('conciliar').disabled=!ready;
+  document.getElementById('hint').textContent=ready?'¡Listo! Apretá Conciliar para cruzar todo.':'Cargá los tres archivos para habilitar la conciliación.';
+}
+
+function wireCSV(which,setStore,parseFn,labelFn){
+  document.getElementById('dz'+which).addEventListener('click',function(){document.getElementById('file'+which).click();});
+  document.getElementById('file'+which).addEventListener('change',function(ev){
+    var f=ev.target.files[0]; if(!f) return;
+    document.getElementById('big'+which).textContent='Leyendo…';
+    var r=new FileReader();
+    r.onload=function(e){
+      try{ setStore(e.target.result); var p=parseFn(e.target.result); setLoaded(which,f.name,labelFn(p)); }
+      catch(err){ document.getElementById('big'+which).textContent='Error'; showToast('Error: '+err.message); }
+    };
+    r.readAsText(f,'latin-1');
+  });
+}
+wireCSV('A',function(v){rawRet=v;},parseOSRet,function(p){return p.length+' movimientos';});
+wireCSV('B',function(v){rawPer=v;},parseOSPer,function(p){return p.length+' movimientos';});
+
+// ARBA es Excel → ArrayBuffer
+document.getElementById('dzC').addEventListener('click',function(){document.getElementById('fileC').click();});
+document.getElementById('fileC').addEventListener('change',function(ev){
+  var f=ev.target.files[0]; if(!f) return;
+  document.getElementById('bigC').textContent='Leyendo Excel…';
+  var r=new FileReader();
+  r.onload=function(e){
+    try{ arbaBuf=e.target.result; var p=parseArba(arbaBuf); setLoaded('C',f.name,p.ret.length+' retenc · '+p.per.length+' percep'); }
+    catch(err){ document.getElementById('bigC').textContent='Error'; showToast('Error: '+err.message); }
+  };
+  r.readAsArrayBuffer(f);
+});
+
+// Cruce por monto (±TOLE). Compara valor absoluto para tolerar N.C. negativas.
+function cruzar(left,right){
+  var used=right.map(function(){return false;});
+  var out=[];
+  left.forEach(function(l){
+    var best=-1;
+    for(var i=0;i<right.length;i++){ if(used[i]) continue; if(Math.abs(right[i].imp-l.imp)<=TOLE){best=i;break;} }
+    if(best>=0){ used[best]=true; out.push({estado:'ok',comp:l.comp,prov:l.prov,imp_os:l.imp,imp_arca:right[best].imp,dif:right[best].imp-l.imp}); }
+    else out.push({estado:'sub',comp:l.comp,prov:l.prov,imp_os:l.imp,imp_arca:null,dif:null});
+  });
+  right.forEach(function(r,i){ if(!used[i]) out.push({estado:'arca',comp:r.comp,prov:'CUIT '+(r.cuit||'—'),imp_os:null,imp_arca:r.imp,dif:null}); });
+  return out;
+}
+
+async function conciliar(){
+  var osRet=parseOSRet(rawRet);
+  var osPer=parseOSPer(rawPer);
+  var arba=parseArba(arbaBuf);
+  resRet=cruzar(osRet,arba.ret);
+  resPer=cruzar(osPer,arba.per);
+  recalcMetrics();
+  renderRows('ret','all'); renderRows('per','all');
+  guardarHistorial('iibb', tasaGlobal(), pendientesGlobal());
+  goPanel(2);
+  await analizarClaude();
+}
+
+function tasaGlobal(){
+  var all=resRet.concat(resPer); if(!all.length) return 0;
+  var ok=all.filter(function(r){return r.estado==='ok';}).length;
+  return Math.round((ok/all.length)*100);
+}
+function pendientesGlobal(){ return resRet.concat(resPer).filter(function(r){return r.estado!=='ok';}).length; }
+
+function recalcMetrics(){
+  document.getElementById('kpiRetOk').textContent=resRet.filter(function(r){return r.estado==='ok';}).length;
+  document.getElementById('kpiRetPend').textContent=resRet.filter(function(r){return r.estado!=='ok';}).length;
+  document.getElementById('kpiPerOk').textContent=resPer.filter(function(r){return r.estado==='ok';}).length;
+  document.getElementById('kpiPerPend').textContent=resPer.filter(function(r){return r.estado!=='ok';}).length;
+}
+
+async function analizarClaude(){
+  var box=document.getElementById('claudeBox');
+  try{
+    var resumen={
+      retenciones:{
+        conciliados:resRet.filter(function(r){return r.estado==='ok';}).length,
+        solo_onesoft:resRet.filter(function(r){return r.estado==='sub';}).length,
+        solo_arba:resRet.filter(function(r){return r.estado==='arca';}).length,
+        difs:resRet.filter(function(r){return r.estado==='ok'&&Math.abs(r.dif)>TOLE;}).map(function(r){return{prov:r.prov,os:r.imp_os,arba:r.imp_arca};})
+      },
+      percepciones:{
+        conciliados:resPer.filter(function(r){return r.estado==='ok';}).length,
+        solo_onesoft:resPer.filter(function(r){return r.estado==='sub';}).length,
+        solo_arba:resPer.filter(function(r){return r.estado==='arca';}).length,
+        solo_arba_top:resPer.filter(function(r){return r.estado==='arca';}).sort(function(a,b){return b.imp_arca-a.imp_arca;}).slice(0,5).map(function(r){return{cuit:r.prov,monto:Math.round(r.imp_arca)};})
+      }
+    };
+    box.innerHTML='Analizando…';
+    var resp=await callClaude(
+      'Sos un experto contable argentino. Devolvé ÚNICAMENTE entre 3 y 5 puntos de atención, uno por línea, empezando con "• ". Sin títulos ni markdown. Cada punto: alerta concreta con dato y monto. Hablás de conciliación de Ingresos Brutos: retenciones (recibos de OneSoft contra ARBA) y percepciones (facturas contra ARBA). Priorizá los comprobantes sin cruzar de cada lado y cualquier diferencia de importe.',
+      'Conciliación de Ingresos Brutos (ARBA):\n'+JSON.stringify(resumen,null,2)
+    );
+    var pts=resp.split('\n').filter(function(l){return l.trim();});
+    box.innerHTML=pts.map(function(p){p=p.replace(/^[•\-\*]\s*/,'').trim();return '<span style="display:block;margin-bottom:5px;">▸ '+p+'</span>';}).join('');
+  }catch(e){
+    box.innerHTML='Las retenciones cruzaron '+resRet.filter(function(r){return r.estado==='ok';}).length+' de '+resRet.length+'. En percepciones quedaron '+resPer.filter(function(r){return r.estado==='arca';}).length+' registros solo en ARBA para revisar.';
+  }
+}
+
+async function callClaude(system,user){
+  if(!window.APP_CONFIG||!window.APP_CONFIG.PROXY_URL) throw new Error('Falta PROXY_URL en config.js');
+  var res=await fetch(window.APP_CONFIG.PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,system:system,messages:[{role:'user',content:user}]})});
+  if(!res.ok) throw new Error('Error '+res.status);
+  var data=await res.json();
+  if(data.error) throw new Error(data.error.message||'Error API');
+  return data.content[0].text;
+}
+
+function fmt(n){ if(n===null||n===undefined) return '—'; return (n<0?'-':'')+'$'+Math.abs(n).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+var BADGE={ok:['ok','Coincide'],sub:['bad','Solo OneSoft'],arca:['warn','Solo ARBA']};
+
+function renderRows(tabla,filter){
+  var data=tabla==='ret'?resRet:resPer;
+  var tbody=document.getElementById(tabla==='ret'?'rowsRet':'rowsPer');
+  var out='';
+  data.forEach(function(r){
+    if(filter!=='all' && r.estado!==filter) return;
+    var b=BADGE[r.estado]||['bad',r.estado], code=b[0], label=b[1];
+    var note='';
+    if(r.estado==='ok'&&Math.abs(r.dif)>TOLE) note='<div class="note">Dif. '+fmt(r.dif)+'</div>';
+    else if(r.estado==='arca') note='<div class="note">No figura en OneSoft</div>';
+    else if(r.estado==='sub') note='<div class="note">No figura en ARBA</div>';
+    out+='<tr><td class="mono" style="font-size:13px;color:var(--muted)">'+(r.comp||'—')+'</td>'
+      +'<td>'+(r.prov||'—')+note+'</td>'
+      +'<td class="r">'+fmt(r.imp_os)+'</td><td class="r">'+fmt(r.imp_arca)+'</td>'
+      +'<td><span class="badge '+code+'"><span class="dot '+code+'"></span>'+label+'</span></td></tr>';
+  });
+  tbody.innerHTML=out||'<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">Sin comprobantes</td></tr>';
+}
+
+function goPanel(n){
+  document.getElementById('panel1').classList.toggle('hidden',n!==1);
+  document.getElementById('panel2').classList.toggle('hidden',n!==2);
+  var s1=document.getElementById('st1'),s2=document.getElementById('st2');
+  if(n===1){s1.className='step on';s2.className='step';}
+  else {s1.className='step done';s2.className='step on';}
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+document.getElementById('conciliar').addEventListener('click',function(){ if(!this.disabled) conciliar(); });
+document.getElementById('volver').addEventListener('click',function(){ goPanel(1); });
+document.getElementById('st1').addEventListener('click',function(){ goPanel(1); });
+document.getElementById('st2').addEventListener('click',function(){ if(!document.getElementById('conciliar').disabled){ goPanel(2); } });
+document.getElementById('exportar').addEventListener('click',exportCSV);
+document.querySelectorAll('.filters').forEach(function(group){
+  var tabla=group.dataset.tabla;
+  group.querySelectorAll('.fbtn').forEach(function(b){
+    b.addEventListener('click',function(){
+      group.querySelectorAll('.fbtn').forEach(function(x){x.classList.remove('on');});
+      b.classList.add('on'); renderRows(tabla,b.dataset.f);
+    });
+  });
+});
+
+function exportCSV(){
+  var labels={ok:'Coincide',sub:'Solo OneSoft',arca:'Solo ARBA'};
+  var headers=['Bloque','Estado','Comprobante','Proveedor/CUIT','OneSoft','ARBA','Diferencia'];
+  function money(n){ if(n===null||n===undefined||n==='') return ''; return Number(n).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+  function rowsOf(data,bloque){
+    return data.map(function(r){return[bloque,labels[r.estado]||r.estado,r.comp,r.prov,money(r.imp_os),money(r.imp_arca),money(r.dif)];});
+  }
+  var rs=rowsOf(resRet,'Retenciones').concat(rowsOf(resPer,'Percepciones'));
+  var csv=[headers].concat(rs).map(function(row){return row.map(function(c){return'"'+String(c==null?'':c).replace(/"/g,'""')+'"';}).join(';');}).join('\r\n');
+  var blob=new Blob(['\uFEFF'+'sep=;\r\n'+csv],{type:'text/csv;charset=utf-8;'});
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='conciliacion_iibb_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+  showToast('Exportado a CSV');
+}
+
+function guardarHistorial(modulo,tasa,difs){
+  try{
+    var key='hist_'+modulo, hist=JSON.parse(localStorage.getItem(key)||'[]');
+    var mes=new Date().toLocaleDateString('es-AR',{month:'short',year:'2-digit'});
+    hist.unshift({mes:mes,tasa:tasa,difs:difs,fecha:Date.now()});
+    localStorage.setItem(key,JSON.stringify(hist.slice(0,12)));
+  }catch(e){}
+}
+</script>
+</body>
+</html>

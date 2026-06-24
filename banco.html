@@ -120,6 +120,10 @@ thead th.r, td.r { text-align: right; font-variant-numeric: tabular-nums; font-f
 tbody td { padding: 15px 24px; border-top: 1px solid var(--hair); }
 tbody tr:hover { background: #f7f9fc; }
 .badge { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; padding: 5px 11px; border-radius: 999px; }
+.tickbtn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 8px; border: 1px solid var(--tint-line); background: var(--paper); color: var(--ok); cursor: pointer; transition: background .14s, border-color .14s, transform .1s; flex: none; padding: 0; }
+.tickbtn:hover { background: var(--ok-bg); border-color: var(--ok); transform: translateY(-1px); }
+.tickbtn:active { transform: none; }
+.manual-tag { font-size: 11px; font-weight: 600; color: var(--muted); background: var(--cool); border: 1px solid var(--hair); padding: 3px 8px; border-radius: 999px; }
 .badge.ok { background: var(--ok-bg); color: var(--ok); }
 .badge.warn { background: var(--warn-bg); color: var(--warn); }
 .badge.bad { background: var(--bad-bg); color: var(--bad); }
@@ -396,26 +400,30 @@ async function conciliar(){
   });
   libroRows.forEach(function(l){ if(!l.used) results.push({status:'bad',fechaBanco:null,fechaLibro:l.fecha,descBanco:'',descLibro:l.concepto,montoBanco:null,montoLibro:l.monto,diasDif:null}); });
 
-  var ok=results.filter(function(r){return r.status==='ok';});
-  var warn=results.filter(function(r){return r.status==='warn';});
-  var bad=results.filter(function(r){return r.status==='bad';});
-  var tasa=results.length?Math.round((ok.length/results.length)*100):0;
-
-  // Métricas (4 scards)
-  var sc=document.querySelectorAll('#panel2 .summary .scard b');
-  if(sc[0]) sc[0].textContent=ok.length;
-  if(sc[1]) sc[1].textContent=bad.filter(function(r){return r.montoBanco===null;}).length; // pendientes (solo libro)
-  if(sc[2]) sc[2].textContent=warn.length; // diferencias de fecha
-  if(sc[3]) sc[3].textContent=tasa+'%';
+  recalcMetrics();
 
   // Subtítulo
   var sub=document.querySelector('#panel2 .head p');
   if(sub) sub.textContent='Período actual · '+results.length+' movimientos cruzados entre el extracto de Credicoop y el libro banco de OneSoft.';
 
   renderRows('all');
-  guardarHistorial('banco', tasa, bad.length);
-  await analizarClaude(ok, warn, bad);
+  var badInit=results.filter(function(r){return r.status==='bad';});
+  guardarHistorial('banco', results.length?Math.round((results.filter(function(r){return r.status==='ok';}).length/results.length)*100):0, badInit.length);
+  await analizarClaude(results.filter(function(r){return r.status==='ok';}), results.filter(function(r){return r.status==='warn';}), badInit);
   goPanel(2);
+}
+
+// Recalcula los contadores del resumen desde results (se llama al conciliar y al tildar)
+function recalcMetrics(){
+  var ok=results.filter(function(r){return r.status==='ok';});
+  var warn=results.filter(function(r){return r.status==='warn';});
+  var bad=results.filter(function(r){return r.status==='bad';});
+  var tasa=results.length?Math.round((ok.length/results.length)*100):0;
+  var sc=document.querySelectorAll('#panel2 .summary .scard b');
+  if(sc[0]) sc[0].textContent=ok.length;
+  if(sc[1]) sc[1].textContent=bad.length;
+  if(sc[2]) sc[2].textContent=warn.length;
+  if(sc[3]) sc[3].textContent=tasa+'%';
 }
 
 // ── Claude: puntos de atención ──
@@ -471,17 +479,32 @@ function renderRows(filter){
     return;
   }
   document.querySelector('#panel2 table thead tr').innerHTML='<th>Fecha</th><th>Concepto</th><th>Comprobante</th><th class="r">Extracto</th><th class="r">Libro banco</th><th>Estado</th>';
-  tbody.innerHTML=rows.map(function(r){
+  var out='';
+  results.forEach(function(r, idx){
+    if(!(filter==='all'||r.status===filter)) return;
     var b=BADGE[r.status], code=b[0], label=b[1];
     var note = r.status==='bad'&&r.montoBanco===null ? '<div class="note">No figura en el extracto</div>'
              : r.status==='bad'&&r.montoLibro===null ? '<div class="note">No figura en el libro banco</div>'
              : r.status==='warn' ? '<div class="note">Difiere '+r.diasDif+' día(s)</div>' : '';
-    var monto = r.montoBanco!==null?r.montoBanco:r.montoLibro;
-    return '<tr><td>'+fmtDate(r.fechaBanco||r.fechaLibro)+'</td><td>'+(r.descBanco||r.descLibro||'—')+note+'</td>'
+    // Botón tilde solo para no conciliados
+    var tick = r.status!=='ok'
+      ? '<button class="tickbtn" title="Marcar como conciliado" onclick="marcarConciliado('+idx+')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></button>'
+      : (r.manual ? '<span class="manual-tag" title="Conciliado a mano">a mano</span>' : '');
+    out+='<tr><td>'+fmtDate(r.fechaBanco||r.fechaLibro)+'</td><td>'+(r.descBanco||r.descLibro||'—')+note+'</td>'
       +'<td class="mono" style="font-size:12.5px;color:var(--muted)">'+( '' )+'</td>'
       +'<td class="r">'+fmt(r.montoBanco)+'</td><td class="r">'+fmt(r.montoLibro)+'</td>'
-      +'<td><span class="badge '+code+'"><span class="dot '+code+'"></span>'+label+'</span></td></tr>';
-  }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">Sin movimientos</td></tr>';
+      +'<td><div style="display:flex;align-items:center;gap:8px;"><span class="badge '+code+'"><span class="dot '+code+'"></span>'+label+'</span>'+tick+'</div></td></tr>';
+  });
+  tbody.innerHTML = out || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">Sin movimientos</td></tr>';
+}
+
+// Marca un movimiento como conciliado a mano y actualiza el resumen
+function marcarConciliado(idx){
+  if(!results[idx]) return;
+  results[idx].status='ok';
+  results[idx].manual=true;
+  recalcMetrics();
+  renderRows(currentFilter);
 }
 
 function categorizar(d){

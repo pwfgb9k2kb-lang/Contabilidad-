@@ -120,6 +120,10 @@ thead th.r, td.r { text-align: right; font-variant-numeric: tabular-nums; font-f
 tbody td { padding: 15px 24px; border-top: 1px solid var(--hair); }
 tbody tr:hover { background: #f7f9fc; }
 .badge { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; padding: 5px 11px; border-radius: 999px; }
+.tickbtn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 8px; border: 1px solid var(--tint-line); background: var(--paper); color: var(--ok); cursor: pointer; transition: background .14s, border-color .14s, transform .1s; flex: none; padding: 0; }
+.tickbtn:hover { background: var(--ok-bg); border-color: var(--ok); transform: translateY(-1px); }
+.tickbtn:active { transform: none; }
+.manual-tag { font-size: 11px; font-weight: 600; color: var(--muted); background: var(--cool); border: 1px solid var(--hair); padding: 3px 8px; border-radius: 999px; }
 .badge.ok { background: var(--ok-bg); color: var(--ok); }
 .badge.warn { background: var(--warn-bg); color: var(--warn); }
 .badge.bad { background: var(--bad-bg); color: var(--bad); }
@@ -395,26 +399,33 @@ async function conciliar(){
     results=results.filter(function(r){return !r._an;});
   }
 
+  recalcMetrics();
+
+  var revisar=results.filter(function(r){return r.estado==='pv'||r.estado==='nro';}).length;
+  var subt=document.querySelector('#panel2 .head p');
+  if(subt) subt.textContent='Período actual · Subdiario IVA (OneSoft) cruzado contra comprobantes de ARCA por CUIT + N° de comprobante.'+(revisar?' · '+revisar+' a revisar carga.':'');
+
+  renderRows('all');
+  var okI=results.filter(function(r){return r.estado==='ok'||r.estado==='pv'||r.estado==='nro';});
+  var subI=results.filter(function(r){return r.estado==='sub';});
+  var arcaI=results.filter(function(r){return r.estado==='arca';});
+  var diffI=results.filter(function(r){return r.estado==='diff';});
+  guardarHistorial('iva', results.length?Math.round((okI.length/results.length)*100):0, subI.length+arcaI.length);
+  await analizarClaude(okI,diffI,subI,arcaI,revisar);
+  goPanel(2);
+}
+
+// Recalcula los contadores del resumen desde results (al conciliar y al tildar)
+function recalcMetrics(){
   var ok=results.filter(function(r){return r.estado==='ok'||r.estado==='pv'||r.estado==='nro';});
-  var diff=results.filter(function(r){return r.estado==='diff';});
   var sub=results.filter(function(r){return r.estado==='sub';});
   var arca=results.filter(function(r){return r.estado==='arca';});
-  var revisar=results.filter(function(r){return r.estado==='pv'||r.estado==='nro';}).length;
   var ivaCred=ok.reduce(function(s,r){return s+(r.total_sub||0);},0);
-
   var sc=document.querySelectorAll('#panel2 .summary .scard b');
   if(sc[0]) sc[0].textContent=ok.length;
   if(sc[1]) sc[1].textContent=arca.length;
   if(sc[2]) sc[2].textContent=sub.length;
   if(sc[3]) sc[3].textContent='$'+(Math.abs(ivaCred)>=1000000?(ivaCred/1000000).toFixed(1)+'M':Math.round(ivaCred/1000)+'k');
-
-  var subt=document.querySelector('#panel2 .head p');
-  if(subt) subt.textContent='Período actual · Subdiario IVA (OneSoft) cruzado contra comprobantes de ARCA por CUIT + N° de comprobante.'+(revisar?' · '+revisar+' a revisar carga.':'');
-
-  renderRows('all');
-  guardarHistorial('iva', results.length?Math.round((ok.length/results.length)*100):0, sub.length+arca.length);
-  await analizarClaude(ok,diff,sub,arca,revisar);
-  goPanel(2);
 }
 
 async function analizarClaude(ok,diff,sub,arca,revisar){
@@ -451,15 +462,15 @@ var BADGE={ok:['ok','Coincide'],pv:['warn','Revisar PV'],nro:['warn','Revisar N�
 
 function renderRows(filter){
   currentFilter=filter;
-  var rows=results.filter(function(r){
-    if(filter==='all') return true;
-    if(filter==='ok') return r.estado==='ok'||r.estado==='pv'||r.estado==='nro';
-    if(filter==='warn') return r.estado==='arca';
-    if(filter==='bad') return r.estado==='sub';
-    return r.estado===filter;
-  });
   var tbody=document.getElementById('rows');
-  tbody.innerHTML=rows.map(function(r){
+  var out='';
+  results.forEach(function(r, idx){
+    var match = filter==='all'
+      || (filter==='ok' && (r.estado==='ok'||r.estado==='pv'||r.estado==='nro'))
+      || (filter==='warn' && r.estado==='arca')
+      || (filter==='bad' && r.estado==='sub')
+      || r.estado===filter;
+    if(!match) return;
     var b=BADGE[r.estado]||['bad',r.estado], code=b[0], label=b[1];
     var note='';
     if(r.estado==='pv') note='<div class="note">PV en ARCA: '+r.pvArca+' (revisar carga)</div>';
@@ -468,13 +479,28 @@ function renderRows(filter){
     else if(r.estado==='arca') note='<div class="note">IVA crédito sin computar</div>';
     else if(r.estado==='sub') note='<div class="note">No figura en ARCA</div>';
     var tipoBadge=(r.tipo||'').indexOf('N.C')>=0?'bad':'ok';
-    return '<tr><td><span class="badge '+tipoBadge+'" style="background:var(--tint-bg);color:var(--blue-2)">'+(r.tipo||'—')+'</span></td>'
+    // Botón tilde para todo lo que no sea coincidencia exacta
+    var esConc = r.estado==='ok';
+    var tick = !esConc
+      ? '<button class="tickbtn" title="Marcar como conciliado" onclick="marcarConciliado('+idx+')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></button>'
+      : (r.manual ? '<span class="manual-tag" title="Conciliado a mano">a mano</span>' : '');
+    out+='<tr><td><span class="badge '+tipoBadge+'" style="background:var(--tint-bg);color:var(--blue-2)">'+(r.tipo||'—')+'</span></td>'
       +'<td>'+(r.prov||'—')+note+'</td>'
       +'<td class="mono" style="font-size:12.5px;color:var(--muted)">'+(r.cuit||'—')+'</td>'
       +'<td class="mono" style="font-size:13px;color:var(--muted)">'+(r.comp||'—')+'</td>'
       +'<td class="r">'+fmt(r.total_sub)+'</td><td class="r">'+fmt(r.total_arca)+'</td>'
-      +'<td><span class="badge '+code+'"><span class="dot '+code+'"></span>'+label+'</span></td></tr>';
-  }).join('') || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:30px">Sin comprobantes</td></tr>';
+      +'<td><div style="display:flex;align-items:center;gap:8px;"><span class="badge '+code+'"><span class="dot '+code+'"></span>'+label+'</span>'+tick+'</div></td></tr>';
+  });
+  tbody.innerHTML = out || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:30px">Sin comprobantes</td></tr>';
+}
+
+// Marca un comprobante como conciliado a mano y actualiza el resumen
+function marcarConciliado(idx){
+  if(!results[idx]) return;
+  results[idx].estado='ok';
+  results[idx].manual=true;
+  recalcMetrics();
+  renderRows(currentFilter);
 }
 
 function goPanel(n){

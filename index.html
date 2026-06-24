@@ -1,384 +1,236 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Portal Contable</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
-<script src="config.js"></script>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Portal Contable · Inicio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --sage:#7a8c7e;--sage-light:#e8ede9;--sage-dark:#4a5c4e;
-  --cream:#faf9f6;--white:#fff;--ink:#1c1f1d;--muted:#5a6360;--hint:#9aa5a1;
-  --border:#e4e8e5;--border2:#d2d9d5;
-  --r:12px;--rs:8px;
-  --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
-  --sh2:0 8px 24px rgba(0,0,0,.10),0 2px 6px rgba(0,0,0,.06);
-}
-body{font-family:'Inter',-apple-system,sans-serif;background:var(--cream);color:var(--ink);min-height:100vh;}
+  * { box-sizing: border-box; }
+  :root {
+    --blue: #284a78;
+    --blue-2: #2f578c;
+    --tint-bg: #e2e9f4;
+    --tint-line: #d2ddee;
+    --cool: #f3f6fa;
+    --paper: #ffffff;
+    --ink: #1c2530;
+    --muted: #61708a;
+    --hair: #e1e7f0;
+    --accent: #2f5a9e;
+  }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: 'Hanken Grotesk', system-ui, sans-serif;
+    color: var(--ink); background: var(--cool);
+    display: flex; min-height: 100vh;
+  }
+  .serif { font-family: 'Newsreader', Georgia, serif; }
 
-/* Access denied */
-#access-denied{display:none;min-height:100vh;align-items:center;justify-content:center;flex-direction:column;gap:1rem;text-align:center;padding:2rem;}
-#access-denied h1{font-family:'DM Serif Display',serif;font-size:32px;font-weight:400;color:var(--ink);}
-#access-denied p{color:var(--muted);font-size:14px;}
+  /* ---------- Sidebar ---------- */
+  .side {
+    width: 248px; flex: none; background: var(--blue); color: #dfe6f2;
+    padding: 26px 20px; display: flex; flex-direction: column; gap: 30px;
+    position: sticky; top: 0; height: 100vh;
+  }
+  .side .brand { display: flex; align-items: center; gap: 12px; }
+  .side .brand .mark { width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,.14); display: grid; place-items: center; flex: none; }
+  .side .brand .name { font-family: 'Newsreader', serif; font-size: 21px; font-weight: 600; color: #f1f5fb; line-height: 1.1; }
+  .navlbl { font-size: 11px; letter-spacing: 1.6px; text-transform: uppercase; color: #93a6c4; margin: 0 0 8px 10px; }
+  .nav { display: flex; flex-direction: column; gap: 3px; }
+  .nav a { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: 9px; color: #c5d2e6; text-decoration: none; font-size: 14.5px; transition: background .15s, color .15s; cursor: pointer; }
+  .nav a svg { flex: none; }
+  .nav a:hover { background: rgba(255,255,255,.08); color: #fff; }
+  .nav a.on { background: rgba(255,255,255,.14); color: #fff; font-weight: 500; }
+  .nav a.dim { color: #7f8da6; cursor: default; }
+  .nav a.dim:hover { background: transparent; color: #7f8da6; }
+  .nav a .soon { margin-left: auto; font-size: 10px; letter-spacing: .4px; text-transform: uppercase; color: #93a6c4; border: 1px solid rgba(255,255,255,.14); padding: 2px 6px; border-radius: 6px; }
+  .side .foot { margin-top: auto; display: flex; align-items: center; gap: 11px; padding: 11px 12px; border-radius: 11px; background: rgba(255,255,255,.08); cursor: pointer; transition: background .15s; }
+  .side .foot:hover { background: rgba(255,255,255,.13); }
+  .side .foot .dot { width: 32px; height: 32px; border-radius: 9px; background: rgba(255,255,255,.16); display: grid; place-items: center; flex: none; }
+  .side .foot b { font-size: 13px; color: #f1f5fb; display: block; }
+  .side .foot span { font-size: 11.5px; color: #93a6c4; }
 
-/* App */
-#app{display:none;}
+  /* ---------- Main ---------- */
+  .main { flex: 1; padding: 40px clamp(28px, 5vw, 72px) 56px; max-width: 1280px; }
+  .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .topbar .org { font-size: 14px; color: var(--muted); }
+  .topbar .org b { color: var(--ink); font-weight: 600; }
+  h1 { font-family: 'Newsreader', serif; font-weight: 500; font-size: clamp(36px, 4.4vw, 50px); line-height: 1.04; margin: 32px 0 8px; letter-spacing: -.4px; }
+  .lede { font-size: 16.5px; color: var(--muted); margin: 0; max-width: 620px; line-height: 1.5; }
 
-header{
-  background:var(--sage-dark);
-  padding:0 2.5rem;
-  height:64px;
-  display:flex;align-items:center;gap:1rem;
-  position:sticky;top:0;z-index:100;
-}
-.logo-mark{width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:9px;display:flex;align-items:center;justify-content:center;}
-.logo-mark svg{width:18px;height:18px;stroke:#fff;fill:none;}
-.logo-text{font-family:'DM Serif Display',serif;font-size:19px;color:#fff;letter-spacing:.01em;}
-.logo-empresa{font-size:12px;color:rgba(255,255,255,.45);margin-left:auto;letter-spacing:.03em;}
+  .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 34px 0 6px; }
+  .kpi { background: var(--paper); border: 1px solid var(--hair); border-radius: 16px; padding: 20px 22px; }
+  .kpi b { font-family: 'Newsreader', serif; font-size: 34px; font-weight: 500; display: block; line-height: 1; }
+  .kpi span { font-size: 13.5px; color: var(--muted); }
+  .kpi.accent b { color: var(--blue-2); }
 
-.page{max-width:960px;margin:0 auto;padding:3rem 2rem;}
+  .sect { font-size: 12px; letter-spacing: 1.8px; text-transform: uppercase; color: var(--muted); margin: 38px 0 16px; }
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+  @media (max-width: 1080px) { .grid, .stats { grid-template-columns: 1fr; } }
+  .mod { background: var(--paper); border: 1px solid var(--hair); border-radius: 16px; padding: 24px 26px; display: flex; gap: 18px; cursor: pointer; transition: border-color .16s, box-shadow .16s, transform .16s; text-align: left; font: inherit; color: inherit; text-decoration: none; }
+  .mod:hover { border-color: #bcccea; box-shadow: 0 14px 30px -20px rgba(28,40,60,.5); transform: translateY(-2px); }
+  .mod.soon { cursor: default; opacity: .72; }
+  .mod.soon:hover { border-color: var(--hair); box-shadow: none; transform: none; }
+  .mod .ic { width: 46px; height: 46px; border-radius: 12px; background: var(--tint-bg); color: var(--blue-2); display: grid; place-items: center; flex: none; }
+  .mod .body { flex: 1; }
+  .mod h3 { font-size: 18px; margin: 2px 0 6px; font-weight: 600; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+  .mod.soon h3 { color: #93a0b6; }
+  .mod p { margin: 0 0 13px; color: var(--muted); font-size: 14px; line-height: 1.5; }
+  .tag { display: inline-block; font-size: 12px; font-weight: 600; color: var(--blue-2); background: var(--tint-bg); padding: 5px 11px; border-radius: 999px; }
+  .mod.soon .tag { background: rgba(0,0,0,.04); color: #93a0b6; }
+  .mod .arrow { opacity: 0; transition: opacity .16s, transform .16s; color: var(--accent); align-self: center; }
+  .mod:not(.soon):hover .arrow { opacity: 1; transform: translateX(2px); }
 
-.page-title{
-  font-family:'DM Serif Display',serif;
-  font-size:32px;font-weight:400;
-  margin-bottom:8px;letter-spacing:-.01em;
-}
-.page-sub{font-size:14px;color:var(--muted);margin-bottom:2.5rem;line-height:1.6;}
+  /* ---------- Assistant ---------- */
+  .assist { margin-top: 18px; display: flex; align-items: center; gap: 16px; background: var(--blue); color: #eef2f9; border-radius: 16px; padding: 18px 22px; flex-wrap: wrap; }
+  .assist .av { width: 42px; height: 42px; border-radius: 11px; background: rgba(255,255,255,.14); display: grid; place-items: center; flex: none; }
+  .assist .at { flex: 1; min-width: 180px; }
+  .assist .at b { font-size: 15px; }
+  .assist .at span { display: block; font-size: 13px; color: #b6c5dd; margin-top: 2px; }
+  .assist form { display: flex; gap: 8px; }
+  .assist input { background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.18); color: #fff; border-radius: 10px; padding: 11px 15px; font: inherit; font-size: 14px; width: 260px; outline: none; transition: border-color .15s, background .15s; }
+  .assist input:focus { border-color: rgba(255,255,255,.4); background: rgba(255,255,255,.16); }
+  .assist input::placeholder { color: #a3b1ca; }
+  .assist button { border: none; background: #fff; color: var(--blue); font: inherit; font-weight: 600; font-size: 14px; padding: 11px 18px; border-radius: 10px; cursor: pointer; transition: background .15s; }
+  .assist button:hover { background: #e7eefa; }
 
-/* Module grid */
-.modules{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1.25rem;margin-bottom:3rem;}
-
-.module-card{
-  background:var(--white);
-  border:1px solid var(--border);
-  border-radius:var(--r);
-  padding:1.75rem;
-  cursor:pointer;
-  transition:all .2s;
-  box-shadow:var(--sh);
-  text-decoration:none;
-  display:block;
-  position:relative;
-  overflow:hidden;
-}
-.module-card::before{
-  content:'';
-  position:absolute;top:0;left:0;right:0;height:3px;
-  background:var(--sage-dark);
-  transform:scaleX(0);transform-origin:left;
-  transition:transform .2s;
-}
-.module-card:hover{box-shadow:var(--sh2);transform:translateY(-2px);}
-.module-card:hover::before{transform:scaleX(1);}
-
-.module-icon{
-  width:44px;height:44px;
-  background:var(--sage-light);
-  border-radius:11px;
-  display:flex;align-items:center;justify-content:center;
-  margin-bottom:1rem;
-}
-.module-icon svg{width:22px;height:22px;stroke:var(--sage-dark);fill:none;}
-
-.module-title{font-size:15px;font-weight:600;margin-bottom:6px;}
-.module-desc{font-size:12.5px;color:var(--muted);line-height:1.55;}
-.module-badge{
-  display:inline-block;margin-top:10px;
-  padding:3px 9px;border-radius:20px;
-  font-size:11px;font-weight:500;
-  background:var(--sage-light);color:var(--sage-dark);
-  border:1px solid rgba(122,140,126,.2);
-}
-
-/* Coming soon card */
-.module-card.soon{opacity:.6;cursor:default;}
-.module-card.soon:hover{box-shadow:var(--sh);transform:none;}
-.module-card.soon::before{display:none;}
-.badge-soon{background:#f2f2ef;color:var(--hint);border-color:var(--border);}
-
-/* Claude chat widget */
-.claude-bar{
-  background:var(--white);
-  border:1px solid var(--border);
-  border-radius:var(--r);
-  padding:1.25rem 1.5rem;
-  box-shadow:var(--sh);
-}
-.claude-bar-header{
-  display:flex;align-items:center;gap:10px;
-  margin-bottom:1rem;
-}
-.claude-avatar{
-  width:32px;height:32px;
-  background:var(--sage-dark);
-  border-radius:8px;
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;
-}
-.claude-avatar svg{width:16px;height:16px;stroke:#fff;fill:none;}
-.claude-label{font-size:13px;font-weight:600;}
-.claude-sublabel{font-size:11.5px;color:var(--hint);}
-
-.claude-messages{
-  max-height:280px;overflow-y:auto;
-  margin-bottom:1rem;
-  display:flex;flex-direction:column;gap:10px;
-}
-.msg{display:flex;gap:8px;align-items:flex-start;}
-.msg-bubble{
-  padding:9px 13px;border-radius:10px;
-  font-size:13px;line-height:1.55;
-  max-width:85%;
-}
-.msg.user{flex-direction:row-reverse;}
-.msg.user .msg-bubble{background:var(--sage-dark);color:#fff;border-radius:10px 10px 2px 10px;}
-.msg.assistant .msg-bubble{background:var(--sage-light);color:var(--ink);border-radius:10px 10px 10px 2px;}
-.msg-avatar{width:26px;height:26px;border-radius:6px;background:var(--sage-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.msg-avatar svg{width:13px;height:13px;stroke:#fff;}
-.msg-avatar.user-av{background:var(--border2);}
-.msg-avatar.user-av svg{stroke:var(--muted);}
-
-.claude-input-wrap{display:flex;gap:8px;}
-.claude-input{
-  flex:1;padding:9px 14px;
-  border:1px solid var(--border2);border-radius:var(--rs);
-  font-size:13px;font-family:inherit;
-  background:var(--white);color:var(--ink);
-  outline:none;transition:border-color .15s;
-  resize:none;
-}
-.claude-input:focus{border-color:var(--sage);}
-.claude-input::placeholder{color:var(--hint);}
-.claude-send{
-  padding:9px 18px;
-  background:var(--sage-dark);color:#fff;
-  border:none;border-radius:var(--rs);
-  font-size:13px;font-weight:500;
-  cursor:pointer;transition:opacity .15s;
-  white-space:nowrap;
-}
-.claude-send:hover{opacity:.85;}
-.claude-send:disabled{opacity:.4;cursor:not-allowed;}
-.typing{display:flex;gap:4px;padding:9px 13px;background:var(--sage-light);border-radius:10px 10px 10px 2px;width:fit-content;}
-.dot{width:6px;height:6px;background:var(--sage);border-radius:50%;animation:bounce .9s infinite;}
-.dot:nth-child(2){animation-delay:.15s;}
-.dot:nth-child(3){animation-delay:.3s;}
-@keyframes bounce{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-5px)}}
-
-/* Scrollbar */
-::-webkit-scrollbar{width:5px;}
-::-webkit-scrollbar-track{background:transparent;}
-::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px;}
+  /* toast */
+  #toast { position: fixed; bottom: 28px; left: 50%; transform: translate(-50%, 20px); background: var(--ink); color: #fff; padding: 12px 20px; border-radius: 12px; font-size: 14px; box-shadow: 0 12px 30px -10px rgba(0,0,0,.4); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 50; }
+  #toast.show { opacity: 1; transform: translate(-50%, 0); }
 </style>
+<script src="config.js">
+// ── Control de acceso por código secreto ──
+(function(){
+  try{
+    var c=window.APP_CONFIG; if(!c||!c.SECRET_PATH) return;
+    var url=window.location.href;
+    var has=url.indexOf(c.SECRET_PATH)>=0;
+    var remembered=false;
+    try{ remembered=sessionStorage.getItem('portal_access')===c.SECRET_PATH; }catch(e){}
+    if(has){ try{ sessionStorage.setItem('portal_access',c.SECRET_PATH); }catch(e){} }
+    if(!has && !remembered){
+      document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:Hanken Grotesk,sans-serif;color:#61708a;text-align:center;padding:40px;"><div><h1 style="font-family:Newsreader,serif;color:#1c2530;">Acceso restringido</h1><p>Ingresá con el enlace completo que incluye el código de acceso.</p></div></div>';
+      throw new Error('no access');
+    }
+    // Preservar el secreto en los links internos
+    document.querySelectorAll('a[href$=".html"]').forEach(function(a){
+      var h=a.getAttribute('href');
+      if(h && h.indexOf('?')<0) a.setAttribute('href', h+'?'+c.SECRET_PATH);
+    });
+    // Empresa
+    if(c.EMPRESA) document.querySelectorAll('.org b, .org').forEach(function(e){ if(e.tagName==='B'||!e.querySelector('b')) {} });
+  }catch(e){ if(e.message==='no access') throw e; }
+})();
+
+// ── Chat del asistente conectado a Claude ──
+(function(){
+  var form=document.getElementById('assist'); if(!form) return;
+  var input=document.getElementById('ask');
+  form.addEventListener('submit', async function(e){
+    e.preventDefault();
+    var q=(input.value||'').trim();
+    if(!q){ showToast('Escribí una consulta primero'); return; }
+    showToast('Consultando al asistente…');
+    input.value=''; input.placeholder='Pensando…'; input.disabled=true;
+    try{
+      var res=await fetch(window.APP_CONFIG.PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:600,
+          system:'Sos un asistente contable argentino dentro de un portal de conciliaciones (banco e IVA compras) para la empresa '+(window.APP_CONFIG.EMPRESA||'')+'. Respondé breve, claro y práctico, en español rioplatense.',
+          messages:[{role:'user',content:q}]})});
+      var data=await res.json();
+      var txt=(data.content&&data.content[0]&&data.content[0].text)||'No pude responder ahora.';
+      alert(txt);
+    }catch(err){ showToast('No se pudo consultar al asistente'); }
+    input.placeholder='Escribí tu consulta…'; input.disabled=false;
+  });
+})();
+
+</script>
 </head>
 <body>
-
-<!-- Access denied -->
-<div id="access-denied" style="display:flex">
-  <div>
-    <div style="font-size:48px;margin-bottom:1rem">🔒</div>
-    <h1>Acceso restringido</h1>
-    <p>Este portal es de uso interno.<br>Si tenés el link correcto, usalo directamente.</p>
+<aside class="side">
+  <div class="brand">
+    <span class="mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f1f5fb" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 9h8M8 13h8M8 17h5"/></svg></span>
+    <span class="name">Portal<br/>Contable</span>
   </div>
-</div>
-
-<!-- App -->
-<div id="app">
-  <header>
-    <div class="logo-mark">
-      <svg viewBox="0 0 20 20" stroke-width="1.5"><rect x="2" y="3" width="16" height="14" rx="2"/><path d="M6 7h8M6 10h8M6 13h4"/></svg>
-    </div>
-    <div class="logo-text">Portal Contable</div>
-    <div class="logo-empresa" id="header-empresa"></div>
-  </header>
-
-  <div class="page">
-    <div class="page-title">¿Qué querés hacer hoy?</div>
-    <div class="page-sub">Seleccioná un módulo para comenzar. Todos los archivos se procesan localmente en tu navegador.</div>
-
-    <div class="modules">
-
-      <!-- Conciliación Banco -->
-      <a href="banco.html" class="module-card">
-        <div class="module-icon">
-          <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg>
-        </div>
-        <div class="module-title">Conciliación Bancaria</div>
-        <div class="module-desc">Cruzá el resumen del banco con el libro banco. Detecta diferencias, partidas pendientes y errores.</div>
-        <span class="module-badge">Credicoop PDF · OneSoft CSV</span>
-      </a>
-
-      <!-- Conciliación IVA -->
-      <a href="iva.html" class="module-card">
-        <div class="module-icon">
-          <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6M16 13H8M16 17H8M10 9H8"/></svg>
-        </div>
-        <div class="module-title">Conciliación IVA Compras</div>
-        <div class="module-desc">Cruzá el Subdiario IVA en CSV con los comprobantes de ARCA en Excel. Triple verificación por CUIT + N° + monto.</div>
-        <span class="module-badge">CSV + Excel · ARCA</span>
-      </a>
-
-      <!-- Retenciones (próximamente) -->
-      <div class="module-card soon">
-        <div class="module-icon">
-          <svg viewBox="0 0 24 24" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-        </div>
-        <div class="module-title">Retenciones AFIP</div>
-        <div class="module-desc">Conciliación de retenciones SICORE / SIRCAR contra registros propios.</div>
-        <span class="module-badge badge-soon">Próximamente</span>
-      </div>
-
-      <!-- Más módulos -->
-      <div class="module-card soon">
-        <div class="module-icon">
-          <svg viewBox="0 0 24 24" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
-        </div>
-        <div class="module-title">Más módulos</div>
-        <div class="module-desc">Declaraciones juradas, IVA ventas, sueldos y más. Pedí el módulo que necesitás.</div>
-        <span class="module-badge badge-soon">A pedido</span>
-      </div>
-
-    </div>
-
-    <!-- Claude assistant -->
-    <div class="claude-bar">
-      <div class="claude-bar-header">
-        <div class="claude-avatar">
-          <svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M12 2a10 10 0 110 20A10 10 0 0112 2z"/><path d="M8 12h8M12 8v8"/></svg>
-        </div>
-        <div>
-          <div class="claude-label">Asistente contable</div>
-          <div class="claude-sublabel">Powered by Claude · Preguntá lo que necesitás</div>
-        </div>
-      </div>
-
-      <div class="claude-messages" id="chat-messages">
-        <div class="msg assistant">
-          <div class="msg-avatar"><svg viewBox="0 0 24 24" stroke-width="1.5" fill="none"><circle cx="12" cy="12" r="5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div>
-          <div class="msg-bubble">Hola, soy tu asistente contable. Puedo ayudarte con consultas sobre IVA, retenciones, conciliaciones, vencimientos de AFIP o cualquier duda contable. ¿En qué te ayudo?</div>
-        </div>
-      </div>
-
-      <div class="claude-input-wrap">
-        <textarea class="claude-input" id="chat-input" rows="1" placeholder="Preguntá algo... ej: ¿Cuándo vence el IVA de mayo?" onkeydown="handleKey(event)"></textarea>
-        <button class="claude-send" id="chat-send" onclick="sendMessage()">Enviar</button>
-      </div>
-    </div>
+  <nav class="nav">
+    <p class="navlbl">Menú</p>
+    <a class="on" data-mod="Inicio"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/></svg> Inicio</a>
+    <a href="banco.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 4l9 6"/><path d="M5 10v8M19 10v8M9 10v8M15 10v8"/><path d="M3 20h18"/></svg> Conciliación Bancaria</a>
+    <a href="iva.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg> IVA Compras</a>
+    <a class="dim"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/></svg> Retenciones AFIP <span class="soon">Pronto</span></a>
+    <a href="reportes.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg> Reportes</a>
+    <a href="config-page.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6l1.4 1.4M17 17l1.4 1.4M18.4 5.6 17 7M7 17l-1.4 1.4"/></svg> Configuración</a>
+  </nav>
+  <div class="foot" data-mod="Asistente contable">
+    <span class="dot"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f1f5fb" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4z"/></svg></span>
+    <div><b>Asistente</b><span>Con tecnología de Claude</span></div>
   </div>
-</div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <span class="org">Empresa · <b>Sulfoquímica SA</b></span>
+    <span class="org" id="today">—</span>
+  </div>
+  <h1>¿Qué querés hacer hoy?</h1>
+  <p class="lede">Seleccioná un módulo para comenzar. Todos los archivos se procesan localmente en tu navegador.</p>
+
+  <div class="stats">
+    <div class="kpi accent"><b>2</b><span>módulos disponibles</span></div>
+    <div class="kpi"><b>14</b><span>conciliaciones este mes</span></div>
+    <div class="kpi"><b>100%</b><span>procesado local</span></div>
+  </div>
+
+  <p class="sect">Módulos</p>
+  <div class="grid" id="mods"></div>
+
+  <form class="assist" id="assist">
+    <span class="av"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4z"/></svg></span>
+    <div class="at"><b>Asistente contable</b><span>Con tecnología de Claude · Preguntá lo que necesitás</span></div>
+    <input id="ask" placeholder="Escribí tu consulta…" />
+    <button type="submit">Preguntar</button>
+  </form>
+</main>
+
+<div id="toast"></div>
 
 <script>
-// ── Access control ──
-function checkAccess(){
-  var cfg=window.APP_CONFIG;
-  if(!cfg){document.getElementById('app').style.display='none';document.getElementById('access-denied').style.display='flex';return false;}
-  var path=window.location.href;
-  var hasSecret=cfg.SECRET_PATH&&path.indexOf(cfg.SECRET_PATH)>=0;
-  // Remember access for the session once granted
-  var remembered=false;
-  try{ remembered=sessionStorage.getItem('portal_access')===cfg.SECRET_PATH; }catch(e){}
-  if(hasSecret){
-    try{ sessionStorage.setItem('portal_access',cfg.SECRET_PATH); }catch(e){}
-  }
-  if(cfg.SECRET_PATH && !hasSecret && !remembered){
-    document.getElementById('app').style.display='none';
-    document.getElementById('access-denied').style.display='flex';
-    return false;
-  }
-  document.getElementById('access-denied').style.display='none';
-  document.getElementById('app').style.display='block';
-  document.getElementById('header-empresa').textContent=cfg.EMPRESA||'';
-  return true;
-}
+  const MODS = [
+    { icon:'<path d="M3 10 12 4l9 6"/><path d="M5 10v8M19 10v8M9 10v8M15 10v8"/><path d="M3 20h18"/>', title:'Conciliación Bancaria', desc:'Cruzá el resumen del banco con el libro banco. Detecta diferencias, partidas pendientes y errores.', tag:'Credicoop PDF · OneSoft CSV', href:'Conciliación Bancaria.html' },
+    { icon:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/>', title:'Conciliación IVA Compras', desc:'Cruzá el Subdiario IVA en CSV con los comprobantes de ARCA en Excel. Triple verificación por CUIT + N° + monto.', tag:'CSV + Excel · ARCA', href:'Conciliación IVA Compras.html' },
+    { icon:'<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>', title:'Retenciones AFIP', desc:'Conciliación de retenciones SICORE / SIRCAR contra registros propios.', tag:'Próximamente', soon:true },
+    { icon:'<circle cx="12" cy="12" r="8"/><path d="M12 9v6M9 12h6"/>', title:'Más módulos', desc:'Declaraciones juradas, IVA ventas, sueldos y más. Pedí el módulo que necesitás.', tag:'A pedido', soon:true },
+  ];
+  const arrow = '<svg class="arrow" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>';
+  document.getElementById('mods').innerHTML = MODS.map(m => {
+    const tag = m.href ? 'a' : 'button';
+    const attrs = m.soon ? '' : (m.href ? `href="${m.href}"` : `data-mod="${m.title}"`);
+    return `<${tag} class="mod${m.soon?' soon':''}" ${attrs}>
+      <span class="ic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${m.icon}</svg></span>
+      <span class="body"><h3>${m.title}</h3><p>${m.desc}</p><span class="tag">${m.tag}</span></span>
+      ${m.soon?'':arrow}
+    </${tag}>`;
+  }).join('');
 
-// ── Claude chat ──
-var chatHistory=[];
+  const toast = document.getElementById('toast');
+  let tt;
+  function showToast(msg){ toast.textContent = msg; toast.classList.add('show'); clearTimeout(tt); tt = setTimeout(()=>toast.classList.remove('show'), 2200); }
+  document.addEventListener('click', e => {
+    const el = e.target.closest('[data-mod]');
+    if (el) showToast('Abriendo · ' + el.dataset.mod);
+  });
+  document.getElementById('assist').addEventListener('submit', e => {
+    e.preventDefault();
+    const v = document.getElementById('ask').value.trim();
+    showToast(v ? 'Consultando al asistente…' : 'Escribí una consulta primero');
+  });
 
-async function sendMessage(){
-  if(!checkAccess()) return;
-  var input=document.getElementById('chat-input');
-  var msg=input.value.trim();
-  if(!msg) return;
-  input.value='';
-  input.style.height='auto';
-
-  appendMsg('user',msg);
-  chatHistory.push({role:'user',content:msg});
-
-  var send=document.getElementById('chat-send');
-  send.disabled=true;
-  var typingId=appendTyping();
-
-  try{
-    var res=await fetch('https://api.anthropic.com/v1/messages',{
-      method:'POST',
-      headers:{'Content-Type':'application/json','x-api-key':window.APP_CONFIG.CLAUDE_API_KEY,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
-      body:JSON.stringify({
-        model:'claude-sonnet-4-6',
-        max_tokens:1000,
-        system:'Sos un asistente contable experto en legislación impositiva argentina. Respondés de forma clara y concisa. Cuando hay vencimientos o fechas, siempre aclarás que pueden cambiar y recomendás verificar en AFIP.',
-        messages:chatHistory
-      })
-    });
-    var data=await res.json();
-    removeTyping(typingId);
-    var reply=data.content&&data.content[0]?data.content[0].text:'No pude procesar la respuesta.';
-    appendMsg('assistant',reply);
-    chatHistory.push({role:'assistant',content:reply});
-  }catch(e){
-    removeTyping(typingId);
-    appendMsg('assistant','Hubo un error conectando con el asistente. Verificá tu API key en config.js.');
-  }
-  send.disabled=false;
-}
-
-function appendMsg(role,text){
-  var container=document.getElementById('chat-messages');
-  var div=document.createElement('div');
-  div.className='msg '+role;
-  var avClass=role==='user'?'user-av':'';
-  var avIcon=role==='user'
-    ?'<svg viewBox="0 0 24 24" stroke-width="1.5" fill="none"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg>'
-    :'<svg viewBox="0 0 24 24" stroke-width="1.5" fill="none"><circle cx="12" cy="12" r="5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg>';
-  div.innerHTML='<div class="msg-avatar '+avClass+'">'+avIcon+'</div><div class="msg-bubble">'+escHtml(text)+'</div>';
-  container.appendChild(div);
-  container.scrollTop=container.scrollHeight;
-  return div;
-}
-
-function appendTyping(){
-  var container=document.getElementById('chat-messages');
-  var div=document.createElement('div');
-  div.className='msg assistant';
-  var id='typing-'+Date.now();
-  div.id=id;
-  div.innerHTML='<div class="msg-avatar"><svg viewBox="0 0 24 24" stroke-width="1.5" fill="none"><circle cx="12" cy="12" r="5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/></svg></div><div class="typing"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
-  container.appendChild(div);
-  container.scrollTop=container.scrollHeight;
-  return id;
-}
-
-function removeTyping(id){
-  var el=document.getElementById(id);
-  if(el) el.remove();
-}
-
-function escHtml(s){
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
-}
-
-function handleKey(e){
-  if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage();}
-  // Auto-resize textarea
-  var ta=document.getElementById('chat-input');
-  ta.style.height='auto';
-  ta.style.height=Math.min(ta.scrollHeight,120)+'px';
-}
-
-// Init
-checkAccess();
+  const d = new Date();
+  document.getElementById('today').textContent = d.toLocaleDateString('es-AR', { weekday:'long', day:'numeric', month:'long' });
 </script>
 </body>
 </html>

@@ -1,800 +1,542 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Conciliación Bancaria · Portal Contable</title>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=DM+Serif+Display&display=swap" rel="stylesheet">
-<script src="config.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-:root{
-  --sage:#7a8c7e;--sage-light:#e8ede9;--sage-dark:#4a5c4e;
-  --cream:#faf9f6;--white:#fff;--ink:#1c1f1d;--muted:#5a6360;--hint:#9aa5a1;
-  --border:#e4e8e5;--border2:#d2d9d5;
-  --ok-bg:#edf5ef;--ok-text:#2d6b3a;--ok-border:#b8d9bf;
-  --diff-bg:#fdf5e8;--diff-text:#7a5200;--diff-border:#f0d49a;
-  --sub-bg:#fdeef0;--sub-text:#7a1f2a;--sub-border:#f0b8bf;
-  --arca-bg:#eeedf8;--arca-text:#3b3399;--arca-border:#c2bfee;
-  --r:12px;--rs:8px;
-  --sh:0 1px 3px rgba(0,0,0,.06),0 1px 2px rgba(0,0,0,.04);
-  --sh2:0 4px 12px rgba(0,0,0,.08);
-  --mono:'SF Mono','Fira Code','Consolas',monospace;
+/* ===== portal.css incrustado ===== */
+/* ===== Portal Contable — estilos compartidos (azul corporativo) ===== */
+* { box-sizing: border-box; }
+:root {
+  --blue: #284a78;
+  --blue-2: #2f578c;
+  --blue-3: #2f5a9e;
+  --tint-bg: #e2e9f4;
+  --tint-line: #d2ddee;
+  --cool: #f3f6fa;
+  --paper: #ffffff;
+  --ink: #1c2530;
+  --muted: #61708a;
+  --hair: #e1e7f0;
+  --ok: #1f7a54;
+  --ok-bg: #e3f1ea;
+  --warn: #9a6a1e;
+  --warn-bg: #f6edda;
+  --bad: #a23a3a;
+  --bad-bg: #f6e4e2;
 }
-body{font-family:'Inter',-apple-system,sans-serif;background:var(--cream);color:var(--ink);font-size:14px;line-height:1.55;min-height:100vh;}
-header{background:var(--sage-dark);padding:0 2.5rem;height:64px;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:100;}
-.logo-mark{width:34px;height:34px;background:rgba(255,255,255,.15);border-radius:9px;display:flex;align-items:center;justify-content:center;}
-.logo-mark svg{width:18px;height:18px;stroke:#fff;fill:none;}
-.logo-text{font-family:'DM Serif Display',serif;font-size:19px;color:#fff;}
-.logo-sub{font-size:11px;color:rgba(255,255,255,.45);margin-left:auto;letter-spacing:.03em;}
-.page{max-width:1080px;margin:0 auto;padding:2.5rem 2rem;}
-.steps{display:flex;margin-bottom:2.5rem;background:var(--white);border:1px solid var(--border);border-radius:50px;padding:5px;width:fit-content;box-shadow:var(--sh);}
-.step-btn{display:flex;align-items:center;gap:8px;padding:7px 18px;border:none;background:none;font-size:13px;font-weight:500;color:var(--hint);border-radius:50px;cursor:pointer;transition:all .2s;white-space:nowrap;}
-.step-btn svg{width:14px;height:14px;}
-.step-btn.active{background:var(--sage-dark);color:#fff;}
-.step-btn:disabled{opacity:.35;cursor:not-allowed;}
-.section{display:none;}.section.active{display:block;}
-.upload-hero{text-align:center;margin-bottom:2rem;}
-.upload-hero h1{font-family:'DM Serif Display',serif;font-size:28px;font-weight:400;margin-bottom:8px;}
-.upload-hero p{font-size:14px;color:var(--muted);max-width:500px;margin:0 auto;line-height:1.6;}
-.rule-badge{display:inline-flex;align-items:center;gap:6px;background:var(--sage-light);color:var(--sage-dark);font-size:12px;font-weight:500;padding:5px 12px;border-radius:50px;margin-top:12px;border:1px solid rgba(122,140,126,.25);}
-.file-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.5rem;}
-@media(max-width:620px){.file-grid{grid-template-columns:1fr;}}
-.file-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:1.5rem;box-shadow:var(--sh);}
-.file-card-header{display:flex;align-items:center;gap:10px;margin-bottom:1rem;}
-.file-icon{width:36px;height:36px;background:var(--sage-light);border-radius:9px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.file-icon svg{width:18px;height:18px;stroke:var(--sage-dark);fill:none;}
-.file-card-title{font-size:14px;font-weight:600;}
-.file-card-sub{font-size:12px;color:var(--hint);}
-.file-status{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;color:var(--hint);margin-bottom:6px;min-height:20px;}
-.file-status.ok{color:var(--ok-text);}.file-status.err{color:var(--sub-text);}
-.file-status svg{width:14px;height:14px;flex-shrink:0;}
-.file-count{font-size:11.5px;color:var(--hint);margin-bottom:12px;padding-left:20px;}
-.prog-wrap{margin-bottom:10px;display:none;}
-.prog-bar{height:4px;background:var(--border);border-radius:4px;overflow:hidden;}
-.prog-fill{height:100%;background:var(--sage-dark);border-radius:4px;width:0%;transition:width .2s;}
-.prog-label{font-size:11px;color:var(--hint);margin-top:4px;}
-.upload-zone{border:1.5px dashed var(--border2);border-radius:var(--rs);padding:16px;text-align:center;cursor:pointer;transition:all .2s;background:var(--cream);display:block;}
-.upload-zone:hover{border-color:var(--sage);background:var(--sage-light);}
-.upload-zone input[type=file]{display:none;}
-.upload-zone-icon svg{width:20px;height:20px;stroke:var(--hint);margin-bottom:5px;}
-.upload-zone-title{font-size:13px;font-weight:500;}
-.upload-zone-sub{font-size:11px;color:var(--hint);margin-top:2px;}
-.format-hint{margin-top:10px;padding:10px 12px;background:var(--cream);border-radius:var(--rs);font-size:11.5px;color:var(--muted);line-height:1.7;border:1px solid var(--border);}
-.format-hint code{font-family:var(--mono);font-size:10.5px;background:var(--border);padding:1px 5px;border-radius:4px;}
-.cta-wrap{display:flex;justify-content:center;margin-top:.5rem;}
-.btn-main{background:var(--sage-dark);color:#fff;border:none;border-radius:50px;padding:13px 36px;font-size:14px;font-weight:500;cursor:pointer;display:flex;align-items:center;gap:8px;transition:all .2s;box-shadow:0 2px 8px rgba(74,92,78,.3);}
-.btn-main svg{width:16px;height:16px;}
-.btn-main:hover{opacity:.88;transform:translateY(-1px);}
-.btn-main:disabled{opacity:.3;cursor:not-allowed;transform:none;box-shadow:none;}
-.processing-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:2.5rem;text-align:center;box-shadow:var(--sh);display:none;}
-.spinner{width:40px;height:40px;border:3px solid var(--border);border-top-color:var(--sage-dark);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 1rem;}
-@keyframes spin{to{transform:rotate(360deg)}}
-.processing-title{font-family:'DM Serif Display',serif;font-size:20px;font-weight:400;margin-bottom:6px;}
-.processing-sub{font-size:13px;color:var(--muted);}
-.processing-steps{margin-top:1.5rem;display:flex;flex-direction:column;gap:8px;text-align:left;max-width:380px;margin-left:auto;margin-right:auto;}
-.proc-step{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--hint);}
-.proc-step.done{color:var(--ok-text);}
-.proc-step.active{color:var(--ink);font-weight:500;}
-.proc-step svg{width:16px;height:16px;flex-shrink:0;}
-.results-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;}
-.results-title{font-family:'DM Serif Display',serif;font-size:22px;font-weight:400;}
-.results-sub{font-size:12.5px;color:var(--hint);margin-top:2px;}
-.export-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;background:var(--white);border:1px solid var(--border2);border-radius:var(--rs);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s;box-shadow:var(--sh);}
-.export-btn svg{width:14px;height:14px;}
-.export-btn:hover{background:var(--sage-light);border-color:var(--sage);color:var(--sage-dark);}
-.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:1.5rem;}
-@media(max-width:620px){.metrics{grid-template-columns:repeat(2,1fr);}}
-.metric{background:var(--white);border:1px solid var(--border);border-radius:var(--r);padding:1.25rem 1.25rem 1rem;box-shadow:var(--sh);position:relative;overflow:hidden;}
-.metric::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
-.metric.ok::before{background:var(--ok-text);}.metric.diff::before{background:var(--diff-text);}
-.metric.sub::before{background:var(--sub-text);}.metric.arca::before{background:var(--arca-text);}
-.metric-val{font-size:28px;font-weight:300;letter-spacing:-.03em;line-height:1;margin-bottom:4px;}
-.metric.ok .metric-val{color:var(--ok-text);}.metric.diff .metric-val{color:var(--diff-text);}
-.metric.sub .metric-val{color:var(--sub-text);}.metric.arca .metric-val{color:var(--arca-text);}
-.metric-label{font-size:11.5px;color:var(--hint);font-weight:500;text-transform:uppercase;letter-spacing:.05em;}
-.metric-amount{font-size:11px;color:var(--hint);margin-top:3px;font-family:var(--mono);}
-.ai-analysis{background:var(--sage-light);border:1px solid rgba(122,140,126,.3);border-radius:var(--r);padding:1.25rem 1.5rem;margin-bottom:1.5rem;font-size:13px;line-height:1.65;color:var(--ink);}
-.ai-analysis-header{display:flex;align-items:center;gap:8px;font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--sage-dark);margin-bottom:10px;}
-.ai-analysis-header svg{width:14px;height:14px;stroke:var(--sage-dark);}
-.filter-bar{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:1rem;}
-.filter-btn{padding:6px 13px;border:1px solid var(--border2);border-radius:50px;font-size:12px;font-weight:500;cursor:pointer;background:var(--white);color:var(--muted);transition:all .15s;white-space:nowrap;}
-.filter-btn.active{background:var(--sage-dark);color:#fff;border-color:var(--sage-dark);}
-.search-wrap{flex:1;min-width:200px;position:relative;}
-.search-wrap svg{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:13px;height:13px;stroke:var(--hint);pointer-events:none;}
-.search-input{width:100%;padding:7px 10px 7px 30px;border:1px solid var(--border2);border-radius:var(--rs);font-size:13px;font-family:inherit;background:var(--white);color:var(--ink);outline:none;}
-.search-input:focus{border-color:var(--sage);}
-.search-input::placeholder{color:var(--hint);}
-.table-card{background:var(--white);border:1px solid var(--border);border-radius:var(--r);overflow:hidden;box-shadow:var(--sh);}
-.table-wrap{overflow-x:auto;}
-table{width:100%;border-collapse:collapse;}
-thead th{padding:10px 14px;text-align:left;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--hint);background:var(--cream);border-bottom:1px solid var(--border);white-space:nowrap;}
-tbody td{padding:9px 14px;border-bottom:1px solid var(--border);vertical-align:middle;font-size:12.5px;}
-tbody tr:last-child td{border-bottom:none;}
-tbody tr:hover td{background:#f8faf8;}
-td.num{text-align:right;font-family:var(--mono);font-size:12px;}
-.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:50px;font-size:11px;font-weight:600;border:1px solid transparent;white-space:nowrap;}
-.badge-ok{background:var(--ok-bg);color:var(--ok-text);border-color:var(--ok-border);}
-.badge-fecha{background:var(--diff-bg);color:var(--diff-text);border-color:var(--diff-border);}
-.badge-banco{background:var(--sub-bg);color:var(--sub-text);border-color:var(--sub-border);}
-.badge-libro{background:var(--arca-bg);color:var(--arca-text);border-color:var(--arca-border);}
-.pagination{display:flex;align-items:center;justify-content:space-between;padding:10px 14px;border-top:1px solid var(--border);font-size:12px;color:var(--hint);background:var(--cream);}
-.page-btns{display:flex;gap:3px;}
-.page-btn{padding:4px 10px;border:1px solid var(--border2);border-radius:6px;background:var(--white);font-size:12px;cursor:pointer;color:var(--ink);}
-.page-btn:hover:not(:disabled){background:var(--sage-light);}
-.page-btn:disabled{opacity:.3;cursor:not-allowed;}
-.page-btn.current{background:var(--sage-dark);color:#fff;border-color:var(--sage-dark);}
-.empty-state{text-align:center;padding:3rem;color:var(--hint);}
-.back-link{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;color:var(--hint);cursor:pointer;border:none;background:none;margin-top:1.25rem;transition:color .15s;font-family:inherit;}
-.back-link:hover{color:var(--sage-dark);}
-.back-link svg{width:13px;height:13px;}
-.error-box{background:#fdeef0;border:1px solid var(--sub-border);border-radius:var(--r);padding:1.25rem 1.5rem;font-size:13px;color:var(--sub-text);margin-bottom:1.5rem;display:none;}
+html, body { margin: 0; }
+body {
+  font-family: 'Hanken Grotesk', system-ui, sans-serif;
+  color: var(--ink); background: var(--cool); min-height: 100vh;
+}
+.serif { font-family: 'Newsreader', Georgia, serif; }
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+/* ---- Top bar ---- */
+.topbar { background: var(--blue); color: #eef2f9; display: flex; align-items: center; gap: 0; padding: 0 clamp(20px,4vw,52px); height: 76px; }
+.topbar .back { display: flex; align-items: center; gap: 7px; color: #c5d2e6; text-decoration: none; font-size: 15px; padding-right: 22px; transition: color .15s; }
+.topbar .back:hover { color: #fff; }
+.topbar .divide { width: 1px; height: 30px; background: rgba(255,255,255,.18); }
+.topbar .crumb { display: flex; align-items: center; gap: 16px; padding-left: 22px; }
+.topbar .crumb .mark { width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,.13); display: grid; place-items: center; flex: none; }
+.topbar .crumb .ttl { font-family: 'Newsreader', serif; font-size: 26px; font-weight: 600; letter-spacing: .2px; }
+.topbar .org { margin-left: auto; font-size: 15px; color: #bccbe2; }
+
+/* ---- Stepper ---- */
+.wrap { max-width: 1280px; margin: 0 auto; padding: 44px clamp(20px,4vw,52px) 64px; }
+.stepper { display: inline-flex; align-items: center; gap: 4px; background: var(--paper); border: 1px solid var(--hair); border-radius: 999px; padding: 7px; box-shadow: 0 8px 24px -18px rgba(28,40,60,.4); }
+.step { display: flex; align-items: center; gap: 9px; padding: 11px 20px; border-radius: 999px; font-size: 15px; font-weight: 600; color: #9aa6ba; border: none; background: transparent; cursor: default; transition: background .15s, color .15s; }
+.step.on { background: var(--blue); color: #fff; }
+.step.done { color: var(--blue-2); cursor: pointer; }
+.step.done:hover { background: var(--tint-bg); }
+.step svg { flex: none; }
+
+/* ---- Headline block ---- */
+.head { text-align: center; margin: 56px auto 0; max-width: 760px; }
+.head h1 { font-family: 'Newsreader', serif; font-weight: 500; font-size: clamp(38px,4.6vw,52px); margin: 0 0 18px; letter-spacing: -.5px; }
+.head p { font-size: 18px; color: var(--muted); line-height: 1.55; margin: 0 auto; max-width: 620px; }
+.rule-pill { display: inline-flex; align-items: center; gap: 9px; margin-top: 26px; background: var(--tint-bg); color: var(--blue-2); border: 1px solid var(--tint-line); border-radius: 999px; padding: 11px 20px; font-size: 15px; font-weight: 600; }
+
+/* ---- Upload cards ---- */
+.uploads { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 52px; }
+@media (max-width: 900px){ .uploads { grid-template-columns: 1fr; } }
+.ucard { background: var(--paper); border: 1px solid var(--hair); border-radius: 20px; padding: 30px 32px; }
+.ucard .uhead { display: flex; align-items: flex-start; gap: 16px; }
+.ucard .uic { width: 48px; height: 48px; border-radius: 12px; background: var(--tint-bg); color: var(--blue-2); display: grid; place-items: center; flex: none; }
+.ucard h3 { font-size: 21px; margin: 2px 0 4px; font-weight: 700; }
+.ucard .sub { font-size: 14px; color: var(--muted); margin: 0; }
+.ustatus { display: flex; align-items: center; gap: 9px; font-size: 14.5px; color: var(--muted); margin: 22px 0 16px; }
+.ustatus.loaded { color: var(--ok); font-weight: 600; }
+.dropzone { border: 2px dashed var(--tint-line); border-radius: 16px; background: var(--cool); padding: 40px 20px; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; }
+.dropzone:hover { border-color: var(--blue-2); background: #eef3fb; }
+.dropzone .up { width: 34px; height: 34px; margin: 0 auto 14px; color: var(--blue-2); }
+.dropzone .big { font-size: 18px; font-weight: 700; }
+.dropzone .small { font-size: 14px; color: var(--muted); margin-top: 6px; }
+.dropzone.filled { border-style: solid; border-color: var(--ok); background: var(--ok-bg); }
+.dropzone.filled .up { color: var(--ok); }
+.dropzone.filled .big { color: var(--ok); }
+.fileinfo { background: var(--cool); border: 1px solid var(--hair); border-radius: 12px; padding: 16px 18px; margin-top: 18px; font-size: 14px; color: var(--muted); line-height: 1.6; }
+.chip { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; background: var(--tint-bg); color: var(--blue-2); padding: 2px 8px; border-radius: 6px; }
+
+/* ---- Primary action ---- */
+.actions { display: flex; justify-content: center; margin-top: 44px; }
+.btn { display: inline-flex; align-items: center; gap: 10px; border: none; border-radius: 999px; padding: 16px 38px; font: inherit; font-size: 17px; font-weight: 700; cursor: pointer; transition: background .15s, transform .12s, box-shadow .15s; }
+.btn.primary { background: var(--blue); color: #fff; box-shadow: 0 14px 30px -14px rgba(40,74,120,.7); }
+.btn.primary:hover:not(:disabled) { background: var(--blue-2); transform: translateY(-1px); }
+.btn.primary:disabled { background: #c4cfde; color: #fff; cursor: not-allowed; box-shadow: none; }
+.btn.ghost { background: var(--paper); color: var(--blue-2); border: 1px solid var(--tint-line); }
+.btn.ghost:hover { background: var(--tint-bg); }
+
+/* ---- Results ---- */
+.summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 8px; }
+@media (max-width: 900px){ .summary { grid-template-columns: 1fr 1fr; } }
+.scard { background: var(--paper); border: 1px solid var(--hair); border-radius: 16px; padding: 22px 24px; }
+.scard .lbl { font-size: 13.5px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.scard b { font-family: 'Newsreader', serif; font-size: 38px; font-weight: 500; display: block; line-height: 1; margin-top: 12px; }
+.scard.ok b { color: var(--ok); } .scard.warn b { color: var(--warn); } .scard.bad b { color: var(--bad); }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.dot.ok { background: var(--ok); } .dot.warn { background: var(--warn); } .dot.bad { background: var(--bad); } .dot.blue { background: var(--blue-2); }
+
+.claude { display: flex; gap: 16px; background: var(--blue); color: #eef2f9; border-radius: 18px; padding: 22px 26px; margin-top: 26px; }
+.claude .av { width: 42px; height: 42px; border-radius: 11px; background: rgba(255,255,255,.14); display: grid; place-items: center; flex: none; }
+.claude h4 { margin: 2px 0 8px; font-size: 16px; }
+.claude p { margin: 0; font-size: 15px; line-height: 1.6; color: #d4ddec; }
+.claude p b { color: #fff; font-weight: 600; }
+
+.tablewrap { background: var(--paper); border: 1px solid var(--hair); border-radius: 18px; overflow: hidden; margin-top: 26px; }
+.tablewrap .thead { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid var(--hair); }
+.tablewrap .thead h3 { font-size: 17px; margin: 0; font-weight: 700; }
+.filters { display: flex; gap: 7px; }
+.fbtn { border: 1px solid var(--tint-line); background: var(--paper); color: var(--muted); font: inherit; font-size: 13px; font-weight: 600; padding: 7px 13px; border-radius: 999px; cursor: pointer; transition: all .14s; }
+.fbtn.on { background: var(--blue); color: #fff; border-color: var(--blue); }
+table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+thead th { text-align: left; font-size: 12px; letter-spacing: .6px; text-transform: uppercase; color: var(--muted); font-weight: 700; padding: 14px 24px; background: var(--cool); }
+thead th.r, td.r { text-align: right; font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', monospace; }
+tbody td { padding: 15px 24px; border-top: 1px solid var(--hair); }
+tbody tr:hover { background: #f7f9fc; }
+.badge { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; padding: 5px 11px; border-radius: 999px; }
+.badge.ok { background: var(--ok-bg); color: var(--ok); }
+.badge.warn { background: var(--warn-bg); color: var(--warn); }
+.badge.bad { background: var(--bad-bg); color: var(--bad); }
+.note { font-size: 13px; color: var(--muted); margin-top: 3px; }
+.hidden { display: none !important; }
+
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="config.js"></script>
 </head>
 <body>
-<header>
-  <a href="index.html" id="portal-link" style="display:flex;align-items:center;gap:6px;color:rgba(255,255,255,.6);font-size:12px;text-decoration:none;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='rgba(255,255,255,.6)'">
-    <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:13px;height:13px"><path d="M10 4L6 8l4 4"/></svg>Portal
-  </a>
-  <div style="width:1px;height:18px;background:rgba(255,255,255,.2);margin:0 4px"></div>
-  <div class="logo-mark"><svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/><path d="M9 22V12h6v10"/></svg></div>
-  <div class="logo-text">Conciliación Bancaria</div>
-  <div class="logo-sub" id="header-empresa"></div>
+<header class="topbar">
+  <a class="back" href="index.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg> Portal</a>
+  <span class="divide"></span>
+  <div class="crumb">
+    <span class="mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#eef2f9" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 4l9 6"/><path d="M5 10v8M19 10v8M9 10v8M15 10v8"/><path d="M3 20h18"/></svg></span>
+    <span class="ttl serif">Conciliación Bancaria</span>
+  </div>
+  <span class="org">Sulfoquímica SA</span>
 </header>
 
-<div class="page">
-  <div class="steps">
-    <button class="step-btn active" id="tab-upload" onclick="switchTab('upload')">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 10V3M5 6l3-3 3 3M3 13h10"/></svg>Cargar archivos
-    </button>
-    <button class="step-btn" id="tab-result" onclick="switchTab('result')" disabled>
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 5h5M2 8h5M2 11h5M9 5h5M9 8h5M9 11h5"/></svg>Conciliación
-    </button>
-    <button class="step-btn" id="tab-cargos" onclick="switchTab('cargos')" disabled>
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M2 4h12M2 8h12M2 12h8"/></svg>Cargos bancarios
-    </button>
+<div class="wrap">
+  <div style="text-align:center;">
+    <div class="stepper">
+      <button class="step on" id="st1"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 20h14"/></svg> Cargar archivos</button>
+      <button class="step" id="st2"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M4 12h16M4 17h10"/></svg> Conciliación</button>
+      <button class="step" id="st3"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg> Cargos bancarios</button>
+    </div>
   </div>
 
-  <div class="section active" id="sec-upload">
-    <div class="upload-hero">
-      <h1>Conciliación Bancaria</h1>
+  <!-- ============ PANEL 1: UPLOAD ============ -->
+  <section id="panel1">
+    <div class="head">
+      <h1 class="serif">Conciliación Bancaria</h1>
       <p>Subí el extracto de Credicoop (PDF) y el libro banco de OneSoft (CSV). El sistema cruza todos los movimientos y Claude marca los puntos de atención.</p>
-      <div class="rule-badge">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:12px;height:12px"><path d="M8 2l1.5 3 3.5.5-2.5 2.5.6 3.5L8 10l-3.1 1.5.6-3.5L3 5.5l3.5-.5z"/></svg>
-        Cruce por monto (±$1) y fecha (hasta 5 días)
-      </div>
+      <div><span class="rule-pill"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4z"/></svg> Cruce por monto (±$1) y fecha (hasta 5 días)</span></div>
     </div>
 
-    <div class="file-grid">
-      <div class="file-card">
-        <div class="file-card-header">
-          <div class="file-icon"><svg viewBox="0 0 24 24" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></svg></div>
-          <div><div class="file-card-title">Extracto del Banco</div><div class="file-card-sub">PDF del resumen de Credicoop</div></div>
+    <div class="uploads">
+      <div class="ucard">
+        <div class="uhead">
+          <span class="uic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="2"/><path d="M3 10h18"/></svg></span>
+          <div><h3>Extracto del Banco</h3><p class="sub">PDF del resumen de Credicoop</p></div>
         </div>
-        <div class="file-status" id="banco-status">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 10.5v.5"/></svg>Sin cargar
+        <div class="ustatus" id="stA"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><circle cx="12" cy="16" r=".5" fill="currentColor"/></svg> Sin cargar</div>
+        <div class="dropzone" id="dzA" data-which="A"><input type="file" id="fileA" accept=".pdf" style="display:none">
+          <div class="up"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 20h14"/></svg></div>
+          <div class="big" id="bigA">Elegir PDF del extracto</div>
+          <div class="small" id="smallA">Resumen de cuenta de Credicoop</div>
         </div>
-        <div class="file-count" id="banco-count"></div>
-        <div class="prog-wrap" id="banco-prog">
-          <div class="prog-bar"><div class="prog-fill" id="banco-fill"></div></div>
-          <div class="prog-label" id="banco-label">Procesando…</div>
+        <div class="fileinfo">PDF del resumen de cuenta corriente de Credicoop. El sistema detecta automáticamente débitos, créditos y fechas.</div>
+      </div>
+
+      <div class="ucard">
+        <div class="uhead">
+          <span class="uic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg></span>
+          <div><h3>Libro Banco</h3><p class="sub">CSV exportado de OneSoft</p></div>
         </div>
-        <label class="upload-zone">
-          <div class="upload-zone-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V5M7 8l3-3 3 3M4 15h12"/></svg></div>
-          <div class="upload-zone-title">Elegir PDF del extracto</div>
-          <div class="upload-zone-sub">Resumen de cuenta de Credicoop</div>
-          <input type="file" id="file-banco" accept=".pdf" onchange="loadBancoPDF(event)">
-        </label>
-        <div class="format-hint">PDF del resumen de cuenta corriente de Credicoop. El sistema detecta automáticamente débitos, créditos y fechas.</div>
-      </div>
-
-      <div class="file-card">
-        <div class="file-card-header">
-          <div class="file-icon"><svg viewBox="0 0 24 24" stroke-width="1.5"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><path d="M14 2v6h6"/></svg></div>
-          <div><div class="file-card-title">Libro Banco</div><div class="file-card-sub">CSV exportado de OneSoft</div></div>
+        <div class="ustatus" id="stB"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v5"/><circle cx="12" cy="16" r=".5" fill="currentColor"/></svg> Sin cargar</div>
+        <div class="dropzone" id="dzB" data-which="B"><input type="file" id="fileB" accept=".csv,.txt" style="display:none">
+          <div class="up"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M5 20h14"/></svg></div>
+          <div class="big" id="bigB">Elegir CSV del libro banco</div>
+          <div class="small" id="smallB">Libro mayor de la cuenta banco</div>
         </div>
-        <div class="file-status" id="libro-status">
-          <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 10.5v.5"/></svg>Sin cargar
+        <div class="fileinfo">CSV del libro mayor de OneSoft (cuenta banco). Columnas: <span class="chip">Comprobante</span> · <span class="chip">Fecha</span> · <span class="chip">Concepto</span> · <span class="chip">Debe</span> · <span class="chip">Haber</span></div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn primary" id="conciliar" disabled><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg> Conciliar</button>
+    </div>
+    <p style="text-align:center; color:var(--muted); font-size:13.5px; margin-top:16px;" id="hint">Cargá ambos archivos para habilitar la conciliación.</p>
+  </section>
+
+  <!-- ============ PANEL 2: RESULTS ============ -->
+  <section id="panel2" class="hidden">
+    <div class="head" style="margin-top:40px;">
+      <h1 class="serif">Resultado de la conciliación</h1>
+      <p>Período mayo 2026 · 142 movimientos cruzados entre el extracto de Credicoop y el libro banco de OneSoft.</p>
+    </div>
+
+    <div class="summary" style="margin-top:36px;">
+      <div class="scard ok"><span class="lbl"><span class="dot ok"></span> Conciliados</span><b>128</b></div>
+      <div class="scard warn"><span class="lbl"><span class="dot warn"></span> Pendientes</span><b>9</b></div>
+      <div class="scard bad"><span class="lbl"><span class="dot bad"></span> Diferencias</span><b>5</b></div>
+      <div class="scard"><span class="lbl"><span class="dot blue"></span> Tasa de cruce</span><b>90%</b></div>
+    </div>
+
+    <div class="claude">
+      <span class="av"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4z"/></svg></span>
+      <div>
+        <h4>Análisis de Claude</h4>
+        <p>El <b>90% de los movimientos concilió automáticamente</b>. Hay <b>5 diferencias de monto</b> que conviene revisar: en 3 casos el extracto incluye comisiones bancarias no registradas en el libro (total <b>$18.430</b>). Quedan <b>9 cheques pendientes de acreditación</b> por <b>$1.247.900</b>, todos posteriores al 26/05 — es esperable que crucen el mes próximo.</p>
+      </div>
+    </div>
+
+    <div class="tablewrap">
+      <div class="thead">
+        <h3>Movimientos</h3>
+        <div class="filters">
+          <button class="fbtn on" data-f="all">Todos</button>
+          <button class="fbtn" data-f="ok">Conciliados</button>
+          <button class="fbtn" data-f="warn">Pendientes</button>
+          <button class="fbtn" data-f="bad">Diferencias</button>
         </div>
-        <div class="file-count" id="libro-count"></div>
-        <label class="upload-zone">
-          <div class="upload-zone-icon"><svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 13V5M7 8l3-3 3 3M4 15h12"/></svg></div>
-          <div class="upload-zone-title">Elegir CSV del libro banco</div>
-          <div class="upload-zone-sub">Libro mayor de la cuenta banco</div>
-          <input type="file" id="file-libro" accept=".csv,.txt" onchange="loadLibroCSV(event)">
-        </label>
-        <div class="format-hint">CSV del libro mayor de OneSoft (cuenta banco). Columnas: <code>Comprobante</code> · <code>Fecha</code> · <code>Concepto</code> · <code>Debe</code> · <code>Haber</code></div>
       </div>
+      <table>
+        <thead><tr><th>Fecha</th><th>Concepto</th><th>Comprobante</th><th class="r">Extracto</th><th class="r">Libro banco</th><th>Estado</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
     </div>
 
-    <div class="cta-wrap">
-      <button class="btn-main" id="btn-conciliar" onclick="conciliar()" disabled>
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 8h10M9 5l4 3-4 3"/></svg>
-        Conciliar
-      </button>
+    <div class="actions" style="gap:14px;">
+      <button class="btn ghost" id="volver"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg> Cargar otros archivos</button>
+      <button class="btn primary" id="exportar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v12M7 11l5 5 5-5"/><path d="M5 20h14"/></svg> Exportar a Excel</button>
     </div>
-  </div>
-
-  <!-- PROCESSING -->
-  <div class="processing-card" id="sec-processing">
-    <div class="spinner"></div>
-    <div class="processing-title" id="proc-title">Procesando archivos</div>
-    <div class="processing-sub" id="proc-sub">Por favor esperá…</div>
-    <div class="processing-steps">
-      <div class="proc-step" id="step-1"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/></svg>Leyendo extracto del banco</div>
-      <div class="proc-step" id="step-2"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/></svg>Leyendo libro banco</div>
-      <div class="proc-step" id="step-3"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/></svg>Cruzando movimientos</div>
-      <div class="proc-step" id="step-4"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="6"/></svg>Analizando con Claude</div>
-    </div>
-  </div>
-
-  <!-- RESULT -->
-  <div class="section" id="sec-result">
-    <div class="error-box" id="error-box"></div>
-    <div class="results-header">
-      <div><div class="results-title">Resultado de la conciliación</div><div class="results-sub" id="results-sub">—</div></div>
-      <button class="export-btn" onclick="exportCSV()">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 3v7M5 7l3 3 3-3M3 13h10"/></svg>Exportar CSV
-      </button>
-    </div>
-    <div class="metrics">
-      <div class="metric ok"><div class="metric-val" id="m-ok">0</div><div class="metric-label">Coinciden</div><div class="metric-amount" id="m-ok-amt"></div></div>
-      <div class="metric diff"><div class="metric-val" id="m-fecha">0</div><div class="metric-label">Dif. fecha</div><div class="metric-amount" id="m-fecha-amt"></div></div>
-      <div class="metric sub"><div class="metric-val" id="m-banco">0</div><div class="metric-label">Solo banco</div><div class="metric-amount" id="m-banco-amt"></div></div>
-      <div class="metric arca"><div class="metric-val" id="m-libro">0</div><div class="metric-label">Solo libro</div><div class="metric-amount" id="m-libro-amt"></div></div>
-    </div>
-    <div class="ai-analysis" id="ai-analysis" style="display:none">
-      <div class="ai-analysis-header">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 1.5l1.8 3.6 4 .6-2.9 2.8.7 4L8 10.6 4.4 12.5l.7-4L2.2 5.7l4-.6z"/></svg>
-        Puntos de atención
-      </div>
-      <div id="ai-analysis-text"></div>
-    </div>
-    <div class="filter-bar">
-      <button class="filter-btn active" onclick="setFilter('all',this)">Todos</button>
-      <button class="filter-btn" onclick="setFilter('ok',this)">✓ Coinciden</button>
-      <button class="filter-btn" onclick="setFilter('fecha',this)">⚠ Dif. fecha</button>
-      <button class="filter-btn" onclick="setFilter('banco',this)">Solo banco</button>
-      <button class="filter-btn" onclick="setFilter('libro',this)">Solo libro</button>
-      <div class="search-wrap">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3 3"/></svg>
-        <input type="text" class="search-input" placeholder="Buscar descripción o monto…" oninput="setSearch(this.value)">
-      </div>
-    </div>
-    <div class="table-card">
-      <div class="table-wrap">
-        <table>
-          <thead><tr>
-            <th style="width:85px">Fecha banco</th>
-            <th style="width:85px">Fecha libro</th>
-            <th>Descripción banco</th>
-            <th>Concepto libro</th>
-            <th style="width:120px;text-align:right">Monto</th>
-            <th style="width:105px">Estado</th>
-          </tr></thead>
-          <tbody id="tbl-body"></tbody>
-        </table>
-      </div>
-      <div class="pagination"><span id="pg-info"></span><div class="page-btns" id="pg-btns"></div></div>
-    </div>
-    <button class="back-link" onclick="resetAll()">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 4L6 8l4 4"/></svg>Nueva conciliación
-    </button>
-  </div>
-
-  <!-- CARGOS BANCARIOS -->
-  <div class="section" id="sec-cargos">
-    <div class="results-header">
-      <div><div class="results-title">Cargos bancarios e impuestos</div><div class="results-sub" id="cargos-sub">Comisiones, IVA, percepciones, ARBA, sellos e impuestos — solo aparecen en el extracto</div></div>
-      <button class="export-btn" onclick="exportCargos()">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 3v7M5 7l3 3 3-3M3 13h10"/></svg>Exportar CSV
-      </button>
-    </div>
-    <div class="metrics" style="grid-template-columns:repeat(3,1fr)">
-      <div class="metric sub"><div class="metric-val" id="c-total">0</div><div class="metric-label">Cantidad</div></div>
-      <div class="metric diff"><div class="metric-val" id="c-monto" style="font-size:22px">$0</div><div class="metric-label">Total cargos</div></div>
-      <div class="metric arca"><div class="metric-val" id="c-tipos">0</div><div class="metric-label">Categorías</div></div>
-    </div>
-    <div class="ai-analysis" id="cargos-resumen" style="display:none;background:var(--cream);border-color:var(--border)">
-      <div class="ai-analysis-header" style="color:var(--muted)">Resumen por categoría</div>
-      <div id="cargos-resumen-text"></div>
-    </div>
-    <div class="filter-bar">
-      <div class="search-wrap">
-        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="6.5" cy="6.5" r="4.5"/><path d="M10 10l3 3"/></svg>
-        <input type="text" class="search-input" placeholder="Buscar cargo…" oninput="setSearchCargos(this.value)">
-      </div>
-    </div>
-    <div class="table-card">
-      <div class="table-wrap">
-        <table>
-          <thead><tr>
-            <th style="width:90px">Fecha</th>
-            <th>Descripción</th>
-            <th style="width:130px;text-align:right">Monto</th>
-          </tr></thead>
-          <tbody id="cargos-body"></tbody>
-        </table>
-      </div>
-      <div class="pagination"><span id="cargos-pg-info"></span><div class="page-btns" id="cargos-pg-btns"></div></div>
-    </div>
-    <button class="back-link" onclick="switchTab('result')">
-      <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10 4L6 8l4 4"/></svg>Volver a la conciliación
-    </button>
-  </div>
+  </section>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<div id="toast" style="position:fixed;bottom:28px;left:50%;transform:translate(-50%,20px);background:var(--ink);color:#fff;padding:12px 20px;border-radius:12px;font-size:14px;box-shadow:0 12px 30px -10px rgba(0,0,0,.4);opacity:0;pointer-events:none;transition:opacity .2s,transform .2s;z-index:50;"></div>
+
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-var bancoRows=[],libroRows=[],cargoRows=[],results=[];
-var cargoPage=1,cargoSearch='';
-var currentFilter='all',currentSearch='',currentPage=1;
-var PAGE_SIZE=40;
-
-(function(){
-  if(window.APP_CONFIG&&window.APP_CONFIG.EMPRESA)
-    document.getElementById('header-empresa').textContent=window.APP_CONFIG.EMPRESA;
-  try{
-    var cfg=window.APP_CONFIG;
-    if(cfg&&cfg.SECRET_PATH){
-      sessionStorage.setItem('portal_access',cfg.SECRET_PATH);
-      var pl=document.getElementById('portal-link');
-      if(pl) pl.href='index.html?'+cfg.SECRET_PATH;
-    }
-  }catch(e){}
-})();
-
-function switchTab(t){
-  ['upload','result','cargos'].forEach(function(id){
-    document.getElementById('sec-'+id).classList.remove('active');
-    document.getElementById('tab-'+id).classList.remove('active');
-  });
-  document.getElementById('sec-'+t).classList.add('active');
-  document.getElementById('tab-'+t).classList.add('active');
+// ── Config: lee tolerancias guardadas en Configuración, con defaults ──
+function cfg(key, def){
+  try{ var v=localStorage.getItem('cfg_'+key); return v!==null?v:def; }catch(e){ return def; }
 }
+var TOLE_MONTO = parseFloat(cfg('tol_banco', '1')) || 1;
+var TOLE_DIAS  = parseInt(cfg('ventana_dias', '5')) || 5;
 
-function setStatus(id,msg,state){
-  var el=document.getElementById(id);
-  var ic={
-    wait:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><circle cx="8" cy="8" r="6"/><path d="M8 5v3M8 10.5v.5"/></svg>',
-    ok:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><path d="M3 8l3.5 3.5L13 5"/></svg>',
-    err:'<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><path d="M5 5l6 6M11 5l-6 6"/></svg>'
-  };
-  el.innerHTML=(ic[state]||ic.wait)+' '+msg;
-  el.className='file-status'+(state==='ok'?' ok':state==='err'?' err':'');
-}
+var bancoRows=[], libroRows=[], cargoRows=[], results=[];
+var loaded={A:false,B:false};
+var currentFilter='all', cargoFilter=false;
 
-function setStep(n){
-  for(var i=1;i<=4;i++){
-    var el=document.getElementById('step-'+i);
-    el.classList.remove('done','active');
-    if(i<n) el.classList.add('done');
-    else if(i===n) el.classList.add('active');
-  }
-}
+// Empresa en header
+(function(){ try{ if(window.APP_CONFIG&&window.APP_CONFIG.EMPRESA) document.querySelectorAll('.org').forEach(function(e){e.textContent=window.APP_CONFIG.EMPRESA;}); }catch(e){} })();
+// Link al portal preservando secreto
+(function(){ try{ var c=window.APP_CONFIG; if(c&&c.SECRET_PATH){ sessionStorage.setItem('portal_access',c.SECRET_PATH); var b=document.querySelector('.back'); if(b) b.href='index.html?'+c.SECRET_PATH; } }catch(e){} })();
 
+var toast=document.getElementById('toast'); var tt;
+function showToast(m){toast.textContent=m;toast.style.opacity=1;toast.style.transform='translate(-50%,0)';clearTimeout(tt);tt=setTimeout(function(){toast.style.opacity=0;toast.style.transform='translate(-50%,20px)';},2400);}
+
+// ── Helpers de parseo ──
 function parseMonto(s){
-  s=(s||'').toString().trim();
-  if(!s) return 0;
+  s=(s||'').toString().trim(); if(!s) return 0;
   s=s.replace(/\./g,'').replace(',','.');
-  var n=parseFloat(s.replace(/[^0-9.\-]/g,''));
-  return isNaN(n)?0:n;
+  var n=parseFloat(s.replace(/[^0-9.\-]/g,'')); return isNaN(n)?0:n;
 }
-
-// Parse DD/MM/YY or DD/MM/YYYY into Date
 function parseFecha(s){
-  if(!s) return null;
-  s=s.toString().trim();
-  var m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
-  if(!m) return null;
+  if(!s) return null; s=s.toString().trim();
+  var m=s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/); if(!m) return null;
   var y=m[3].length===2?2000+parseInt(m[3]):parseInt(m[3]);
   return new Date(y,parseInt(m[2])-1,parseInt(m[1]));
 }
+function diasDif(a,b){ if(!a||!b) return 9999; return Math.abs((a-b)/86400000); }
 
-// Detecta si un movimiento es cargo bancario / impuesto (solo aparece en banco)
 var CARGO_PATTERNS=['Comision','Comisión','I.V.A.','IVA -','Percepcion IVA','Percepción IVA','Percep Ingr Brutos','Percep Ingresos','Recaudacion ARBA','Recaudación ARBA','Impuesto Ley 25','Impuesto de Sellos','ECHQ','Intereses por Saldo','Ajuste p/'];
-function esCargo(desc){
-  desc=desc||'';
-  for(var i=0;i<CARGO_PATTERNS.length;i++){
-    if(desc.toLowerCase().indexOf(CARGO_PATTERNS[i].toLowerCase())>=0) return true;
+function esCargo(d){ d=d||''; for(var i=0;i<CARGO_PATTERNS.length;i++){ if(d.toLowerCase().indexOf(CARGO_PATTERNS[i].toLowerCase())>=0) return true; } return false; }
+
+// ── Parse Extracto Credicoop (PDF) ──
+async function loadBancoPDF(file){
+  var ab=await file.arrayBuffer();
+  var pdf=await pdfjsLib.getDocument({data:ab}).promise;
+  bancoRows=[]; cargoRows=[];
+  var amountRe=/^-?\d{1,3}(?:\.\d{3})*,\d{2}$/, dateRe=/^\d{2}\/\d{2}\/\d{2}$/;
+  for(var pi=0;pi<pdf.numPages;pi++){
+    var page=await pdf.getPage(pi+1);
+    var tc=await page.getTextContent();
+    var byY={};
+    tc.items.forEach(function(it){
+      if(!it.str.trim()) return;
+      var y=Math.round(it.transform[5]);
+      if(!byY[y]) byY[y]=[];
+      byY[y].push({x0:it.transform[4],x1:it.transform[4]+it.width,str:it.str.trim()});
+    });
+    Object.keys(byY).sort(function(a,b){return b-a;}).forEach(function(y){
+      var ws=byY[y].sort(function(a,b){return a.x0-b.x0;});
+      if(!ws.length||!dateRe.test(ws[0].str)) return;
+      var fecha=parseFecha(ws[0].str), deb=0, cred=0, parts=[], comp='';
+      for(var i=1;i<ws.length;i++){
+        var w=ws[i];
+        if(amountRe.test(w.str)){ var v=parseMonto(w.str); if(w.x1<430) deb=v; else if(w.x1<530) cred=v; }
+        else parts.push(w.str);
+      }
+      if(deb===0&&cred===0) return;
+      if(parts.length&&/^\d{4,6}$/.test(parts[0])){ comp=parts[0]; parts=parts.slice(1); }
+      var desc=parts.join(' '), monto=cred-deb;
+      var row={fecha:fecha,comp:comp,desc:desc,monto:monto,used:false};
+      if(esCargo(desc)) cargoRows.push(row); else bancoRows.push(row);
+    });
   }
-  return false;
 }
 
-function diasDif(a,b){
-  if(!a||!b) return 9999;
-  return Math.abs((a-b)/(86400000));
+// ── Parse Libro Banco (CSV OneSoft) ──
+function loadLibroCSV(file){
+  return new Promise(function(resolve,reject){
+    var r=new FileReader();
+    r.onload=function(e){
+      try{
+        var lines=e.target.result.split(/\r?\n/);
+        libroRows=[];
+        lines.forEach(function(line){
+          if(!line.trim()) return;
+          var c=line.split(';');
+          if(c.length<8) return;
+          var fecha=parseFecha((c[3]||'').trim());
+          if(!fecha) return;
+          var debe=parseMonto(c[5]), haber=parseMonto(c[6]);
+          if(debe===0&&haber===0) return;
+          libroRows.push({comp:(c[2]||'').trim(),fecha:fecha,concepto:(c[4]||'').trim(),monto:debe-haber,used:false});
+        });
+        resolve();
+      }catch(err){reject(err);}
+    };
+    r.readAsText(file,'latin-1');
+  });
 }
 
-// ── EXTRACTO CREDICOOP (PDF) ──
-// Columns by X right-edge: Débito ~411, Crédito ~506, Saldo ~601
-// Each movement line starts with DD/MM/YY
-async function loadBancoPDF(ev){
-  var file=ev.target.files[0]; if(!file) return;
-  setStatus('banco-status','Leyendo PDF…','wait');
-  document.getElementById('banco-count').textContent='';
-  document.getElementById('banco-prog').style.display='block';
-  document.getElementById('banco-fill').style.width='0%';
+// ── File handling ──
+function setLoaded(which, fname, detail){
+  loaded[which]=true;
+  var dz=document.getElementById('dz'+which);
+  dz.classList.add('filled');
+  document.getElementById('big'+which).textContent=fname;
+  document.getElementById('small'+which).textContent=detail;
+  var st=document.getElementById('st'+which);
+  st.classList.add('loaded');
+  st.innerHTML='<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> Cargado correctamente';
+  var ready=loaded.A&&loaded.B;
+  document.getElementById('conciliar').disabled=!ready;
+  document.getElementById('hint').textContent=ready?'¡Listo! Apretá Conciliar para cruzar los movimientos.':'Cargá ambos archivos para habilitar la conciliación.';
+}
 
+document.getElementById('dzA').addEventListener('click',function(){document.getElementById('fileA').click();});
+document.getElementById('dzB').addEventListener('click',function(){document.getElementById('fileB').click();});
+
+document.getElementById('fileA').addEventListener('change',async function(ev){
+  var f=ev.target.files[0]; if(!f) return;
+  document.getElementById('bigA').textContent='Leyendo PDF…';
   try{
-    var ab=await file.arrayBuffer();
-    var pdf=await pdfjsLib.getDocument({data:ab}).promise;
-    var nPages=pdf.numPages;
-    bancoRows=[];
-    cargoRows=[];
-    var amountRe=/^-?\d{1,3}(?:\.\d{3})*,\d{2}$/;
-    var dateRe=/^\d{2}\/\d{2}\/\d{2}$/;
+    await loadBancoPDF(f);
+    setLoaded('A',f.name,bancoRows.length+' movimientos + '+cargoRows.length+' cargos');
+  }catch(e){ document.getElementById('bigA').textContent='Error al leer'; showToast('Error: '+e.message); }
+});
+document.getElementById('fileB').addEventListener('change',async function(ev){
+  var f=ev.target.files[0]; if(!f) return;
+  document.getElementById('bigB').textContent='Leyendo CSV…';
+  try{
+    await loadLibroCSV(f);
+    setLoaded('B',f.name,libroRows.length+' movimientos');
+  }catch(e){ document.getElementById('bigB').textContent='Error al leer'; showToast('Error: '+e.message); }
+});
 
-    for(var pi=0;pi<nPages;pi++){
-      document.getElementById('banco-fill').style.width=Math.round(((pi+1)/nPages)*100)+'%';
-      document.getElementById('banco-label').textContent='Página '+(pi+1)+' de '+nPages;
-      var page=await pdf.getPage(pi+1);
-      var tc=await page.getTextContent();
-
-      // Stop processing once we hit the annexes (after "SALDO AL")
-      // Group by Y line
-      var byY={};
-      tc.items.forEach(function(item){
-        if(!item.str.trim()) return;
-        // PDF.js: transform[4]=x, transform[5]=y; x1 = x + width
-        var y=Math.round(item.transform[5]);
-        if(!byY[y]) byY[y]=[];
-        byY[y].push({x0:item.transform[4],x1:item.transform[4]+item.width,str:item.str.trim()});
-      });
-
-      Object.keys(byY).sort(function(a,b){return b-a;}).forEach(function(y){
-        var ws=byY[y].sort(function(a,b){return a.x0-b.x0;});
-        if(!ws.length) return;
-        if(!dateRe.test(ws[0].str)) return;
-        var fecha=parseFecha(ws[0].str);
-        var debito=0,credito=0;
-        var descParts=[], comp='';
-        for(var i=1;i<ws.length;i++){
-          var w=ws[i];
-          if(amountRe.test(w.str)){
-            var val=parseMonto(w.str);
-            if(w.x1<430) debito=val;
-            else if(w.x1<530) credito=val;
-            // else saldo, ignore
-          } else {
-            descParts.push(w.str);
-          }
-        }
-        if(debito===0&&credito===0) return;
-        // First desc part may be comprobante (4-6 digits)
-        if(descParts.length&&/^\d{4,6}$/.test(descParts[0])){
-          comp=descParts[0];
-          descParts=descParts.slice(1);
-        }
-        var desc=descParts.join(' ');
-        var monto=credito-debito; // positive=ingreso, negative=egreso
-        var row={fecha:fecha,comp:comp,desc:desc,monto:monto,used:false};
-        if(esCargo(desc)) cargoRows.push(row);
-        else bancoRows.push(row);
-      });
-    }
-
-    document.getElementById('banco-prog').style.display='none';
-    setStatus('banco-status',file.name,'ok');
-    document.getElementById('banco-count').textContent=bancoRows.length+' movimientos + '+cargoRows.length+' cargos bancarios';
-    checkReady();
-  }catch(e){
-    document.getElementById('banco-prog').style.display='none';
-    setStatus('banco-status','Error: '+e.message,'err');
-    console.error(e);
-  }
-}
-
-// ── LIBRO BANCO (CSV OneSoft) ──
-// Cols: Cuenta;Tipo;Comprobante;Fecha;Concepto;Debe;Haber;Saldo;...
-function loadLibroCSV(ev){
-  var file=ev.target.files[0]; if(!file) return;
-  setStatus('libro-status','Leyendo…','wait');
-  var reader=new FileReader();
-  reader.onload=function(e){
-    try{
-      var text=e.target.result;
-      var lines=text.split(/\r?\n/);
-      libroRows=[];
-      lines.forEach(function(line){
-        if(!line.trim()) return;
-        var cols=line.split(';');
-        if(cols.length<8) return;
-        var comp=(cols[2]||'').trim();
-        var fecha=parseFecha((cols[3]||'').trim());
-        if(!fecha) return; // skips header rows
-        var concepto=(cols[4]||'').trim();
-        var debe=parseMonto(cols[5]);
-        var haber=parseMonto(cols[6]);
-        var monto=debe-haber; // positive=ingreso
-        if(debe===0&&haber===0) return;
-        libroRows.push({comp:comp,fecha:fecha,concepto:concepto,monto:monto,used:false});
-      });
-      setStatus('libro-status',file.name,'ok');
-      document.getElementById('libro-count').textContent=libroRows.length+' movimientos cargados';
-      checkReady();
-    }catch(err){
-      setStatus('libro-status','Error: '+err.message,'err');
-    }
-  };
-  reader.readAsText(file,'latin-1');
-}
-
-function checkReady(){
-  document.getElementById('btn-conciliar').disabled=!(bancoRows.length&&libroRows.length);
-}
-
-// ── CONCILIAR ──
-// Monto ±1. Si monto exacto (dif<0.005): fecha hasta 5 días. Si no: hasta 3 días.
+// ── Conciliar ──
 async function conciliar(){
-  document.getElementById('sec-upload').classList.remove('active');
-  document.getElementById('sec-processing').style.display='block';
-  document.getElementById('error-box').style.display='none';
+  bancoRows.forEach(function(r){r.used=false;});
+  libroRows.forEach(function(r){r.used=false;});
+  results=[];
+  bancoRows.forEach(function(b){
+    var best=null,bd=9999;
+    for(var i=0;i<libroRows.length;i++){
+      var l=libroRows[i];
+      if(l.used) continue;
+      var dm=Math.abs(Math.abs(b.monto)-Math.abs(l.monto));
+      if(dm>TOLE_MONTO) continue;
+      if((b.monto>0)!==(l.monto>0)&&b.monto!==0&&l.monto!==0) continue;
+      var d=diasDif(b.fecha,l.fecha);
+      if(d<=TOLE_DIAS&&d<bd){best=l;bd=d;}
+    }
+    if(best){ best.used=true; results.push({status:bd<0.5?'ok':'warn',fechaBanco:b.fecha,fechaLibro:best.fecha,descBanco:b.desc,descLibro:best.concepto,montoBanco:b.monto,montoLibro:best.monto,diasDif:Math.round(bd)}); }
+    else results.push({status:'bad',fechaBanco:b.fecha,fechaLibro:null,descBanco:b.desc,descLibro:'',montoBanco:b.monto,montoLibro:null,diasDif:null});
+  });
+  libroRows.forEach(function(l){ if(!l.used) results.push({status:'bad',fechaBanco:null,fechaLibro:l.fecha,descBanco:'',descLibro:l.concepto,montoBanco:null,montoLibro:l.monto,diasDif:null}); });
 
+  var ok=results.filter(function(r){return r.status==='ok';});
+  var warn=results.filter(function(r){return r.status==='warn';});
+  var bad=results.filter(function(r){return r.status==='bad';});
+  var tasa=results.length?Math.round((ok.length/results.length)*100):0;
+
+  // Métricas (4 scards)
+  var sc=document.querySelectorAll('#panel2 .summary .scard b');
+  if(sc[0]) sc[0].textContent=ok.length;
+  if(sc[1]) sc[1].textContent=bad.filter(function(r){return r.montoBanco===null;}).length; // pendientes (solo libro)
+  if(sc[2]) sc[2].textContent=warn.length; // diferencias de fecha
+  if(sc[3]) sc[3].textContent=tasa+'%';
+
+  // Subtítulo
+  var sub=document.querySelector('#panel2 .head p');
+  if(sub) sub.textContent='Período actual · '+results.length+' movimientos cruzados entre el extracto de Credicoop y el libro banco de OneSoft.';
+
+  renderRows('all');
+  guardarHistorial('banco', tasa, bad.length);
+  await analizarClaude(ok, warn, bad);
+  goPanel(2);
+}
+
+// ── Claude: puntos de atención ──
+async function analizarClaude(ok, warn, bad){
+  var box=document.querySelector('#panel2 .claude p');
+  if(!box) return;
   try{
-    setStep(1);await sleep(100);
-    setStep(2);await sleep(100);
-    setStep(3);
-
-    bancoRows.forEach(function(r){r.used=false;});
-    libroRows.forEach(function(r){r.used=false;});
-    results=[];
-
-    bancoRows.forEach(function(b){
-      var best=null,bestDias=9999;
-      for(var i=0;i<libroRows.length;i++){
-        var l=libroRows[i];
-        if(l.used) continue;
-        var dm=Math.abs(Math.abs(b.monto)-Math.abs(l.monto));
-        if(dm>1) continue;
-        // same sign (ingreso/egreso)
-        if((b.monto>0)!==(l.monto>0)&&b.monto!==0&&l.monto!==0) continue;
-        if(!b.fecha||!l.fecha) continue;
-        var dias=diasDif(b.fecha,l.fecha);
-        var tol=5;
-        if(dias<=tol&&dias<bestDias){best=l;bestDias=dias;}
-      }
-      if(best){
-        best.used=true;
-        results.push({status:bestDias<0.5?'ok':'fecha',fechaBanco:b.fecha,fechaLibro:best.fecha,descBanco:b.desc,descLibro:best.concepto,monto:b.monto,diasDif:Math.round(bestDias)});
-      } else {
-        results.push({status:'banco',fechaBanco:b.fecha,fechaLibro:null,descBanco:b.desc,descLibro:'',monto:b.monto,diasDif:null});
-      }
-    });
-    libroRows.forEach(function(l){
-      if(!l.used) results.push({status:'libro',fechaBanco:null,fechaLibro:l.fecha,descBanco:'',descLibro:l.concepto,monto:l.monto,diasDif:null});
-    });
-
-    var ok=results.filter(function(r){return r.status==='ok';});
-    var fecha=results.filter(function(r){return r.status==='fecha';});
-    var banco=results.filter(function(r){return r.status==='banco';});
-    var libro=results.filter(function(r){return r.status==='libro';});
-
-    document.getElementById('m-ok').textContent=ok.length;
-    document.getElementById('m-fecha').textContent=fecha.length;
-    document.getElementById('m-banco').textContent=banco.length;
-    document.getElementById('m-libro').textContent=libro.length;
-    document.getElementById('m-ok-amt').textContent=fmtAmt(ok.reduce(function(s,r){return s+Math.abs(r.monto);},0));
-    document.getElementById('m-fecha-amt').textContent=fmtAmt(fecha.reduce(function(s,r){return s+Math.abs(r.monto);},0));
-    document.getElementById('m-banco-amt').textContent=fmtAmt(banco.reduce(function(s,r){return s+Math.abs(r.monto);},0));
-    document.getElementById('m-libro-amt').textContent=fmtAmt(libro.reduce(function(s,r){return s+Math.abs(r.monto);},0));
-    document.getElementById('results-sub').textContent=results.length+' movimientos · '+new Date().toLocaleDateString('es-AR');
-
-    currentFilter='all';currentSearch='';currentPage=1;
-    document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});
-    document.querySelector('.filter-btn').classList.add('active');
-    document.querySelector('.search-input').value='';
-    document.getElementById('tab-result').disabled=false;
-    document.getElementById('tab-cargos').disabled=false;
-    renderCargos();
-
-    setStep(4);
-    document.getElementById('proc-title').textContent='Claude analizando el resultado';
-    document.getElementById('proc-sub').textContent='Generando puntos de atención…';
-
-    try{
-      var summary={
-        total_movimientos:results.length,
-        banco_movs:bancoRows.length,libro_movs:libroRows.length,
-        coinciden:ok.length,dif_fecha:fecha.length,solo_banco:banco.length,solo_libro:libro.length,
-        monto_solo_banco:banco.reduce(function(s,r){return s+Math.abs(r.monto);},0),
-        monto_solo_libro:libro.reduce(function(s,r){return s+Math.abs(r.monto);},0),
-        solo_banco_top:banco.slice().sort(function(a,b){return Math.abs(b.monto)-Math.abs(a.monto);}).slice(0,8).map(function(r){return{desc:r.descBanco,monto:Math.round(r.monto)};}),
-        solo_libro_top:libro.slice().sort(function(a,b){return Math.abs(b.monto)-Math.abs(a.monto);}).slice(0,8).map(function(r){return{concepto:r.descLibro,monto:Math.round(r.monto)};})
-      };
-      var response=await callClaude(
-        'Sos un experto contable argentino. Devolvé ÚNICAMENTE entre 3 y 5 puntos de atención, uno por línea, empezando cada uno con "• ". Sin títulos, sin introducción, sin markdown, sin conclusión. Cada punto debe ser una alerta concreta con dato y monto. Considerá que las comisiones, IVA y percepciones suelen aparecer solo en el banco (es normal). Priorizá movimientos de mayor monto sin conciliar de cada lado.',
-        'Resultado de la conciliación bancaria:\n'+JSON.stringify(summary,null,2)
-      );
-      var puntos=response.split('\n').filter(function(l){return l.trim();});
-      var htmlPuntos=puntos.map(function(p){
-        p=p.replace(/^[•\-\*]\s*/,'').trim();
-        return '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:6px;"><span style="color:var(--diff-text);flex-shrink:0;margin-top:1px;">▸</span><span>'+p+'</span></div>';
-      }).join('');
-      document.getElementById('ai-analysis').style.display='block';
-      document.getElementById('ai-analysis-text').innerHTML=htmlPuntos;
-    }catch(e){console.error('Claude:',e);}
-
-    document.getElementById('sec-processing').style.display='none';
-    switchTab('result');
-    renderTable();
-
-  }catch(e){
-    document.getElementById('sec-processing').style.display='none';
-    document.getElementById('tab-result').disabled=false;
-    switchTab('result');
-    document.getElementById('sec-result').classList.add('active');
-    var eb=document.getElementById('error-box');
-    eb.style.display='block';
-    eb.textContent='Error: '+e.message;
-  }
+    var soloLibro=results.filter(function(r){return r.montoBanco===null;});
+    var soloBanco=results.filter(function(r){return r.montoLibro===null&&r.status==='bad';});
+    var summary={
+      total:results.length,coinciden:ok.length,dif_fecha:warn.length,
+      solo_banco:soloBanco.length,solo_libro:soloLibro.length,
+      cargos_bancarios:cargoRows.length,
+      total_cargos:Math.round(cargoRows.reduce(function(s,r){return s+Math.abs(r.monto);},0)),
+      solo_banco_top:soloBanco.slice().sort(function(a,b){return Math.abs(b.montoBanco)-Math.abs(a.montoBanco);}).slice(0,6).map(function(r){return{desc:r.descBanco,monto:Math.round(r.montoBanco)};}),
+      solo_libro_top:soloLibro.slice().sort(function(a,b){return Math.abs(b.montoLibro)-Math.abs(a.montoLibro);}).slice(0,6).map(function(r){return{desc:r.descLibro,monto:Math.round(r.montoLibro)};})
+    };
+    box.innerHTML='Analizando…';
+    var resp=await callClaude(
+      'Sos un experto contable argentino. Devolvé ÚNICAMENTE entre 3 y 5 puntos de atención, uno por línea, empezando con "• ". Sin títulos ni markdown. Cada punto: alerta concreta con dato y monto. Las comisiones/IVA/percepciones aparecen solo en el banco (es normal). Priorizá los mayores montos sin conciliar de cada lado.',
+      'Conciliación bancaria:\n'+JSON.stringify(summary,null,2)
+    );
+    var pts=resp.split('\n').filter(function(l){return l.trim();});
+    box.innerHTML=pts.map(function(p){p=p.replace(/^[•\-\*]\s*/,'').trim();return '<span style="display:block;margin-bottom:5px;">▸ '+p+'</span>';}).join('');
+  }catch(e){ box.innerHTML='El '+(results.length?Math.round((ok.length/results.length)*100):0)+'% de los movimientos concilió. Revisá las partidas pendientes y las diferencias en la tabla.'; }
 }
 
 async function callClaude(system,user){
-  var res=await fetch(window.APP_CONFIG.PROXY_URL,{
-    method:'POST',headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,system:system,messages:[{role:'user',content:user}]})
-  });
+  var res=await fetch(window.APP_CONFIG.PROXY_URL,{method:'POST',headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:400,system:system,messages:[{role:'user',content:user}]})});
   if(!res.ok) throw new Error('Error '+res.status);
   var data=await res.json();
   if(data.error) throw new Error(data.error.message||'Error API');
   return data.content[0].text;
 }
 
-function sleep(ms){return new Promise(function(r){setTimeout(r,ms);});}
-function fmtDate(d){if(!d) return '—';return d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'});}
-function fmt(n){if(n===null||n===undefined) return '—';return Number(n).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2});}
-function fmtAmt(n){if(!n) return '';var abs=Math.abs(n);if(abs>=1000000) return '$'+(abs/1000000).toFixed(1)+'M';if(abs>=1000) return '$'+Math.round(abs/1000)+'k';return '$'+Math.round(abs);}
+// ── Render tabla ──
+function fmtDate(d){ if(!d) return '—'; return d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'}); }
+function fmt(n){ if(n===null||n===undefined) return '—'; return (n<0?'-':'')+'$'+Math.abs(n).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+var BADGE={ok:['ok','Conciliado'],warn:['warn','Dif. fecha'],bad:['bad','Pendiente']};
 
-function getFiltered(){
-  return results.filter(function(r){
-    if(currentFilter!=='all'&&r.status!==currentFilter) return false;
-    if(currentSearch){var q=currentSearch.toLowerCase();if((r.descBanco||'').toLowerCase().indexOf(q)<0&&(r.descLibro||'').toLowerCase().indexOf(q)<0&&String(r.monto||'').indexOf(q)<0) return false;}
-    return true;
-  });
-}
-
-function renderTable(){
-  var filtered=getFiltered(),total=filtered.length,pages=Math.ceil(total/PAGE_SIZE)||1;
-  if(currentPage>pages) currentPage=pages;
-  var slice=filtered.slice((currentPage-1)*PAGE_SIZE,currentPage*PAGE_SIZE);
-  var tbody=document.getElementById('tbl-body');
-  if(!slice.length){
-    tbody.innerHTML='<tr><td colspan="6"><div class="empty-state"><p>Sin resultados</p></div></td></tr>';
-  } else {
-    tbody.innerHTML=slice.map(function(r){
-      var badge=r.status==='ok'?'<span class="badge badge-ok">✓ Coincide</span>'
-               :r.status==='fecha'?'<span class="badge badge-fecha">⚠ '+r.diasDif+'d</span>'
-               :r.status==='banco'?'<span class="badge badge-banco">Solo banco</span>'
-               :'<span class="badge badge-libro">Solo libro</span>';
-      return '<tr>'
-        +'<td style="font-size:12px">'+fmtDate(r.fechaBanco)+'</td>'
-        +'<td style="font-size:12px">'+fmtDate(r.fechaLibro)+'</td>'
-        +'<td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="'+(r.descBanco||'')+'">'+(r.descBanco||'—')+'</td>'
-        +'<td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px" title="'+(r.descLibro||'')+'">'+(r.descLibro||'—')+'</td>'
-        +'<td class="num" style="'+(r.monto<0?'color:var(--sub-text)':'color:var(--ok-text)')+'">'+fmt(r.monto)+'</td>'
-        +'<td>'+badge+'</td>'
-        +'</tr>';
-    }).join('');
+function renderRows(filter){
+  currentFilter=filter;
+  var src = cargoFilter ? [] : results;
+  var rows = src.filter(function(r){ return filter==='all'||r.status===filter; });
+  var tbody=document.getElementById('rows');
+  if(cargoFilter){
+    // Mostrar cargos bancarios
+    document.querySelector('#panel2 table thead tr').innerHTML='<th>Fecha</th><th>Concepto</th><th>Categoría</th><th class="r">Monto</th>';
+    tbody.innerHTML=cargoRows.map(function(c){
+      return '<tr><td>'+fmtDate(c.fecha)+'</td><td>'+(c.desc||'—')+'</td><td style="color:var(--muted);font-size:13px">'+categorizar(c.desc)+'</td><td class="r">'+fmt(c.monto)+'</td></tr>';
+    }).join('') || '<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:30px">Sin cargos bancarios</td></tr>';
+    return;
   }
-  document.getElementById('pg-info').textContent=total+' registros · pág. '+currentPage+' de '+pages;
-  var btns='<button class="page-btn" onclick="goPage('+(currentPage-1)+')" '+(currentPage===1?'disabled':'')+'>‹</button>';
-  var start=Math.max(1,currentPage-2),end=Math.min(pages,currentPage+2);
-  for(var p=start;p<=end;p++) btns+='<button class="page-btn'+(p===currentPage?' current':'')+'" onclick="goPage('+p+')">'+p+'</button>';
-  btns+='<button class="page-btn" onclick="goPage('+(currentPage+1)+')" '+(currentPage===pages?'disabled':'')+'>›</button>';
-  document.getElementById('pg-btns').innerHTML=btns;
+  document.querySelector('#panel2 table thead tr').innerHTML='<th>Fecha</th><th>Concepto</th><th>Comprobante</th><th class="r">Extracto</th><th class="r">Libro banco</th><th>Estado</th>';
+  tbody.innerHTML=rows.map(function(r){
+    var b=BADGE[r.status], code=b[0], label=b[1];
+    var note = r.status==='bad'&&r.montoBanco===null ? '<div class="note">No figura en el extracto</div>'
+             : r.status==='bad'&&r.montoLibro===null ? '<div class="note">No figura en el libro banco</div>'
+             : r.status==='warn' ? '<div class="note">Difiere '+r.diasDif+' día(s)</div>' : '';
+    var monto = r.montoBanco!==null?r.montoBanco:r.montoLibro;
+    return '<tr><td>'+fmtDate(r.fechaBanco||r.fechaLibro)+'</td><td>'+(r.descBanco||r.descLibro||'—')+note+'</td>'
+      +'<td class="mono" style="font-size:12.5px;color:var(--muted)">'+( '' )+'</td>'
+      +'<td class="r">'+fmt(r.montoBanco)+'</td><td class="r">'+fmt(r.montoLibro)+'</td>'
+      +'<td><span class="badge '+code+'"><span class="dot '+code+'"></span>'+label+'</span></td></tr>';
+  }).join('') || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">Sin movimientos</td></tr>';
 }
 
-function goPage(p){currentPage=p;renderTable();}
-function setFilter(f,el){currentFilter=f;currentPage=1;document.querySelectorAll('.filter-btn').forEach(function(b){b.classList.remove('active');});el.classList.add('active');renderTable();}
-function setSearch(v){currentSearch=v;currentPage=1;renderTable();}
-
-function resetAll(){
-  bancoRows=[];libroRows=[];cargoRows=[];results=[];
-  ['banco','libro'].forEach(function(t){
-    document.getElementById(t+'-status').innerHTML='Sin cargar';
-    document.getElementById(t+'-count').textContent='';
-    document.getElementById('file-'+t).value='';
-  });
-  document.getElementById('banco-prog').style.display='none';
-  document.getElementById('btn-conciliar').disabled=true;
-  document.getElementById('tab-result').disabled=true;
-  document.getElementById('tab-cargos').disabled=true;
-  document.getElementById('ai-analysis').style.display='none';
-  document.getElementById('proc-title').textContent='Procesando archivos';
-  document.getElementById('proc-sub').textContent='Por favor esperá…';
-  switchTab('upload');
-}
-
-
-// ── CARGOS BANCARIOS ──
-function renderCargos(){
-  document.getElementById('c-total').textContent=cargoRows.length;
-  var totalMonto=cargoRows.reduce(function(s,r){return s+Math.abs(r.monto);},0);
-  document.getElementById('c-monto').textContent=fmtAmt(totalMonto);
-
-  // Group by category
-  var cats={};
-  cargoRows.forEach(function(r){
-    var cat=categorizar(r.desc);
-    if(!cats[cat]) cats[cat]={count:0,monto:0};
-    cats[cat].count++;
-    cats[cat].monto+=Math.abs(r.monto);
-  });
-  document.getElementById('c-tipos').textContent=Object.keys(cats).length;
-
-  var resumenHtml=Object.keys(cats).sort(function(a,b){return cats[b].monto-cats[a].monto;}).map(function(cat){
-    return '<div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border);font-size:12.5px"><span>'+cat+' <span style="color:var(--hint)">('+cats[cat].count+')</span></span><span style="font-family:var(--mono);font-weight:500">$'+fmt(cats[cat].monto)+'</span></div>';
-  }).join('');
-  document.getElementById('cargos-resumen').style.display='block';
-  document.getElementById('cargos-resumen-text').innerHTML=resumenHtml;
-
-  renderCargosTable();
-}
-
-function categorizar(desc){
-  desc=(desc||'').toLowerCase();
-  if(desc.indexOf('comision')>=0||desc.indexOf('comisión')>=0) return 'Comisiones';
-  if(desc.indexOf('i.v.a.')>=0||desc.indexOf('iva -')>=0) return 'IVA';
-  if(desc.indexOf('percepcion iva')>=0||desc.indexOf('percepción iva')>=0) return 'Percepción IVA';
-  if(desc.indexOf('ingr brutos')>=0||desc.indexOf('ingresos brutos')>=0) return 'Ingresos Brutos';
-  if(desc.indexOf('arba')>=0) return 'Recaudación ARBA';
-  if(desc.indexOf('ley 25')>=0) return 'Impuesto Ley 25.413';
-  if(desc.indexOf('sellos')>=0) return 'Impuesto de Sellos';
-  if(desc.indexOf('echq')>=0) return 'Comisiones cheques';
-  if(desc.indexOf('interes')>=0) return 'Intereses';
+function categorizar(d){
+  d=(d||'').toLowerCase();
+  if(d.indexOf('comision')>=0||d.indexOf('comisión')>=0) return 'Comisiones';
+  if(d.indexOf('i.v.a.')>=0||d.indexOf('iva -')>=0) return 'IVA';
+  if(d.indexOf('percepcion iva')>=0||d.indexOf('percepción iva')>=0) return 'Percepción IVA';
+  if(d.indexOf('ingr brutos')>=0||d.indexOf('ingresos brutos')>=0) return 'Ingresos Brutos';
+  if(d.indexOf('arba')>=0) return 'Recaudación ARBA';
+  if(d.indexOf('ley 25')>=0) return 'Impuesto Ley 25.413';
+  if(d.indexOf('sellos')>=0) return 'Impuesto de Sellos';
+  if(d.indexOf('echq')>=0) return 'Comisiones cheques';
+  if(d.indexOf('interes')>=0) return 'Intereses';
   return 'Otros cargos';
 }
 
-function getCargosFiltered(){
-  return cargoRows.filter(function(r){
-    if(cargoSearch){var q=cargoSearch.toLowerCase();if((r.desc||'').toLowerCase().indexOf(q)<0&&String(r.monto||'').indexOf(q)<0) return false;}
-    return true;
-  });
+// ── Navegación de paneles y pasos ──
+function goPanel(n){
+  document.getElementById('panel1').classList.toggle('hidden',n!==1);
+  document.getElementById('panel2').classList.toggle('hidden',n!==2);
+  var s1=document.getElementById('st1'),s2=document.getElementById('st2'),s3=document.getElementById('st3');
+  if(n===1){s1.className='step on';s2.className='step';s3.className='step';}
+  else {s1.className='step done';s2.className='step on';s3.className='step done';}
+  window.scrollTo({top:0,behavior:'smooth'});
 }
 
-function renderCargosTable(){
-  var filtered=getCargosFiltered(),total=filtered.length,pages=Math.ceil(total/PAGE_SIZE)||1;
-  if(cargoPage>pages) cargoPage=pages;
-  var slice=filtered.slice((cargoPage-1)*PAGE_SIZE,cargoPage*PAGE_SIZE);
-  var tbody=document.getElementById('cargos-body');
-  if(!slice.length){
-    tbody.innerHTML='<tr><td colspan="3"><div class="empty-state"><p>Sin cargos</p></div></td></tr>';
-  } else {
-    tbody.innerHTML=slice.map(function(r){
-      return '<tr><td style="font-size:12px">'+fmtDate(r.fecha)+'</td><td style="font-size:12px">'+(r.desc||'—')+'</td><td class="num" style="color:var(--sub-text)">'+fmt(r.monto)+'</td></tr>';
-    }).join('');
-  }
-  document.getElementById('cargos-pg-info').textContent=total+' cargos · pág. '+cargoPage+' de '+pages;
-  var btns='<button class="page-btn" onclick="goCargoPage('+(cargoPage-1)+')" '+(cargoPage===1?'disabled':'')+'>‹</button>';
-  var start=Math.max(1,cargoPage-2),end=Math.min(pages,cargoPage+2);
-  for(var p=start;p<=end;p++) btns+='<button class="page-btn'+(p===cargoPage?' current':'')+'" onclick="goCargoPage('+p+')">'+p+'</button>';
-  btns+='<button class="page-btn" onclick="goCargoPage('+(cargoPage+1)+')" '+(cargoPage===pages?'disabled':'')+'>›</button>';
-  document.getElementById('cargos-pg-btns').innerHTML=btns;
-}
+document.getElementById('conciliar').addEventListener('click',function(){ if(!this.disabled){ cargoFilter=false; conciliar(); } });
+document.getElementById('volver').addEventListener('click',function(){ goPanel(1); });
+document.getElementById('st1').addEventListener('click',function(){ goPanel(1); });
+document.getElementById('st2').addEventListener('click',function(){ if(!document.getElementById('conciliar').disabled){ cargoFilter=false; renderRows('all'); goPanel(2); } });
+document.getElementById('st3').addEventListener('click',function(){ if(loaded.A&&loaded.B&&results.length){ cargoFilter=true; renderRows('all'); goPanel(2); } });
+document.getElementById('exportar').addEventListener('click',exportCSV);
+document.querySelectorAll('.fbtn').forEach(function(b){ b.addEventListener('click',function(){ document.querySelectorAll('.fbtn').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); cargoFilter=false; renderRows(b.dataset.f); }); });
 
-function goCargoPage(p){cargoPage=p;renderCargosTable();}
-function setSearchCargos(v){cargoSearch=v;cargoPage=1;renderCargosTable();}
-
-function exportCargos(){
-  var filtered=getCargosFiltered();
-  var headers=['Fecha','Categoría','Descripción','Monto'];
-  var rows=filtered.map(function(r){return[fmtDate(r.fecha),categorizar(r.desc),r.desc,r.monto!=null?r.monto.toFixed(2):''];});
-  var csv=[headers].concat(rows).map(function(row){return row.map(function(c){return'"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');
-  var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
-  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='cargos_bancarios_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
-}
-
+// ── Export CSV ──
 function exportCSV(){
-  var filtered=getFiltered();
-  var labels={ok:'Coincide',fecha:'Dif. fecha',banco:'Solo banco',libro:'Solo libro'};
-  var headers=['Estado','Fecha Banco','Fecha Libro','Descripción Banco','Concepto Libro','Monto','Días Diferencia'];
-  var rows=filtered.map(function(r){return[labels[r.status]||r.status,fmtDate(r.fechaBanco),fmtDate(r.fechaLibro),r.descBanco,r.descLibro,r.monto!=null?r.monto.toFixed(2):'',r.diasDif!=null?r.diasDif:''];});
-  var csv=[headers].concat(rows).map(function(row){return row.map(function(c){return'"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');
+  var labels={ok:'Conciliado',warn:'Dif. fecha',bad:'Pendiente'};
+  var headers=['Estado','Fecha Banco','Fecha Libro','Desc Banco','Concepto Libro','Monto Banco','Monto Libro','Días Dif'];
+  var rs=results.map(function(r){return[labels[r.status],fmtDate(r.fechaBanco),fmtDate(r.fechaLibro),r.descBanco,r.descLibro,r.montoBanco!=null?r.montoBanco.toFixed(2):'',r.montoLibro!=null?r.montoLibro.toFixed(2):'',r.diasDif!=null?r.diasDif:''];});
+  var csv=[headers].concat(rs).map(function(row){return row.map(function(c){return'"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');
   var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
-  var a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='conciliacion_banco_'+new Date().toISOString().slice(0,10)+'.csv';a.click();
+  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='conciliacion_banco_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
+  showToast('Exportado a CSV');
+}
+
+// ── Guardar en historial (para Reportes) ──
+function guardarHistorial(modulo, tasa, difs){
+  try{
+    var key='hist_'+modulo;
+    var hist=JSON.parse(localStorage.getItem(key)||'[]');
+    var mes=new Date().toLocaleDateString('es-AR',{month:'short',year:'2-digit'});
+    hist.unshift({mes:mes,tasa:tasa,difs:difs,fecha:Date.now()});
+    hist=hist.slice(0,12);
+    localStorage.setItem(key,JSON.stringify(hist));
+  }catch(e){}
 }
 </script>
 </body>

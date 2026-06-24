@@ -449,12 +449,16 @@ document.querySelectorAll('.filters').forEach(function(group){
 function exportCSV(){
   var labels={ok:'Coincide',sub:'Solo OneSoft',arca:'Solo ARCA'};
   var headers=['Bloque','Estado','Comprobante','Proveedor/CUIT','OneSoft','ARCA','Diferencia'];
+  // Monto en formato argentino: miles con punto, decimales con coma (ej: 1.545.669,50)
+  function money(n){ if(n===null||n===undefined||n==='') return ''; return Number(n).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
   function rowsOf(data,bloque){
-    return data.map(function(r){return[bloque,labels[r.estado]||r.estado,r.comp,r.prov,r.imp_os!=null?r.imp_os.toFixed(2):'',r.imp_arca!=null?r.imp_arca.toFixed(2):'',r.dif!=null?r.dif.toFixed(2):''];});
+    return data.map(function(r){return[bloque,labels[r.estado]||r.estado,r.comp,r.prov,money(r.imp_os),money(r.imp_arca),money(r.dif)];});
   }
   var rs=rowsOf(resRet,'Retenciones').concat(rowsOf(resPer,'Percepciones'));
-  var csv=[headers].concat(rs).map(function(row){return row.map(function(c){return'"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');
-  var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
+  // Separador ; para que Excel en español abra las columnas correctamente
+  var csv=[headers].concat(rs).map(function(row){return row.map(function(c){return'"'+String(c==null?'':c).replace(/"/g,'""')+'"';}).join(';');}).join('\r\n');
+  // sep=; en la primera línea ayuda a Excel a detectar el separador automáticamente
+  var blob=new Blob(['\uFEFF'+'sep=;\r\n'+csv],{type:'text/csv;charset=utf-8;'});
   var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='conciliacion_retenciones_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
   showToast('Exportado a CSV');
 }

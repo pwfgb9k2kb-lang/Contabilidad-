@@ -129,8 +129,8 @@ tbody tr:hover { background: #f7f9fc; }
 </style>
 <script src="config.js"></script>
 <style>
-  .seg { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 8px; }
-  @media (max-width: 900px){ .seg { grid-template-columns: 1fr; } }
+  .seg { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 24px; margin-top: 8px; }
+  @media (max-width: 720px){ .seg { grid-template-columns: 1fr; } }
   .col h2 { font-family: 'Newsreader', serif; font-weight: 500; font-size: 26px; margin: 0 0 4px; display: flex; align-items: center; gap: 12px; }
   .col .colsub { font-size: 14px; color: var(--muted); margin: 0 0 18px; }
   .col .cic { width: 40px; height: 40px; border-radius: 11px; background: var(--tint-bg); color: var(--blue-2); display: grid; place-items: center; }
@@ -194,6 +194,27 @@ tbody tr:hover { background: #f7f9fc; }
       <p class="colsub" id="ivaSub">Sin conciliaciones registradas todavía</p>
       <div class="runlist" id="ivaRuns"></div>
     </div>
+
+    <!-- RETENCIONES Y PERCEPCIONES IVA -->
+    <div class="col">
+      <h2><span class="cic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg></span> Retenciones y Percepciones IVA</h2>
+      <p class="colsub" id="retSub">Sin conciliaciones registradas todavía</p>
+      <div class="runlist" id="retRuns"></div>
+    </div>
+
+    <!-- INGRESOS BRUTOS -->
+    <div class="col">
+      <h2><span class="cic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg></span> Ingresos Brutos</h2>
+      <p class="colsub" id="iibbSub">Sin conciliaciones registradas todavía</p>
+      <div class="runlist" id="iibbRuns"></div>
+    </div>
+
+    <!-- RETENCIONES DE GANANCIAS -->
+    <div class="col">
+      <h2><span class="cic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></span> Retenciones de Ganancias</h2>
+      <p class="colsub" id="ganSub">Sin conciliaciones registradas todavía</p>
+      <div class="runlist" id="ganRuns"></div>
+    </div>
   </div>
 </div>
 
@@ -231,12 +252,18 @@ function render(id, data, destino, subId, subLabel){
 
 var bank=getHist('banco');
 var iva=getHist('iva');
+var ret=getHist('retenciones');
+var iibb=getHist('iibb');
+var gan=getHist('ganancias');
 render('bankRuns', bank, 'banco.html', 'bankSub', 'cuenta corriente Credicoop');
 render('ivaRuns', iva, 'iva.html', 'ivaSub', 'Subdiario vs ARCA');
+render('retRuns', ret, 'retenciones.html', 'retSub', 'Recibos y facturas vs ARCA');
+render('iibbRuns', iibb, 'iibb.html', 'iibbSub', 'OneSoft vs ARBA');
+render('ganRuns', gan, 'ganancias.html', 'ganSub', 'Recibos vs ARCA');
 
 // Banda de totales: calculada solo sobre datos reales
 try{
-  var allRuns = bank.concat(iva);
+  var allRuns = bank.concat(iva).concat(ret).concat(iibb).concat(gan);
   var totConc = allRuns.length;
   var avgTasa = allRuns.length ? Math.round(allRuns.reduce(function(s,r){return s+r[1];},0)/allRuns.length) : 0;
   var totDifs = allRuns.reduce(function(s,r){return s+r[2];},0);

@@ -21,7 +21,7 @@
     --hair: #e1e7f0;
     --accent: #2f5a9e;
   }
-  html, body { margin: 0; height: 100%; }
+  html, body { margin: 0; }
   body {
     font-family: 'Hanken Grotesk', system-ui, sans-serif;
     color: var(--ink); background: var(--cool);
@@ -33,7 +33,7 @@
   .side {
     width: 248px; flex: none; background: var(--blue); color: #dfe6f2;
     padding: 26px 20px; display: flex; flex-direction: column; gap: 30px;
-    position: sticky; top: 0; height: 100vh;
+    align-self: stretch; min-height: 100vh;
   }
   .side .brand { display: flex; align-items: center; gap: 12px; }
   .side .brand .mark { width: 38px; height: 38px; border-radius: 10px; background: rgba(255,255,255,.14); display: grid; place-items: center; flex: none; }

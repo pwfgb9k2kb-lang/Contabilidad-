@@ -308,7 +308,7 @@ function cruzar(left,right){
     if(best>=0){ used[best]=true; out.push({estado:'ok',comp:l.comp,fecha:l.fecha||right[best].fecha,prov:l.prov,cuit:right[best].cuit,imp_os:l.imp,imp_arca:right[best].imp,dif:right[best].imp-l.imp}); }
     else out.push({estado:'sub',comp:l.comp,fecha:l.fecha,prov:l.prov,cuit:'',imp_os:l.imp,imp_arca:null,dif:null});
   });
-  right.forEach(function(r,i){ if(!used[i]) out.push({estado:'arca',comp:'Rég. '+(r.reg||'—'),fecha:r.fecha,prov:'CUIT '+(r.cuit||'—'),cuit:r.cuit||'',imp_os:null,imp_arca:r.imp,dif:null}); });
+  right.forEach(function(r,i){ if(!used[i]) out.push({estado:'arca',comp:'Rég. '+(r.reg||'—'),fecha:r.fecha,prov:'',cuit:r.cuit||'',imp_os:null,imp_arca:r.imp,dif:null}); });
   return out;
 }
 
@@ -383,8 +383,20 @@ function renderRows(filter){
     if(r.estado==='ok'&&Math.abs(r.dif)>TOLE) note='<div class="note">Dif. '+fmt(r.dif)+'</div>';
     else if(r.estado==='arca') note='<div class="note">No figura en OneSoft</div>';
     else if(r.estado==='sub') note='<div class="note">No figura en ARCA</div>';
-    var provHtml=(r.prov||'—');
-    if(r.nombreEstimado) provHtml='<span class="estimado">'+r.nombreEstimado+'<span class="qmark" title="Nombre estimado por IA, verificar en el padrón AFIP">?</span></span>';
+    // Columna proveedor: si hay CUIT (viene de ARCA) mostramos CUIT + razón social estimada.
+    var provHtml;
+    if(r.cuit){
+      var cuitLine='<span class="mono" style="font-size:12.5px;color:var(--muted)">CUIT '+r.cuit+'</span>';
+      var nom='';
+      if(r.estado==='ok' && r.prov){ // conciliada: nombre real de OneSoft
+        nom='<div style="font-weight:600">'+r.prov+'</div>';
+      } else if(r.nombreEstimado){ // solo ARCA: nombre estimado por IA
+        nom='<div class="estimado" style="font-weight:600">'+r.nombreEstimado+'<span class="qmark" title="Nombre estimado por IA, verificar en el padrón AFIP">?</span></div>';
+      }
+      provHtml=nom+cuitLine;
+    } else {
+      provHtml=(r.prov||'—'); // solo OneSoft, sin CUIT
+    }
     var esConc=(r.estado==='ok'||r.manual);
     var tick=!esConc
       ? '<button class="tickbtn" title="Marcar como conciliado" onclick="marcarConciliado('+idx+')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></button>'
@@ -406,9 +418,9 @@ function marcarConciliado(idx){
   renderRows(currentFilter);
 }
 
-// ── CUIT → razón social con IA, solo cuando está segura ──
+// ── CUIT → razón social con IA, solo cuando está segura. Aplica a TODAS las filas con CUIT ──
 async function resolverNombres(){
-  var pend=results.filter(function(r){return r.estado==='arca'&&r.cuit&&r.cuit.length>=10;});
+  var pend=results.filter(function(r){return r.cuit&&r.cuit.length>=10;});
   if(!pend.length) return;
   var cuits=[];
   pend.forEach(function(r){ if(cuits.indexOf(r.cuit)<0) cuits.push(r.cuit); });
@@ -419,7 +431,7 @@ async function resolverNombres(){
     );
     var clean=resp.replace(/```json/g,'').replace(/```/g,'').trim();
     var map=JSON.parse(clean);
-    results.forEach(function(r){ if(r.estado==='arca'&&map[r.cuit]) r.nombreEstimado=map[r.cuit]; });
+    results.forEach(function(r){ if(r.cuit&&map[r.cuit]) r.nombreEstimado=map[r.cuit]; });
     renderRows(currentFilter);
   }catch(e){ /* si falla, queda el CUIT */ }
 }
@@ -442,9 +454,10 @@ document.querySelectorAll('.fbtn').forEach(function(b){ b.addEventListener('clic
 
 function exportCSV(){
   var labels={ok:'Coincide',sub:'Solo OneSoft',arca:'Solo ARCA'};
-  var headers=['Estado','Fecha','Comprobante','Proveedor/CUIT','OneSoft','ARCA','Diferencia'];
+  var headers=['Estado','Fecha','Comprobante','Proveedor','CUIT','OneSoft','ARCA','Diferencia'];
   function money(n){ if(n===null||n===undefined||n==='') return ''; return Number(n).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
-  var rs=results.map(function(r){return[(r.manual?'Conciliado (a mano)':(labels[r.estado]||r.estado)),(r.fecha||''),r.comp,(r.nombreEstimado||r.prov),money(r.imp_os),money(r.imp_arca),money(r.dif)];});
+  function nombre(r){ if(r.estado==='ok') return r.prov||''; return r.nombreEstimado||r.prov||''; }
+  var rs=results.map(function(r){return[(r.manual?'Conciliado (a mano)':(labels[r.estado]||r.estado)),(r.fecha||''),r.comp,nombre(r),(r.cuit||''),money(r.imp_os),money(r.imp_arca),money(r.dif)];});
   var csv=[headers].concat(rs).map(function(row){return row.map(function(c){return'"'+String(c==null?'':c).replace(/"/g,'""')+'"';}).join(';');}).join('\r\n');
   var blob=new Blob(['\uFEFF'+'sep=;\r\n'+csv],{type:'text/csv;charset=utf-8;'});
   var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='conciliacion_ganancias_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();

@@ -189,7 +189,7 @@ tbody tr:hover { background: #f7f9fc; }
       </div>
       <div class="row">
         <div class="lt"><b>Período contable</b><span>Mes que se concilia por defecto</span></div>
-        <div class="rt"><select class="fld"><option>Mayo 2026</option><option>Abril 2026</option><option>Marzo 2026</option></select></div>
+        <div class="rt"><select class="fld" id="cfg_periodo"></select></div>
       </div>
     </div>
 
@@ -254,6 +254,28 @@ tbody tr:hover { background: #f7f9fc; }
 const toast=document.getElementById('toast'); let tt;
 function showToast(m){toast.textContent=m;toast.style.opacity=1;toast.style.transform='translate(-50%,0)';clearTimeout(tt);tt=setTimeout(()=>{toast.style.opacity=0;toast.style.transform='translate(-50%,20px)';},2200);}
 
+// Llena el período contable automáticamente: desde 2024 hasta el año que viene.
+// Siempre incluye el mes actual, así no hay que actualizarlo a mano nunca.
+function llenarPeriodos(){
+  var sel=document.getElementById('cfg_periodo');
+  if(!sel) return;
+  var meses=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  var hoy=new Date();
+  var anioDesde=2024;
+  var anioHasta=hoy.getFullYear()+1; // un año hacia adelante por si se adelantan cargas
+  var opciones=[];
+  for(var a=anioHasta; a>=anioDesde; a--){
+    var mesTope=(a===anioHasta)?11:11; // todos los meses de cada año
+    for(var m=mesTope; m>=0; m--){
+      opciones.push(meses[m]+' '+a);
+    }
+  }
+  // Valor por defecto = mes actual (ej: "Junio 2026")
+  var actual=meses[hoy.getMonth()]+' '+hoy.getFullYear();
+  sel.innerHTML=opciones.map(function(o){ return '<option'+(o===actual?' selected':'')+'>'+o+'</option>'; }).join('');
+}
+llenarPeriodos();
+
 // Cargar valores guardados
 function loadCfg(){
   try{
@@ -263,6 +285,8 @@ function loadCfg(){
     document.getElementById('cfg_tol_iva').value = g('tol_iva','100');
     document.getElementById('cfg_ventana').value = g('ventana_dias','5');
     if(g('anular_pares','1')==='0') document.getElementById('cfg_anular_pares').classList.remove('on');
+    var periodoGuardado=localStorage.getItem('cfg_periodo');
+    if(periodoGuardado){ var ps=document.getElementById('cfg_periodo'); if(ps){ for(var i=0;i<ps.options.length;i++){ if(ps.options[i].value===periodoGuardado){ ps.selectedIndex=i; break; } } } }
     if(g('auto_claude','1')==='0') document.getElementById('cfg_auto_claude').classList.remove('on');
     var nivel=g('nivel_detalle','Estándar');
     document.querySelectorAll('.segctl button').forEach(function(b){ b.classList.toggle('on', b.textContent===nivel); });
@@ -282,6 +306,7 @@ document.getElementById('save').addEventListener('click',function(){
     localStorage.setItem('cfg_tol_iva', document.getElementById('cfg_tol_iva').value);
     localStorage.setItem('cfg_ventana_dias', document.getElementById('cfg_ventana').value);
     localStorage.setItem('cfg_anular_pares', document.getElementById('cfg_anular_pares').classList.contains('on')?'1':'0');
+    var pSel=document.getElementById('cfg_periodo'); if(pSel) localStorage.setItem('cfg_periodo', pSel.value);
     localStorage.setItem('cfg_auto_claude', document.getElementById('cfg_auto_claude').classList.contains('on')?'1':'0');
     var nivel='Estándar'; document.querySelectorAll('.segctl button').forEach(function(b){ if(b.classList.contains('on')) nivel=b.textContent; });
     localStorage.setItem('cfg_nivel_detalle', nivel);

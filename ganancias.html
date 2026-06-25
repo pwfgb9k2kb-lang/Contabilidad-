@@ -205,7 +205,7 @@ tbody tr:hover { background: #f7f9fc; }
         </div>
       </div>
       <table>
-        <thead><tr><th>Comprobante</th><th>Proveedor / CUIT</th><th class="r">OneSoft</th><th class="r">ARCA</th><th>Estado</th></tr></thead>
+        <thead><tr><th>Fecha</th><th>Comprobante</th><th>Proveedor / CUIT</th><th class="r">OneSoft</th><th class="r">ARCA</th><th>Estado</th></tr></thead>
         <tbody id="rows"></tbody>
       </table>
     </div>
@@ -254,12 +254,12 @@ function parseOneSoft(text){
   return out;
 }
 
-// ── ARCA TXT ancho fijo: CUIT[0:12], fecha[42:52], regimen[52:55], importe[55:70] ──
+// ── ARCA TXT ancho fijo: el 1er dígito es relleno; CUIT real = [1:12], fecha[42:52], regimen[52:55], importe[55:70] ──
 function parseArcaTxt(text){
   var lines=text.split(/\r?\n/).filter(function(l){return l.trim()!=='';});
   var out=[];
   lines.forEach(function(l){
-    var cuit=(l.substring(0,12)||'').replace(/\D/g,'');
+    var cuit=(l.substring(1,12)||'').replace(/\D/g,'');
     var fecha=(l.substring(42,52)||'').trim();
     var reg=(l.substring(52,55)||'').trim();
     var imp=parseMonto(l.substring(55).trim());
@@ -305,10 +305,10 @@ function cruzar(left,right){
   left.forEach(function(l){
     var best=-1;
     for(var i=0;i<right.length;i++){ if(used[i]) continue; if(Math.abs(right[i].imp-l.imp)<=TOLE){best=i;break;} }
-    if(best>=0){ used[best]=true; out.push({estado:'ok',comp:l.comp,prov:l.prov,cuit:right[best].cuit,imp_os:l.imp,imp_arca:right[best].imp,dif:right[best].imp-l.imp}); }
-    else out.push({estado:'sub',comp:l.comp,prov:l.prov,cuit:'',imp_os:l.imp,imp_arca:null,dif:null});
+    if(best>=0){ used[best]=true; out.push({estado:'ok',comp:l.comp,fecha:l.fecha||right[best].fecha,prov:l.prov,cuit:right[best].cuit,imp_os:l.imp,imp_arca:right[best].imp,dif:right[best].imp-l.imp}); }
+    else out.push({estado:'sub',comp:l.comp,fecha:l.fecha,prov:l.prov,cuit:'',imp_os:l.imp,imp_arca:null,dif:null});
   });
-  right.forEach(function(r,i){ if(!used[i]) out.push({estado:'arca',comp:'Rég. '+(r.reg||'—'),prov:'CUIT '+(r.cuit||'—'),cuit:r.cuit||'',imp_os:null,imp_arca:r.imp,dif:null}); });
+  right.forEach(function(r,i){ if(!used[i]) out.push({estado:'arca',comp:'Rég. '+(r.reg||'—'),fecha:r.fecha,prov:'CUIT '+(r.cuit||'—'),cuit:r.cuit||'',imp_os:null,imp_arca:r.imp,dif:null}); });
   return out;
 }
 
@@ -389,12 +389,13 @@ function renderRows(filter){
     var tick=!esConc
       ? '<button class="tickbtn" title="Marcar como conciliado" onclick="marcarConciliado('+idx+')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></button>'
       : (r.manual ? '<span class="manual-tag" title="Conciliado a mano">a mano</span>' : '');
-    out+='<tr><td class="mono" style="font-size:13px;color:var(--muted)">'+(r.comp||'—')+'</td>'
+    out+='<tr><td class="mono" style="font-size:12.5px;color:var(--muted)">'+(r.fecha||'—')+'</td>'
+      +'<td class="mono" style="font-size:13px;color:var(--muted)">'+(r.comp||'—')+'</td>'
       +'<td>'+provHtml+note+'</td>'
       +'<td class="r">'+fmt(r.imp_os)+'</td><td class="r">'+fmt(r.imp_arca)+'</td>'
       +'<td><div style="display:flex;align-items:center;gap:8px;"><span class="badge '+code+'"><span class="dot '+code+'"></span>'+label+'</span>'+tick+'</div></td></tr>';
   });
-  tbody.innerHTML=out||'<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">Sin comprobantes</td></tr>';
+  tbody.innerHTML=out||'<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">Sin comprobantes</td></tr>';
 }
 
 function marcarConciliado(idx){
@@ -441,9 +442,9 @@ document.querySelectorAll('.fbtn').forEach(function(b){ b.addEventListener('clic
 
 function exportCSV(){
   var labels={ok:'Coincide',sub:'Solo OneSoft',arca:'Solo ARCA'};
-  var headers=['Estado','Comprobante','Proveedor/CUIT','OneSoft','ARCA','Diferencia'];
+  var headers=['Estado','Fecha','Comprobante','Proveedor/CUIT','OneSoft','ARCA','Diferencia'];
   function money(n){ if(n===null||n===undefined||n==='') return ''; return Number(n).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
-  var rs=results.map(function(r){return[(r.manual?'Conciliado (a mano)':(labels[r.estado]||r.estado)),r.comp,(r.nombreEstimado||r.prov),money(r.imp_os),money(r.imp_arca),money(r.dif)];});
+  var rs=results.map(function(r){return[(r.manual?'Conciliado (a mano)':(labels[r.estado]||r.estado)),(r.fecha||''),r.comp,(r.nombreEstimado||r.prov),money(r.imp_os),money(r.imp_arca),money(r.dif)];});
   var csv=[headers].concat(rs).map(function(row){return row.map(function(c){return'"'+String(c==null?'':c).replace(/"/g,'""')+'"';}).join(';');}).join('\r\n');
   var blob=new Blob(['\uFEFF'+'sep=;\r\n'+csv],{type:'text/csv;charset=utf-8;'});
   var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='conciliacion_ganancias_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();

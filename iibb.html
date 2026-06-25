@@ -104,6 +104,12 @@ tbody tr:hover { background: #f7f9fc; }
 .badge.warn { background: var(--warn-bg); color: var(--warn); }
 .badge.bad { background: var(--bad-bg); color: var(--bad); }
 .note { font-size: 13px; color: var(--muted); margin-top: 3px; }
+.tickbtn { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 8px; border: 1px solid var(--tint-line); background: var(--paper); color: var(--ok); cursor: pointer; transition: background .14s, border-color .14s, transform .1s; flex: none; padding: 0; }
+.tickbtn:hover { background: var(--ok-bg); border-color: var(--ok); transform: translateY(-1px); }
+.tickbtn:active { transform: none; }
+.manual-tag { font-size: 11px; font-weight: 600; color: var(--muted); background: var(--cool); border: 1px solid var(--hair); padding: 3px 8px; border-radius: 999px; }
+.estimado { font-style: italic; }
+.estimado .qmark { color: var(--warn); font-weight: 700; margin-left: 3px; cursor: help; }
 .hidden { display: none !important; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -381,7 +387,7 @@ function cruzar(left,right){
     if(best>=0){ used[best]=true; out.push({estado:'ok',comp:l.comp,prov:l.prov,imp_os:l.imp,imp_arca:right[best].imp,dif:right[best].imp-l.imp}); }
     else out.push({estado:'sub',comp:l.comp,prov:l.prov,imp_os:l.imp,imp_arca:null,dif:null});
   });
-  right.forEach(function(r,i){ if(!used[i]) out.push({estado:'arca',comp:r.comp,prov:'CUIT '+(r.cuit||'—'),imp_os:null,imp_arca:r.imp,dif:null}); });
+  right.forEach(function(r,i){ if(!used[i]) out.push({estado:'arca',comp:r.comp,prov:'CUIT '+(r.cuit||'—'),cuit:r.cuit||'',imp_os:null,imp_arca:r.imp,dif:null}); });
   return out;
 }
 
@@ -396,6 +402,7 @@ async function conciliar(){
   guardarHistorial('iibb', tasaGlobal(), pendientesGlobal());
   goPanel(2);
   await analizarClaude();
+  resolverNombres();
 }
 
 function tasaGlobal(){
@@ -458,19 +465,56 @@ function renderRows(tabla,filter){
   var data=tabla==='ret'?resRet:resPer;
   var tbody=document.getElementById(tabla==='ret'?'rowsRet':'rowsPer');
   var out='';
-  data.forEach(function(r){
+  data.forEach(function(r,idx){
     if(filter!=='all' && r.estado!==filter) return;
     var b=BADGE[r.estado]||['bad',r.estado], code=b[0], label=b[1];
+    if(r.manual){ code='ok'; label='Conciliado'; }
     var note='';
     if(r.estado==='ok'&&Math.abs(r.dif)>TOLE) note='<div class="note">Dif. '+fmt(r.dif)+'</div>';
     else if(r.estado==='arca') note='<div class="note">No figura en OneSoft</div>';
     else if(r.estado==='sub') note='<div class="note">No figura en ARBA</div>';
+    var provHtml=(r.prov||'—');
+    if(r.nombreEstimado) provHtml='<span class="estimado">'+r.nombreEstimado+'<span class="qmark" title="Nombre estimado por IA, verificar en el padrón AFIP">?</span></span>';
+    var esConc=(r.estado==='ok'||r.manual);
+    var tick=!esConc
+      ? '<button class="tickbtn" title="Marcar como conciliado" onclick="marcarConciliado(\''+tabla+'\','+idx+')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></button>'
+      : (r.manual ? '<span class="manual-tag" title="Conciliado a mano">a mano</span>' : '');
     out+='<tr><td class="mono" style="font-size:13px;color:var(--muted)">'+(r.comp||'—')+'</td>'
-      +'<td>'+(r.prov||'—')+note+'</td>'
+      +'<td>'+provHtml+note+'</td>'
       +'<td class="r">'+fmt(r.imp_os)+'</td><td class="r">'+fmt(r.imp_arca)+'</td>'
-      +'<td><span class="badge '+code+'"><span class="dot '+code+'"></span>'+label+'</span></td></tr>';
+      +'<td><div style="display:flex;align-items:center;gap:8px;"><span class="badge '+code+'"><span class="dot '+code+'"></span>'+label+'</span>'+tick+'</div></td></tr>';
   });
   tbody.innerHTML=out||'<tr><td colspan="5" style="text-align:center;color:var(--muted);padding:30px">Sin comprobantes</td></tr>';
+}
+
+function marcarConciliado(tabla,idx){
+  var data=tabla==='ret'?resRet:resPer;
+  if(!data[idx]) return;
+  data[idx].manual=true;
+  data[idx].estado='ok';
+  recalcMetrics();
+  renderRows(tabla, tabla==='ret'?filtRetActual():filtPerActual());
+}
+function filtRetActual(){ var on=document.querySelector('.filters[data-tabla="ret"] .fbtn.on'); return on?on.dataset.f:'all'; }
+function filtPerActual(){ var on=document.querySelector('.filters[data-tabla="per"] .fbtn.on'); return on?on.dataset.f:'all'; }
+
+async function resolverNombres(){
+  var pend=resRet.concat(resPer).filter(function(r){return r.estado==='arca'&&r.cuit&&r.cuit.length>=10;});
+  if(!pend.length) return;
+  var cuits=[];
+  pend.forEach(function(r){ if(cuits.indexOf(r.cuit)<0) cuits.push(r.cuit); });
+  try{
+    var resp=await callClaude(
+      'Sos un asistente que identifica empresas argentinas por su CUIT. Te paso una lista de CUITs. Devolvé ÚNICAMENTE un JSON válido (sin markdown, sin texto extra) con forma {"CUIT":"RAZON SOCIAL"}. Incluí SOLO los CUITs de los que estés MUY seguro de la razón social (empresas conocidas). Si no estás seguro de alguno, NO lo incluyas en el JSON. Es preferible omitir a inventar.',
+      'CUITs: '+JSON.stringify(cuits)
+    );
+    var clean=resp.replace(/```json/g,'').replace(/```/g,'').trim();
+    var map=JSON.parse(clean);
+    [resRet,resPer].forEach(function(arr){
+      arr.forEach(function(r){ if(r.estado==='arca'&&map[r.cuit]) r.nombreEstimado=map[r.cuit]; });
+    });
+    renderRows('ret',filtRetActual()); renderRows('per',filtPerActual());
+  }catch(e){ /* si falla, se queda el CUIT */ }
 }
 
 function goPanel(n){
@@ -502,7 +546,7 @@ function exportCSV(){
   var headers=['Bloque','Estado','Comprobante','Proveedor/CUIT','OneSoft','ARBA','Diferencia'];
   function money(n){ if(n===null||n===undefined||n==='') return ''; return Number(n).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
   function rowsOf(data,bloque){
-    return data.map(function(r){return[bloque,labels[r.estado]||r.estado,r.comp,r.prov,money(r.imp_os),money(r.imp_arca),money(r.dif)];});
+    return data.map(function(r){return[bloque,(r.manual?'Conciliado (a mano)':(labels[r.estado]||r.estado)),r.comp,(r.nombreEstimado||r.prov),money(r.imp_os),money(r.imp_arca),money(r.dif)];});
   }
   var rs=rowsOf(resRet,'Retenciones').concat(rowsOf(resPer,'Percepciones'));
   var csv=[headers].concat(rs).map(function(row){return row.map(function(c){return'"'+String(c==null?'':c).replace(/"/g,'""')+'"';}).join(';');}).join('\r\n');

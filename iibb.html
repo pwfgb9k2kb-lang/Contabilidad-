@@ -113,6 +113,8 @@ tbody tr:hover { background: #f7f9fc; }
 .hidden { display: none !important; }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="export-excel.js"></script>
 <script src="config.js"></script>
 </head>
 <body>
@@ -543,16 +545,29 @@ document.querySelectorAll('.filters').forEach(function(group){
 
 function exportCSV(){
   var labels={ok:'Coincide',sub:'Solo OneSoft',arca:'Solo ARBA'};
-  var headers=['Bloque','Estado','Comprobante','Proveedor/CUIT','OneSoft','ARBA','Diferencia'];
-  function money(n){ if(n===null||n===undefined||n==='') return ''; return Number(n).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
-  function rowsOf(data,bloque){
-    return data.map(function(r){return[bloque,(r.manual?'Conciliado (a mano)':(labels[r.estado]||r.estado)),r.comp,(r.nombreEstimado||r.prov),money(r.imp_os),money(r.imp_arca),money(r.dif)];});
+  function filasDe(data){
+    return data.map(function(r){
+      return {
+        estado:(r.manual?'Conciliado (a mano)':(labels[r.estado]||r.estado)),
+        comp:r.comp||'', prov:(r.nombreEstimado||r.prov||''),
+        os:(r.imp_os==null?'':r.imp_os), arba:(r.imp_arca==null?'':r.imp_arca), dif:(r.dif==null?'':r.dif),
+        _st:(r.manual?'manual':r.estado)
+      };
+    });
   }
-  var rs=rowsOf(resRet,'Retenciones').concat(rowsOf(resPer,'Percepciones'));
-  var csv=[headers].concat(rs).map(function(row){return row.map(function(c){return'"'+String(c==null?'':c).replace(/"/g,'""')+'"';}).join(';');}).join('\r\n');
-  var blob=new Blob(['\uFEFF'+'sep=;\r\n'+csv],{type:'text/csv;charset=utf-8;'});
-  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='conciliacion_iibb_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
-  showToast('Exportado a CSV');
+  var cols=[
+    {header:'Estado',key:'estado',width:20},{header:'Comprobante',key:'comp',width:22},
+    {header:'Proveedor / CUIT',key:'prov',width:34},{header:'OneSoft',key:'os',width:16},
+    {header:'ARBA',key:'arba',width:16},{header:'Diferencia',key:'dif',width:14}
+  ];
+  exportarExcel({
+    nombreArchivo:'conciliacion_iibb',
+    hojas:[
+      {nombre:'Retenciones', columnas:cols, filas:filasDe(resRet)},
+      {nombre:'Percepciones', columnas:cols, filas:filasDe(resPer)}
+    ]
+  });
+  showToast('Exportado a Excel');
 }
 
 function guardarHistorial(modulo,tasa,difs){

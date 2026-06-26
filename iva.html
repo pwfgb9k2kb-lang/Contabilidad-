@@ -3,41 +3,22 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Conciliación IVA Compras · Portal Contable</title>
+<title>IVA Compras · Portal Contable</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
-/* ===== portal.css incrustado ===== */
-/* ===== Portal Contable — estilos compartidos (azul corporativo) ===== */
 * { box-sizing: border-box; }
 :root {
-  --blue: #284a78;
-  --blue-2: #2f578c;
-  --blue-3: #2f5a9e;
-  --tint-bg: #e2e9f4;
-  --tint-line: #d2ddee;
-  --cool: #f3f6fa;
-  --paper: #ffffff;
-  --ink: #1c2530;
-  --muted: #61708a;
-  --hair: #e1e7f0;
-  --ok: #1f7a54;
-  --ok-bg: #e3f1ea;
-  --warn: #9a6a1e;
-  --warn-bg: #f6edda;
-  --bad: #a23a3a;
-  --bad-bg: #f6e4e2;
+  --blue: #284a78; --blue-2: #2f578c; --blue-3: #2f5a9e;
+  --tint-bg: #e2e9f4; --tint-line: #d2ddee; --cool: #f3f6fa; --paper: #ffffff;
+  --ink: #1c2530; --muted: #61708a; --hair: #e1e7f0;
+  --ok: #1f7a54; --ok-bg: #e3f1ea; --warn: #9a6a1e; --warn-bg: #f6edda; --bad: #a23a3a; --bad-bg: #f6e4e2;
 }
 html, body { margin: 0; }
-body {
-  font-family: 'Hanken Grotesk', system-ui, sans-serif;
-  color: var(--ink); background: var(--cool); min-height: 100vh;
-}
+body { font-family: 'Hanken Grotesk', system-ui, sans-serif; color: var(--ink); background: var(--cool); min-height: 100vh; }
 .serif { font-family: 'Newsreader', Georgia, serif; }
 .mono { font-family: 'JetBrains Mono', monospace; }
-
-/* ---- Top bar ---- */
 .topbar { background: var(--blue); color: #eef2f9; display: flex; align-items: center; gap: 0; padding: 0 clamp(20px,4vw,52px); height: 76px; }
 .topbar .back { display: flex; align-items: center; gap: 7px; color: #c5d2e6; text-decoration: none; font-size: 15px; padding-right: 22px; transition: color .15s; }
 .topbar .back:hover { color: #fff; }
@@ -46,8 +27,6 @@ body {
 .topbar .crumb .mark { width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,.13); display: grid; place-items: center; flex: none; }
 .topbar .crumb .ttl { font-family: 'Newsreader', serif; font-size: 26px; font-weight: 600; letter-spacing: .2px; }
 .topbar .org { margin-left: auto; font-size: 15px; color: #bccbe2; }
-
-/* ---- Stepper ---- */
 .wrap { max-width: 1280px; margin: 0 auto; padding: 44px clamp(20px,4vw,52px) 64px; }
 .stepper { display: inline-flex; align-items: center; gap: 4px; background: var(--paper); border: 1px solid var(--hair); border-radius: 999px; padding: 7px; box-shadow: 0 8px 24px -18px rgba(28,40,60,.4); }
 .step { display: flex; align-items: center; gap: 9px; padding: 11px 20px; border-radius: 999px; font-size: 15px; font-weight: 600; color: #9aa6ba; border: none; background: transparent; cursor: default; transition: background .15s, color .15s; }
@@ -55,14 +34,10 @@ body {
 .step.done { color: var(--blue-2); cursor: pointer; }
 .step.done:hover { background: var(--tint-bg); }
 .step svg { flex: none; }
-
-/* ---- Headline block ---- */
 .head { text-align: center; margin: 56px auto 0; max-width: 760px; }
 .head h1 { font-family: 'Newsreader', serif; font-weight: 500; font-size: clamp(38px,4.6vw,52px); margin: 0 0 18px; letter-spacing: -.5px; }
 .head p { font-size: 18px; color: var(--muted); line-height: 1.55; margin: 0 auto; max-width: 620px; }
 .rule-pill { display: inline-flex; align-items: center; gap: 9px; margin-top: 26px; background: var(--tint-bg); color: var(--blue-2); border: 1px solid var(--tint-line); border-radius: 999px; padding: 11px 20px; font-size: 15px; font-weight: 600; }
-
-/* ---- Upload cards ---- */
 .uploads { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 52px; }
 @media (max-width: 900px){ .uploads { grid-template-columns: 1fr; } }
 .ucard { background: var(--paper); border: 1px solid var(--hair); border-radius: 20px; padding: 30px 32px; }
@@ -82,8 +57,6 @@ body {
 .dropzone.filled .big { color: var(--ok); }
 .fileinfo { background: var(--cool); border: 1px solid var(--hair); border-radius: 12px; padding: 16px 18px; margin-top: 18px; font-size: 14px; color: var(--muted); line-height: 1.6; }
 .chip { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; background: var(--tint-bg); color: var(--blue-2); padding: 2px 8px; border-radius: 6px; }
-
-/* ---- Primary action ---- */
 .actions { display: flex; justify-content: center; margin-top: 44px; }
 .btn { display: inline-flex; align-items: center; gap: 10px; border: none; border-radius: 999px; padding: 16px 38px; font: inherit; font-size: 17px; font-weight: 700; cursor: pointer; transition: background .15s, transform .12s, box-shadow .15s; }
 .btn.primary { background: var(--blue); color: #fff; box-shadow: 0 14px 30px -14px rgba(40,74,120,.7); }
@@ -91,8 +64,6 @@ body {
 .btn.primary:disabled { background: #c4cfde; color: #fff; cursor: not-allowed; box-shadow: none; }
 .btn.ghost { background: var(--paper); color: var(--blue-2); border: 1px solid var(--tint-line); }
 .btn.ghost:hover { background: var(--tint-bg); }
-
-/* ---- Results ---- */
 .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 8px; }
 @media (max-width: 900px){ .summary { grid-template-columns: 1fr 1fr; } }
 .scard { background: var(--paper); border: 1px solid var(--hair); border-radius: 16px; padding: 22px 24px; }
@@ -101,13 +72,11 @@ body {
 .scard.ok b { color: var(--ok); } .scard.warn b { color: var(--warn); } .scard.bad b { color: var(--bad); }
 .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
 .dot.ok { background: var(--ok); } .dot.warn { background: var(--warn); } .dot.bad { background: var(--bad); } .dot.blue { background: var(--blue-2); }
-
 .claude { display: flex; gap: 16px; background: var(--blue); color: #eef2f9; border-radius: 18px; padding: 22px 26px; margin-top: 26px; }
 .claude .av { width: 42px; height: 42px; border-radius: 11px; background: rgba(255,255,255,.14); display: grid; place-items: center; flex: none; }
 .claude h4 { margin: 2px 0 8px; font-size: 16px; }
 .claude p { margin: 0; font-size: 15px; line-height: 1.6; color: #d4ddec; }
 .claude p b { color: #fff; font-weight: 600; }
-
 .tablewrap { background: var(--paper); border: 1px solid var(--hair); border-radius: 18px; overflow: hidden; margin-top: 26px; }
 .tablewrap .thead { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid var(--hair); }
 .tablewrap .thead h3 { font-size: 17px; margin: 0; font-weight: 700; }
@@ -129,9 +98,10 @@ tbody tr:hover { background: #f7f9fc; }
 .badge.bad { background: var(--bad-bg); color: var(--bad); }
 .note { font-size: 13px; color: var(--muted); margin-top: 3px; }
 .hidden { display: none !important; }
-
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="export-excel.js"></script>
 <script src="config.js"></script>
 </head>
 <body>
@@ -140,7 +110,7 @@ tbody tr:hover { background: #f7f9fc; }
   <span class="divide"></span>
   <div class="crumb">
     <span class="mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#eef2f9" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></span>
-    <span class="ttl serif">Conciliación IVA Compras</span>
+    <span class="ttl serif">IVA Compras</span>
   </div>
   <span class="org">Sulfoquímica SA</span>
 </header>
@@ -153,10 +123,9 @@ tbody tr:hover { background: #f7f9fc; }
     </div>
   </div>
 
-  <!-- ============ PANEL 1: UPLOAD ============ -->
   <section id="panel1">
     <div class="head">
-      <h1 class="serif">Conciliación IVA Compras</h1>
+      <h1 class="serif">IVA Compras</h1>
       <p>Subí el Subdiario IVA en CSV y los comprobantes de ARCA en Excel. El sistema parsea todos los datos y Claude analiza el resultado completo.</p>
       <div><span class="rule-pill"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg> CUIT + N° · Tolerancia $100 · Anula pares F+NC</span></div>
     </div>
@@ -197,7 +166,6 @@ tbody tr:hover { background: #f7f9fc; }
     <p style="text-align:center; color:var(--muted); font-size:13.5px; margin-top:16px;" id="hint">Cargá ambos archivos para habilitar la conciliación.</p>
   </section>
 
-  <!-- ============ PANEL 2: RESULTS ============ -->
   <section id="panel2" class="hidden">
     <div class="head" style="margin-top:40px;">
       <h1 class="serif">Resultado de la conciliación</h1>
@@ -267,7 +235,6 @@ function parseMonto(s){
 }
 function numParecido(a,b){ if(a===b||a.length!==b.length) return false; var d=0; for(var i=0;i<a.length;i++){if(a[i]!==b[i])d++;} return d===1; }
 
-// ── Parse Subdiario IVA (CSV OneSoft) ──
 function loadSubCSV(file){
   return new Promise(function(resolve,reject){
     var r=new FileReader();
@@ -296,7 +263,6 @@ function loadSubCSV(file){
   });
 }
 
-// ── Parse ARCA (Excel) ──
 function loadArcaExcel(file){
   return new Promise(function(resolve,reject){
     var r=new FileReader();
@@ -349,7 +315,6 @@ document.getElementById('fileB').addEventListener('change',async function(ev){
   catch(e){ document.getElementById('bigB').textContent='Error'; showToast('Error: '+e.message); }
 });
 
-// ── Conciliar (con todas las reglas afinadas) ──
 async function conciliar(){
   var arcaMap={};
   arcaRows.forEach(function(r){ r.used=false; arcaMap[r.key]=arcaMap[r.key]||[]; arcaMap[r.key].push(r); });
@@ -365,7 +330,6 @@ async function conciliar(){
       results.push({estado:Math.abs(dif)<=TOLE?'ok':'diff',cuit:sub.cuit,prov:sub.prov||matched.prov,comp:sub.pv+'-'+sub.nro,tipo:sub.tipo,total_sub:sub.total,total_arca:matched.total,diferencia:dif});
     } else subSin.push(sub);
   });
-  // Rescate PV / Nro
   subSin.forEach(function(sub){
     var resc=null,motivo='';
     Object.keys(arcaMap).forEach(function(k){
@@ -383,9 +347,7 @@ async function conciliar(){
   });
   Object.keys(arcaMap).forEach(function(k){ arcaMap[k].forEach(function(a){ if(!a.used) results.push({estado:'arca',cuit:a.cuit,prov:a.prov,comp:a.pv+'-'+a.nro,tipo:a.tipo,total_sub:null,total_arca:a.total,diferencia:null}); }); });
 
-  // Regla: ignorar <=1
   results=results.filter(function(r){ if(r.estado==='sub'||r.estado==='arca'){ var m=r.estado==='sub'?r.total_sub:r.total_arca; if(Math.abs(m||0)<=1) return false; } return true; });
-  // Regla: anular pares F+NC
   if(ANULAR_PARES){
     ['sub','arca'].forEach(function(est){
       var field=est==='sub'?'total_sub':'total_arca', g={};
@@ -415,7 +377,6 @@ async function conciliar(){
   goPanel(2);
 }
 
-// Recalcula los contadores del resumen desde results (al conciliar y al tildar)
 function recalcMetrics(){
   var ok=results.filter(function(r){return r.estado==='ok'||r.estado==='pv'||r.estado==='nro';});
   var sub=results.filter(function(r){return r.estado==='sub';});
@@ -472,6 +433,7 @@ function renderRows(filter){
       || r.estado===filter;
     if(!match) return;
     var b=BADGE[r.estado]||['bad',r.estado], code=b[0], label=b[1];
+    if(r.manual){ code='ok'; label='Conciliado'; }
     var note='';
     if(r.estado==='pv') note='<div class="note">PV en ARCA: '+r.pvArca+' (revisar carga)</div>';
     else if(r.estado==='nro') note='<div class="note">N° en ARCA: '+r.nroArca+' (revisar carga)</div>';
@@ -479,8 +441,7 @@ function renderRows(filter){
     else if(r.estado==='arca') note='<div class="note">IVA crédito sin computar</div>';
     else if(r.estado==='sub') note='<div class="note">No figura en ARCA</div>';
     var tipoBadge=(r.tipo||'').indexOf('N.C')>=0?'bad':'ok';
-    // Botón tilde para todo lo que no sea coincidencia exacta
-    var esConc = r.estado==='ok';
+    var esConc = (r.estado==='ok'||r.manual);
     var tick = !esConc
       ? '<button class="tickbtn" title="Marcar como conciliado" onclick="marcarConciliado('+idx+')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></button>'
       : (r.manual ? '<span class="manual-tag" title="Conciliado a mano">a mano</span>' : '');
@@ -494,7 +455,6 @@ function renderRows(filter){
   tbody.innerHTML = out || '<tr><td colspan="7" style="text-align:center;color:var(--muted);padding:30px">Sin comprobantes</td></tr>';
 }
 
-// Marca un comprobante como conciliado a mano y actualiza el resumen
 function marcarConciliado(idx){
   if(!results[idx]) return;
   results[idx].estado='ok';
@@ -516,17 +476,36 @@ document.getElementById('conciliar').addEventListener('click',function(){ if(!th
 document.getElementById('volver').addEventListener('click',function(){ goPanel(1); });
 document.getElementById('st1').addEventListener('click',function(){ goPanel(1); });
 document.getElementById('st2').addEventListener('click',function(){ if(!document.getElementById('conciliar').disabled){ renderRows('all'); goPanel(2); } });
-document.getElementById('exportar').addEventListener('click',exportCSV);
+document.getElementById('exportar').addEventListener('click',exportarIva);
 document.querySelectorAll('.fbtn').forEach(function(b){ b.addEventListener('click',function(){ document.querySelectorAll('.fbtn').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); renderRows(b.dataset.f); }); });
 
-function exportCSV(){
+// ── Export a Excel con diseño ──
+function exportarIva(){
   var labels={ok:'Coincide',pv:'Coincide - revisar PV',nro:'Coincide - revisar N°',diff:'Diferencia monto',sub:'Solo Subdiario',arca:'Solo ARCA'};
-  var headers=['Estado','CUIT','Proveedor','Comprobante','Tipo','Total Subdiario','Total ARCA','Diferencia'];
-  var rs=results.map(function(r){return[labels[r.estado]||r.estado,r.cuit,r.prov,r.comp,r.tipo,r.total_sub!=null?r.total_sub.toFixed(2):'',r.total_arca!=null?r.total_arca.toFixed(2):'',r.diferencia!=null?r.diferencia.toFixed(2):''];});
-  var csv=[headers].concat(rs).map(function(row){return row.map(function(c){return'"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');
-  var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
-  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='conciliacion_iva_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
-  showToast('Exportado a CSV');
+  function stKey(r){ if(r.manual) return 'manual'; if(r.estado==='ok'||r.estado==='pv'||r.estado==='nro') return 'ok'; if(r.estado==='arca'||r.estado==='diff') return 'arca'; return 'sub'; }
+  var filas=results.map(function(r){
+    return {
+      estado:(r.manual?'Conciliado (a mano)':(labels[r.estado]||r.estado)),
+      tipo:r.tipo||'', prov:r.prov||'', cuit:(r.cuit||''), comp:r.comp||'',
+      os:(r.total_sub==null?'':r.total_sub), arca:(r.total_arca==null?'':r.total_arca),
+      dif:(r.diferencia==null?'':r.diferencia),
+      _st:stKey(r)
+    };
+  });
+  exportarExcel({
+    nombreArchivo:'conciliacion_iva',
+    hojas:[{
+      nombre:'IVA Compras',
+      columnas:[
+        {header:'Estado',key:'estado',width:22},{header:'Tipo',key:'tipo',width:12},
+        {header:'Proveedor',key:'prov',width:32},{header:'CUIT',key:'cuit',width:15},
+        {header:'Comprobante',key:'comp',width:18},{header:'Subdiario',key:'os',width:16},
+        {header:'ARCA',key:'arca',width:16},{header:'Diferencia',key:'dif',width:14}
+      ],
+      filas:filas
+    }]
+  });
+  showToast('Exportado a Excel');
 }
 
 function guardarHistorial(modulo,tasa,difs){

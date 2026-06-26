@@ -8,36 +8,17 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
 <style>
-/* ===== portal.css incrustado ===== */
-/* ===== Portal Contable — estilos compartidos (azul corporativo) ===== */
 * { box-sizing: border-box; }
 :root {
-  --blue: #284a78;
-  --blue-2: #2f578c;
-  --blue-3: #2f5a9e;
-  --tint-bg: #e2e9f4;
-  --tint-line: #d2ddee;
-  --cool: #f3f6fa;
-  --paper: #ffffff;
-  --ink: #1c2530;
-  --muted: #61708a;
-  --hair: #e1e7f0;
-  --ok: #1f7a54;
-  --ok-bg: #e3f1ea;
-  --warn: #9a6a1e;
-  --warn-bg: #f6edda;
-  --bad: #a23a3a;
-  --bad-bg: #f6e4e2;
+  --blue: #284a78; --blue-2: #2f578c; --blue-3: #2f5a9e;
+  --tint-bg: #e2e9f4; --tint-line: #d2ddee; --cool: #f3f6fa; --paper: #ffffff;
+  --ink: #1c2530; --muted: #61708a; --hair: #e1e7f0;
+  --ok: #1f7a54; --ok-bg: #e3f1ea; --warn: #9a6a1e; --warn-bg: #f6edda; --bad: #a23a3a; --bad-bg: #f6e4e2;
 }
 html, body { margin: 0; }
-body {
-  font-family: 'Hanken Grotesk', system-ui, sans-serif;
-  color: var(--ink); background: var(--cool); min-height: 100vh;
-}
+body { font-family: 'Hanken Grotesk', system-ui, sans-serif; color: var(--ink); background: var(--cool); min-height: 100vh; }
 .serif { font-family: 'Newsreader', Georgia, serif; }
 .mono { font-family: 'JetBrains Mono', monospace; }
-
-/* ---- Top bar ---- */
 .topbar { background: var(--blue); color: #eef2f9; display: flex; align-items: center; gap: 0; padding: 0 clamp(20px,4vw,52px); height: 76px; }
 .topbar .back { display: flex; align-items: center; gap: 7px; color: #c5d2e6; text-decoration: none; font-size: 15px; padding-right: 22px; transition: color .15s; }
 .topbar .back:hover { color: #fff; }
@@ -46,8 +27,6 @@ body {
 .topbar .crumb .mark { width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,.13); display: grid; place-items: center; flex: none; }
 .topbar .crumb .ttl { font-family: 'Newsreader', serif; font-size: 26px; font-weight: 600; letter-spacing: .2px; }
 .topbar .org { margin-left: auto; font-size: 15px; color: #bccbe2; }
-
-/* ---- Stepper ---- */
 .wrap { max-width: 1280px; margin: 0 auto; padding: 44px clamp(20px,4vw,52px) 64px; }
 .stepper { display: inline-flex; align-items: center; gap: 4px; background: var(--paper); border: 1px solid var(--hair); border-radius: 999px; padding: 7px; box-shadow: 0 8px 24px -18px rgba(28,40,60,.4); }
 .step { display: flex; align-items: center; gap: 9px; padding: 11px 20px; border-radius: 999px; font-size: 15px; font-weight: 600; color: #9aa6ba; border: none; background: transparent; cursor: default; transition: background .15s, color .15s; }
@@ -55,14 +34,10 @@ body {
 .step.done { color: var(--blue-2); cursor: pointer; }
 .step.done:hover { background: var(--tint-bg); }
 .step svg { flex: none; }
-
-/* ---- Headline block ---- */
 .head { text-align: center; margin: 56px auto 0; max-width: 760px; }
 .head h1 { font-family: 'Newsreader', serif; font-weight: 500; font-size: clamp(38px,4.6vw,52px); margin: 0 0 18px; letter-spacing: -.5px; }
 .head p { font-size: 18px; color: var(--muted); line-height: 1.55; margin: 0 auto; max-width: 620px; }
 .rule-pill { display: inline-flex; align-items: center; gap: 9px; margin-top: 26px; background: var(--tint-bg); color: var(--blue-2); border: 1px solid var(--tint-line); border-radius: 999px; padding: 11px 20px; font-size: 15px; font-weight: 600; }
-
-/* ---- Upload cards ---- */
 .uploads { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 52px; }
 @media (max-width: 900px){ .uploads { grid-template-columns: 1fr; } }
 .ucard { background: var(--paper); border: 1px solid var(--hair); border-radius: 20px; padding: 30px 32px; }
@@ -82,8 +57,6 @@ body {
 .dropzone.filled .big { color: var(--ok); }
 .fileinfo { background: var(--cool); border: 1px solid var(--hair); border-radius: 12px; padding: 16px 18px; margin-top: 18px; font-size: 14px; color: var(--muted); line-height: 1.6; }
 .chip { display: inline-block; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; background: var(--tint-bg); color: var(--blue-2); padding: 2px 8px; border-radius: 6px; }
-
-/* ---- Primary action ---- */
 .actions { display: flex; justify-content: center; margin-top: 44px; }
 .btn { display: inline-flex; align-items: center; gap: 10px; border: none; border-radius: 999px; padding: 16px 38px; font: inherit; font-size: 17px; font-weight: 700; cursor: pointer; transition: background .15s, transform .12s, box-shadow .15s; }
 .btn.primary { background: var(--blue); color: #fff; box-shadow: 0 14px 30px -14px rgba(40,74,120,.7); }
@@ -91,8 +64,6 @@ body {
 .btn.primary:disabled { background: #c4cfde; color: #fff; cursor: not-allowed; box-shadow: none; }
 .btn.ghost { background: var(--paper); color: var(--blue-2); border: 1px solid var(--tint-line); }
 .btn.ghost:hover { background: var(--tint-bg); }
-
-/* ---- Results ---- */
 .summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 8px; }
 @media (max-width: 900px){ .summary { grid-template-columns: 1fr 1fr; } }
 .scard { background: var(--paper); border: 1px solid var(--hair); border-radius: 16px; padding: 22px 24px; }
@@ -101,13 +72,11 @@ body {
 .scard.ok b { color: var(--ok); } .scard.warn b { color: var(--warn); } .scard.bad b { color: var(--bad); }
 .dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
 .dot.ok { background: var(--ok); } .dot.warn { background: var(--warn); } .dot.bad { background: var(--bad); } .dot.blue { background: var(--blue-2); }
-
 .claude { display: flex; gap: 16px; background: var(--blue); color: #eef2f9; border-radius: 18px; padding: 22px 26px; margin-top: 26px; }
 .claude .av { width: 42px; height: 42px; border-radius: 11px; background: rgba(255,255,255,.14); display: grid; place-items: center; flex: none; }
 .claude h4 { margin: 2px 0 8px; font-size: 16px; }
 .claude p { margin: 0; font-size: 15px; line-height: 1.6; color: #d4ddec; }
 .claude p b { color: #fff; font-weight: 600; }
-
 .tablewrap { background: var(--paper); border: 1px solid var(--hair); border-radius: 18px; overflow: hidden; margin-top: 26px; }
 .tablewrap .thead { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid var(--hair); }
 .tablewrap .thead h3 { font-size: 17px; margin: 0; font-weight: 700; }
@@ -129,10 +98,11 @@ tbody tr:hover { background: #f7f9fc; }
 .badge.bad { background: var(--bad-bg); color: var(--bad); }
 .note { font-size: 13px; color: var(--muted); margin-top: 3px; }
 .hidden { display: none !important; }
-
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="export-excel.js"></script>
 <script src="config.js"></script>
 </head>
 <body>
@@ -141,7 +111,7 @@ tbody tr:hover { background: #f7f9fc; }
   <span class="divide"></span>
   <div class="crumb">
     <span class="mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#eef2f9" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 4l9 6"/><path d="M5 10v8M19 10v8M9 10v8M15 10v8"/><path d="M3 20h18"/></svg></span>
-    <span class="ttl serif">Conciliación Bancaria</span>
+    <span class="ttl serif">Banco Credicoop</span>
   </div>
   <span class="org">Sulfoquímica SA</span>
 </header>
@@ -155,10 +125,9 @@ tbody tr:hover { background: #f7f9fc; }
     </div>
   </div>
 
-  <!-- ============ PANEL 1: UPLOAD ============ -->
   <section id="panel1">
     <div class="head">
-      <h1 class="serif">Conciliación Bancaria</h1>
+      <h1 class="serif">Banco Credicoop</h1>
       <p>Subí el extracto de Credicoop (PDF) y el libro banco de OneSoft (CSV). El sistema cruza todos los movimientos y Claude marca los puntos de atención.</p>
       <div><span class="rule-pill"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.8 4.6L18.5 9l-4.7 1.4L12 15l-1.8-4.6L5.5 9l4.7-1.4z"/></svg> Cruce por monto (±$1) y fecha (hasta 5 días)</span></div>
     </div>
@@ -199,7 +168,6 @@ tbody tr:hover { background: #f7f9fc; }
     <p style="text-align:center; color:var(--muted); font-size:13.5px; margin-top:16px;" id="hint">Cargá ambos archivos para habilitar la conciliación.</p>
   </section>
 
-  <!-- ============ PANEL 2: RESULTS ============ -->
   <section id="panel2" class="hidden">
     <div class="head" style="margin-top:40px;">
       <h1 class="serif">Resultado de la conciliación</h1>
@@ -249,10 +217,7 @@ tbody tr:hover { background: #f7f9fc; }
 <script>
 pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-// ── Config: lee tolerancias guardadas en Configuración, con defaults ──
-function cfg(key, def){
-  try{ var v=localStorage.getItem('cfg_'+key); return v!==null?v:def; }catch(e){ return def; }
-}
+function cfg(key, def){ try{ var v=localStorage.getItem('cfg_'+key); return v!==null?v:def; }catch(e){ return def; } }
 var TOLE_MONTO = parseFloat(cfg('tol_banco', '1')) || 1;
 var TOLE_DIAS  = parseInt(cfg('ventana_dias', '5')) || 5;
 
@@ -260,15 +225,12 @@ var bancoRows=[], libroRows=[], cargoRows=[], results=[];
 var loaded={A:false,B:false};
 var currentFilter='all', cargoFilter=false;
 
-// Empresa en header
 (function(){ try{ if(window.APP_CONFIG&&window.APP_CONFIG.EMPRESA) document.querySelectorAll('.org').forEach(function(e){e.textContent=window.APP_CONFIG.EMPRESA;}); }catch(e){} })();
-// Link al portal preservando secreto
 (function(){ try{ var c=window.APP_CONFIG; if(c&&c.SECRET_PATH){ sessionStorage.setItem('portal_access',c.SECRET_PATH); var b=document.querySelector('.back'); if(b) b.href='index.html?'+c.SECRET_PATH; } }catch(e){} })();
 
 var toast=document.getElementById('toast'); var tt;
 function showToast(m){toast.textContent=m;toast.style.opacity=1;toast.style.transform='translate(-50%,0)';clearTimeout(tt);tt=setTimeout(function(){toast.style.opacity=0;toast.style.transform='translate(-50%,20px)';},2400);}
 
-// ── Helpers de parseo ──
 function parseMonto(s){
   s=(s||'').toString().trim(); if(!s) return 0;
   s=s.replace(/\./g,'').replace(',','.');
@@ -285,7 +247,6 @@ function diasDif(a,b){ if(!a||!b) return 9999; return Math.abs((a-b)/86400000); 
 var CARGO_PATTERNS=['Comision','Comisión','I.V.A.','IVA -','Percepcion IVA','Percepción IVA','Percep Ingr Brutos','Percep Ingresos','Recaudacion ARBA','Recaudación ARBA','Impuesto Ley 25','Impuesto de Sellos','ECHQ','Intereses por Saldo','Ajuste p/'];
 function esCargo(d){ d=d||''; for(var i=0;i<CARGO_PATTERNS.length;i++){ if(d.toLowerCase().indexOf(CARGO_PATTERNS[i].toLowerCase())>=0) return true; } return false; }
 
-// ── Parse Extracto Credicoop (PDF) ──
 async function loadBancoPDF(file){
   var ab=await file.arrayBuffer();
   var pdf=await pdfjsLib.getDocument({data:ab}).promise;
@@ -319,7 +280,6 @@ async function loadBancoPDF(file){
   }
 }
 
-// ── Parse Libro Banco (CSV OneSoft) ──
 function loadLibroCSV(file){
   return new Promise(function(resolve,reject){
     var r=new FileReader();
@@ -344,7 +304,6 @@ function loadLibroCSV(file){
   });
 }
 
-// ── File handling ──
 function setLoaded(which, fname, detail){
   loaded[which]=true;
   var dz=document.getElementById('dz'+which);
@@ -379,7 +338,6 @@ document.getElementById('fileB').addEventListener('change',async function(ev){
   }catch(e){ document.getElementById('bigB').textContent='Error al leer'; showToast('Error: '+e.message); }
 });
 
-// ── Conciliar ──
 async function conciliar(){
   bancoRows.forEach(function(r){r.used=false;});
   libroRows.forEach(function(r){r.used=false;});
@@ -402,7 +360,6 @@ async function conciliar(){
 
   recalcMetrics();
 
-  // Subtítulo
   var sub=document.querySelector('#panel2 .head p');
   if(sub) sub.textContent='Período actual · '+results.length+' movimientos cruzados entre el extracto de Credicoop y el libro banco de OneSoft.';
 
@@ -413,7 +370,6 @@ async function conciliar(){
   goPanel(2);
 }
 
-// Recalcula los contadores del resumen desde results (se llama al conciliar y al tildar)
 function recalcMetrics(){
   var ok=results.filter(function(r){return r.status==='ok';});
   var warn=results.filter(function(r){return r.status==='warn';});
@@ -426,7 +382,6 @@ function recalcMetrics(){
   if(sc[3]) sc[3].textContent=tasa+'%';
 }
 
-// ── Claude: puntos de atención ──
 async function analizarClaude(ok, warn, bad){
   var box=document.querySelector('#panel2 .claude p');
   if(!box) return;
@@ -460,18 +415,14 @@ async function callClaude(system,user){
   return data.content[0].text;
 }
 
-// ── Render tabla ──
 function fmtDate(d){ if(!d) return '—'; return d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit'}); }
 function fmt(n){ if(n===null||n===undefined) return '—'; return (n<0?'-':'')+'$'+Math.abs(n).toLocaleString('es-AR',{minimumFractionDigits:2,maximumFractionDigits:2}); }
 var BADGE={ok:['ok','Conciliado'],warn:['warn','Dif. fecha'],bad:['bad','Pendiente']};
 
 function renderRows(filter){
   currentFilter=filter;
-  var src = cargoFilter ? [] : results;
-  var rows = src.filter(function(r){ return filter==='all'||r.status===filter; });
   var tbody=document.getElementById('rows');
   if(cargoFilter){
-    // Mostrar cargos bancarios
     document.querySelector('#panel2 table thead tr').innerHTML='<th>Fecha</th><th>Concepto</th><th>Categoría</th><th class="r">Monto</th>';
     tbody.innerHTML=cargoRows.map(function(c){
       return '<tr><td>'+fmtDate(c.fecha)+'</td><td>'+(c.desc||'—')+'</td><td style="color:var(--muted);font-size:13px">'+categorizar(c.desc)+'</td><td class="r">'+fmt(c.monto)+'</td></tr>';
@@ -483,11 +434,12 @@ function renderRows(filter){
   results.forEach(function(r, idx){
     if(!(filter==='all'||r.status===filter)) return;
     var b=BADGE[r.status], code=b[0], label=b[1];
+    if(r.manual){ code='ok'; label='Conciliado'; }
     var note = r.status==='bad'&&r.montoBanco===null ? '<div class="note">No figura en el extracto</div>'
              : r.status==='bad'&&r.montoLibro===null ? '<div class="note">No figura en el libro banco</div>'
              : r.status==='warn' ? '<div class="note">Difiere '+r.diasDif+' día(s)</div>' : '';
-    // Botón tilde solo para no conciliados
-    var tick = r.status!=='ok'
+    var esConc=(r.status==='ok'||r.manual);
+    var tick = !esConc
       ? '<button class="tickbtn" title="Marcar como conciliado" onclick="marcarConciliado('+idx+')"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg></button>'
       : (r.manual ? '<span class="manual-tag" title="Conciliado a mano">a mano</span>' : '');
     out+='<tr><td>'+fmtDate(r.fechaBanco||r.fechaLibro)+'</td><td>'+(r.descBanco||r.descLibro||'—')+note+'</td>'
@@ -498,7 +450,6 @@ function renderRows(filter){
   tbody.innerHTML = out || '<tr><td colspan="6" style="text-align:center;color:var(--muted);padding:30px">Sin movimientos</td></tr>';
 }
 
-// Marca un movimiento como conciliado a mano y actualiza el resumen
 function marcarConciliado(idx){
   if(!results[idx]) return;
   results[idx].status='ok';
@@ -521,7 +472,6 @@ function categorizar(d){
   return 'Otros cargos';
 }
 
-// ── Navegación de paneles y pasos ──
 function goPanel(n){
   document.getElementById('panel1').classList.toggle('hidden',n!==1);
   document.getElementById('panel2').classList.toggle('hidden',n!==2);
@@ -536,21 +486,52 @@ document.getElementById('volver').addEventListener('click',function(){ goPanel(1
 document.getElementById('st1').addEventListener('click',function(){ goPanel(1); });
 document.getElementById('st2').addEventListener('click',function(){ if(!document.getElementById('conciliar').disabled){ cargoFilter=false; renderRows('all'); goPanel(2); } });
 document.getElementById('st3').addEventListener('click',function(){ if(loaded.A&&loaded.B&&results.length){ cargoFilter=true; renderRows('all'); goPanel(2); } });
-document.getElementById('exportar').addEventListener('click',exportCSV);
+document.getElementById('exportar').addEventListener('click',exportarBanco);
 document.querySelectorAll('.fbtn').forEach(function(b){ b.addEventListener('click',function(){ document.querySelectorAll('.fbtn').forEach(function(x){x.classList.remove('on');}); b.classList.add('on'); cargoFilter=false; renderRows(b.dataset.f); }); });
 
-// ── Export CSV ──
-function exportCSV(){
+// ── Export a Excel con diseño ──
+function exportarBanco(){
   var labels={ok:'Conciliado',warn:'Dif. fecha',bad:'Pendiente'};
-  var headers=['Estado','Fecha Banco','Fecha Libro','Desc Banco','Concepto Libro','Monto Banco','Monto Libro','Días Dif'];
-  var rs=results.map(function(r){return[labels[r.status],fmtDate(r.fechaBanco),fmtDate(r.fechaLibro),r.descBanco,r.descLibro,r.montoBanco!=null?r.montoBanco.toFixed(2):'',r.montoLibro!=null?r.montoLibro.toFixed(2):'',r.diasDif!=null?r.diasDif:''];});
-  var csv=[headers].concat(rs).map(function(row){return row.map(function(c){return'"'+String(c||'').replace(/"/g,'""')+'"';}).join(',');}).join('\n');
-  var blob=new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8;'});
-  var a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download='conciliacion_banco_'+new Date().toISOString().slice(0,10)+'.csv'; a.click();
-  showToast('Exportado a CSV');
+  function fechaStr(d){ if(!d) return ''; return d.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}); }
+  function stKey(r){ if(r.manual) return 'manual'; if(r.status==='ok') return 'ok'; if(r.status==='warn') return 'arca'; return 'sub'; }
+  var filasMov=results.map(function(r){
+    return {
+      estado:(r.manual?'Conciliado (a mano)':(labels[r.status]||r.status)),
+      fbanco:fechaStr(r.fechaBanco), flibro:fechaStr(r.fechaLibro),
+      descb:r.descBanco||'', descl:r.descLibro||'',
+      os:(r.montoBanco==null?'':r.montoBanco), arca:(r.montoLibro==null?'':r.montoLibro),
+      dias:(r.diasDif==null?'':r.diasDif),
+      _st:stKey(r)
+    };
+  });
+  var filasCargos=cargoRows.map(function(c){
+    return { fecha:c.fecha?c.fecha.toLocaleDateString('es-AR',{day:'2-digit',month:'2-digit',year:'numeric'}):'',
+             concepto:c.desc||'', categoria:categorizar(c.desc), os:(c.monto==null?'':c.monto) };
+  });
+  var hojas=[{
+    nombre:'Conciliación',
+    columnas:[
+      {header:'Estado',key:'estado',width:22},{header:'Fecha Banco',key:'fbanco',width:14},
+      {header:'Fecha Libro',key:'flibro',width:14},{header:'Concepto Banco',key:'descb',width:34},
+      {header:'Concepto Libro',key:'descl',width:34},{header:'Extracto',key:'os',width:16},
+      {header:'Libro Banco',key:'arca',width:16},{header:'Días dif.',key:'dias',width:10}
+    ],
+    filas:filasMov
+  }];
+  if(filasCargos.length){
+    hojas.push({
+      nombre:'Cargos bancarios',
+      columnas:[
+        {header:'Fecha',key:'fecha',width:14},{header:'Concepto',key:'concepto',width:40},
+        {header:'Categoría',key:'categoria',width:22},{header:'Monto',key:'os',width:16}
+      ],
+      filas:filasCargos
+    });
+  }
+  exportarExcel({ nombreArchivo:'conciliacion_banco', hojas:hojas });
+  showToast('Exportado a Excel');
 }
 
-// ── Guardar en historial (para Reportes) ──
 function guardarHistorial(modulo, tasa, difs){
   try{
     var key='hist_'+modulo;

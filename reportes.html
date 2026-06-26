@@ -183,23 +183,9 @@ tbody tr:hover { background: #f7f9fc; }
   <div class="seg">
     <!-- BANCARIA -->
     <div class="col">
-      <h2><span class="cic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 4l9 6"/><path d="M5 10v8M19 10v8M9 10v8M15 10v8"/><path d="M3 20h18"/></svg></span> Conciliación Bancaria</h2>
+      <h2><span class="cic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 4l9 6"/><path d="M5 10v8M19 10v8M9 10v8M15 10v8"/><path d="M3 20h18"/></svg></span> Banco Credicoop</h2>
       <p class="colsub" id="bankSub">Sin conciliaciones registradas todavía</p>
       <div class="runlist" id="bankRuns"></div>
-    </div>
-
-    <!-- IVA -->
-    <div class="col">
-      <h2><span class="cic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></span> IVA Compras</h2>
-      <p class="colsub" id="ivaSub">Sin conciliaciones registradas todavía</p>
-      <div class="runlist" id="ivaRuns"></div>
-    </div>
-
-    <!-- RETENCIONES Y PERCEPCIONES IVA -->
-    <div class="col">
-      <h2><span class="cic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg></span> Retenciones y Percepciones IVA</h2>
-      <p class="colsub" id="retSub">Sin conciliaciones registradas todavía</p>
-      <div class="runlist" id="retRuns"></div>
     </div>
 
     <!-- INGRESOS BRUTOS -->
@@ -209,11 +195,32 @@ tbody tr:hover { background: #f7f9fc; }
       <div class="runlist" id="iibbRuns"></div>
     </div>
 
+    <!-- IVA -->
+    <div class="col">
+      <h2><span class="cic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg></span> IVA Compras</h2>
+      <p class="colsub" id="ivaSub">Sin conciliaciones registradas todavía</p>
+      <div class="runlist" id="ivaRuns"></div>
+    </div>
+
     <!-- RETENCIONES DE GANANCIAS -->
     <div class="col">
       <h2><span class="cic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></span> Retenciones de Ganancias</h2>
       <p class="colsub" id="ganSub">Sin conciliaciones registradas todavía</p>
       <div class="runlist" id="ganRuns"></div>
+    </div>
+
+    <!-- RETENCIONES SUSS -->
+    <div class="col">
+      <h2><span class="cic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg></span> Retenciones SUSS</h2>
+      <p class="colsub" id="sussSub">Sin conciliaciones registradas todavía</p>
+      <div class="runlist" id="sussRuns"></div>
+    </div>
+
+    <!-- RETENCIONES Y PERCEPCIONES IVA -->
+    <div class="col">
+      <h2><span class="cic"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg></span> Retenciones y Percepciones IVA</h2>
+      <p class="colsub" id="retSub">Sin conciliaciones registradas todavía</p>
+      <div class="runlist" id="retRuns"></div>
     </div>
   </div>
 </div>
@@ -255,15 +262,17 @@ var iva=getHist('iva');
 var ret=getHist('retenciones');
 var iibb=getHist('iibb');
 var gan=getHist('ganancias');
+var suss=getHist('suss');
 render('bankRuns', bank, 'banco.html', 'bankSub', 'cuenta corriente Credicoop');
 render('ivaRuns', iva, 'iva.html', 'ivaSub', 'Subdiario vs ARCA');
 render('retRuns', ret, 'retenciones.html', 'retSub', 'Recibos y facturas vs ARCA');
 render('iibbRuns', iibb, 'iibb.html', 'iibbSub', 'OneSoft vs ARBA');
 render('ganRuns', gan, 'ganancias.html', 'ganSub', 'Recibos vs ARCA');
+render('sussRuns', suss, 'suss.html', 'sussSub', 'Recibos vs ARCA (Seg. Social)');
 
 // Banda de totales: calculada solo sobre datos reales
 try{
-  var allRuns = bank.concat(iva).concat(ret).concat(iibb).concat(gan);
+  var allRuns = bank.concat(iva).concat(ret).concat(iibb).concat(gan).concat(suss);
   var totConc = allRuns.length;
   var avgTasa = allRuns.length ? Math.round(allRuns.reduce(function(s,r){return s+r[1];},0)/allRuns.length) : 0;
   var totDifs = allRuns.reduce(function(s,r){return s+r[2];},0);

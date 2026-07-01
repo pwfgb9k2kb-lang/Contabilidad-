@@ -231,7 +231,10 @@ function readSheet(file){return new Promise((res,rej)=>{const r=new FileReader()
 function parseProd(rows){const d=[];for(let i=2;i<rows.length;i++){const r=rows[i];
   const art=(r[1]===undefined?'':String(r[1])).trim();if(!art)continue;
   d.push({fecha:r[0],art,desc:(r[2]||'').toString().trim(),prod:num(r[3]),peso:num(r[4]),
-    turno:r[5],codlinea:num(r[6]),linea:r[7],pers:num(r[8]),tiempo:num(r[14])});}return d;}
+    turno:r[5],ctrl:r[9],codlinea:num(r[6]),linea:r[7],pers:num(r[8]),
+    hini:r[11],hfin:r[13],tiempo:num(r[14]),tiempoS:r[15],
+    bi:num(r[16]),bii:num(r[17]),bip:num(r[18]),biip:num(r[19]),biiip:num(r[20]),
+    cab:r[21],paga:r[22],probl:r[23],loteg:r[24],lote:r[26]});}return d;}
 
 function parseVentas(rows){const m={};for(let i=4;i<rows.length;i++){const r=rows[i];
   let art=(r[0]===undefined?'':String(r[0])).trim();
@@ -293,27 +296,117 @@ function render(R){
   document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
 }
 
-function buildExcel(R){const wb=XLSX.utils.book_new();
-  const head=['CodArt','Producto','Cajas producidas','Litros prod','Cant vendida','Precio venta',
-    'Costo unitario','MO Directa','Costo indirecto','Costo elaboración','Costo total',
-    'Prod. valorizada -10%','Resultado','Margen %'];
-  const rows=[head];
-  for(const s of R.skus)rows.push([s.art,s.desc,s.cajas,Math.round(s.litp),s.cant||'',
-    s.precio?+s.precio.toFixed(2):'',+s.costoUnit.toFixed(2),+s.mo.toFixed(2),+s.ind.toFixed(2),
-    +s.elab.toFixed(2),+s.ct.toFixed(2),s.pv?+s.pv.toFixed(2):'',s.m!==null?+s.res.toFixed(2):'',
-    s.m!==null?+(s.m*100).toFixed(1):'']);
-  rows.push(['','TOTAL',R.T.prod,Math.round(R.T.litp),'','','',+R.T.mo.toFixed(2),+R.T.ind.toFixed(2),
-    +R.T.elab.toFixed(2),+R.T.tot.toFixed(2),+R.T.val.toFixed(2),+R.T.res.toFixed(2),+(R.margenPond*100).toFixed(1)]);
-  const w1=XLSX.utils.aoa_to_sheet(rows);w1['!cols']=head.map((h,i)=>({wch:i===1?34:14}));
-  XLSX.utils.book_append_sheet(wb,w1,'Resumen');
-  const rp=[['Fecha','CodArt','CodDesc','Linea','Tiempo','Cant.Pers.','Horas hombre','Valor hora','Horas valorizadas']];
-  for(const r of R.reproc){const hh=r.tiempo*r.pers;rp.push([r.fecha,r.art,r.desc,r.linea,r.tiempo,r.pers,
-    +hh.toFixed(2),+VH_REPROC.toFixed(2),+(hh*VH_REPROC).toFixed(2)]);}
-  rp.push(['','','','','','TOTAL',+R.rh.toFixed(2),'',+R.rv.toFixed(2)]);
-  const w2=XLSX.utils.aoa_to_sheet(rp);
-  w2['!cols']=[{wch:12},{wch:14},{wch:30},{wch:16},{wch:8},{wch:9},{wch:12},{wch:12},{wch:16}];
-  XLSX.utils.book_append_sheet(wb,w2,'Reproceso');
-  XLSX.writeFile(wb,'Costos_Produccion_'+new Date().toISOString().slice(0,10)+'.xlsx');
+function cliente(art){const a=String(art).toUpperCase();
+  if(a.startsWith('UNI'))return 'Unilever';if(a.startsWith('DIV'))return 'Diversey';
+  if(a.startsWith('SUT')||a.startsWith('SUP'))return 'Spartan';if(a.startsWith('POW'))return 'Powerful';
+  if(a.startsWith('SCJ'))return 'SC Johnson';if(a.startsWith('ECO'))return 'Ecolab';
+  if(a.startsWith('FAD')||a.startsWith('FAB'))return 'Fabricacion propia';
+  if(a.startsWith('AYU'))return 'Ayudin';if(a.startsWith('DRE'))return 'Drever';return 'Otros';}
+
+function buildExcel(){
+  const VH_MO_STR='26565.019985196*1.095', VH_REPROC_STR='18901*1.078*1.095';
+  const prodRows=S.prodRows, vmap=S.vmap;
+  const prod=prodRows.filter(r=>!NO_PROD.has(r.codlinea));
+  const reproc=prodRows.filter(r=>NO_PROD.has(r.codlinea));
+  prod.sort((a,b)=>(a.art+a.desc).localeCompare(b.art+b.desc));
+  const wb=XLSX.utils.book_new();
+  const F=(f)=>({t:'n',f:f});
+
+  const baseHdr=['Fecha','CodArt','CodDesc','Producido','Peso Caja','Turno','CodLinea','Linea',
+    'Cant. Pers.','Controla Efic.','HoraInicio','HoraFin','Tiempo','Tiempo S','BaseI','BaseII',
+    'BaseIProp','BaseIIProp','BaseIIP','Cabecera','Paga Premio Igual','Problemas Cal.','LoteG','Lote'];
+  const baseRow=r=>[r.fecha,r.art,r.desc,r.prod,r.peso,r.turno,r.codlinea,r.linea,r.pers,r.ctrl,
+    r.hini,r.hfin,r.tiempo,r.tiempoS,r.bi,r.bii,r.bip,r.biip,r.biiip,r.cab,r.paga,r.probl,r.loteg,r.lote];
+
+  // Base
+  const baseAOA=[baseHdr]; for(const r of prod)baseAOA.push(baseRow(r));
+  const wsBase=XLSX.utils.aoa_to_sheet(baseAOA);
+  XLSX.utils.book_append_sheet(wb,wsBase,'Base');
+  const nBase=prod.length;
+
+  // Reproceso
+  const wsRep=XLSX.utils.aoa_to_sheet([baseHdr.concat(['horas hombre','Valor','Horas valorizadas'])]);
+  let rr=2;
+  for(const r of reproc){XLSX.utils.sheet_add_aoa(wsRep,[baseRow(r)],{origin:'A'+rr});
+    wsRep['Y'+rr]=F('M'+rr+'*I'+rr);wsRep['Z'+rr]=F(VH_REPROC_STR);wsRep['AA'+rr]=F('Y'+rr+'*Z'+rr);rr++;}
+  wsRep['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:reproc.length,c:26}});
+  XLSX.utils.book_append_sheet(wb,wsRep,'Reproceso');
+
+  // REsumen para planilla
+  const resHdr=['Fecha','CodArt','CodDesc','Producido','Peso Caja','Turno','CodLinea','Linea',
+    'Cant. Pers.','HoraInicio','HoraFin','Tiempo','Tiempo S','BaseI','BaseII','BaseIProp','BaseIIProp',
+    'Cabecera','CAJAS SOBRE BASE I','CAJAS SOBRE BASE II','CONTROL','Horas Hombre real','Valor horario A1',
+    'MO Dir','Litros','Litros prod','Factor ind','Costos Ind x litro','Elaboracion Batch 10t','Costos Totales',
+    'Cant vendida','Precio Venta','Prod valorizada -10%','Resultado','%','Stock ant','Prod','Fact',
+    'Stock Teorico','Stock Real','Dif de stock'];
+  const wsRes=XLSX.utils.aoa_to_sheet([resHdr]);
+  const groups=[];let cur=null;
+  for(const r of prod){const k=r.art+'||'+r.desc;
+    if(!cur||cur.key!==k){cur={key:k,art:r.art,desc:r.desc,rows:[]};groups.push(cur);}cur.rows.push(r);}
+  let row=2;
+  for(const g of groups){const gStart=row;
+    for(let ri=0;ri<g.rows.length;ri++){const r=g.rows[ri];
+      XLSX.utils.sheet_add_aoa(wsRes,[[r.fecha,r.art,r.desc,r.prod,r.peso,r.turno,r.codlinea,r.linea,r.pers,
+        r.hini,r.hfin,r.tiempo,r.tiempoS,r.bi,r.bii,r.bip,r.biip,r.cab]],{origin:'A'+row});
+      wsRes['S'+row]=F('D'+row+'-P'+row);wsRes['T'+row]=F('D'+row+'-Q'+row);wsRes['U'+row]=F('T'+row+'-S'+row);
+      wsRes['V'+row]=F('L'+row+'*I'+row);wsRes['W'+row]=F(ri===0?VH_MO_STR:'W'+(row-1));
+      wsRes['X'+row]=F('W'+row+'*V'+row);wsRes['Y'+row]=F(ri===0?'E'+row:'Y'+gStart);
+      wsRes['Z'+row]=F('Y'+row+'*D'+row);wsRes['AA'+row]=F('IF(Y'+row+'=0,0,6/Y'+row+')');
+      wsRes['AB'+row]=F('Z'+row+'*265.43*AA'+row);wsRes['AC'+row]=F('(((W'+row+'*1.0833*9)/10000)*Z'+row+')');
+      wsRes['AD'+row]=F('X'+row+'+AB'+row+'+AC'+row);row++;}
+    const gEnd=row-1;
+    wsRes['C'+row]={t:'s',v:'Total '+g.desc};
+    ['D','S','T','V','X','Z','AB','AC','AD'].forEach(cl=>{wsRes[cl+row]=F('SUBTOTAL(9,'+cl+gStart+':'+cl+gEnd+')');});
+    const v=vmap[g.art];let cant='',precio='';
+    if(v&&v.cant){cant=v.cant;precio=v.imp/v.cant;if(g.art.startsWith('ECO')){cant/=ECO_F;precio*=ECO_F;}}
+    if(cant!==''){wsRes['AE'+row]={t:'n',v:cant};wsRes['AF'+row]={t:'n',v:+precio.toFixed(2)};}
+    wsRes['AG'+row]=F('AF'+row+'*D'+row+'*0.9');wsRes['AH'+row]=F('AG'+row+'-AD'+row);
+    wsRes['AI'+row]=F('IF(AG'+row+'=0,0,AH'+row+'/AG'+row+')');
+    wsRes['AK'+row]=F('D'+row);wsRes['AL'+row]=F('AE'+row);
+    wsRes['AM'+row]=F('AJ'+row+'+AK'+row+'-AL'+row);wsRes['AO'+row]=F('AM'+row+'-AN'+row);row++;}
+  wsRes['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:row-2,c:40}});
+  wsRes['!cols']=resHdr.map((h,i)=>({wch:i===2?32:12}));
+  XLSX.utils.book_append_sheet(wb,wsRes,'REsumen para planilla');
+
+  // x cliente
+  const wsXc=XLSX.utils.aoa_to_sheet([['CodArt','cliente','CodDesc','Producido','Litros prod','Horas Hombre',
+    'MO Dir','Costos Totales','Cant vendida','Precio Venta','Prod valorizada','Resultado','%']]);
+  const xg={};
+  for(const r of prod){const k=r.art+'||'+r.desc;if(!xg[k])xg[k]={art:r.art,desc:r.desc,prod:0,hh:0,peso:r.peso};
+    xg[k].prod+=r.prod;xg[k].hh+=r.tiempo*r.pers;}
+  const xarr=Object.values(xg).sort((a,b)=>cliente(a.art).localeCompare(cliente(b.art))||a.art.localeCompare(b.art));
+  let xr=2;
+  for(const g of xarr){const litp=g.peso*g.prod;
+    XLSX.utils.sheet_add_aoa(wsXc,[[g.art,cliente(g.art),g.desc,g.prod,litp,g.hh]],{origin:'A'+xr});
+    wsXc['G'+xr]=F('F'+xr+'*('+VH_MO_STR+')');
+    wsXc['H'+xr]=F('G'+xr+'+(E'+xr+'*265.43*IF(E'+xr+'=0,0,6/(E'+xr+'/D'+xr+')))+((('+VH_MO_STR+'*1.0833*9)/10000)*E'+xr+')');
+    const v=vmap[g.art];let cant='',precio='';
+    if(v&&v.cant){cant=v.cant;precio=v.imp/v.cant;if(g.art.startsWith('ECO')){cant/=ECO_F;precio*=ECO_F;}}
+    if(cant!==''){wsXc['I'+xr]={t:'n',v:cant};wsXc['J'+xr]={t:'n',v:+precio.toFixed(2)};}
+    wsXc['K'+xr]=F('J'+xr+'*D'+xr+'*0.9');wsXc['L'+xr]=F('K'+xr+'-H'+xr);
+    wsXc['M'+xr]=F('IF(K'+xr+'=0,0,L'+xr+'/K'+xr+')');xr++;}
+  wsXc['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:xarr.length,c:12}});
+  XLSX.utils.book_append_sheet(wb,wsXc,'x cliente');
+
+  // Dif horas diarias
+  const wsDh=XLSX.utils.aoa_to_sheet([['Fecha','Cabecera (Empleado)','Linea','Tiempo','Dif vs 8hs']]);
+  const recs=prod.filter(r=>r.cab&&String(r.cab).trim()).sort((a,b)=>b.tiempo-a.tiempo);
+  let dr=2;
+  for(const r of recs){XLSX.utils.sheet_add_aoa(wsDh,[[r.fecha,r.cab,r.linea,r.tiempo]],{origin:'A'+dr});
+    wsDh['E'+dr]=F('D'+dr+'-8');dr++;}
+  wsDh['!ref']=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:recs.length,c:4}});
+  XLSX.utils.book_append_sheet(wb,wsDh,'Dif horas diarias');
+
+  // Evolucion
+  const wsEv=XLSX.utils.aoa_to_sheet([['Concepto','Período']]);
+  wsEv['A2']={t:'s',v:'Cajas producidas (Base)'};wsEv['B2']=F('SUM(Base!D2:D'+(nBase+1)+')');
+  wsEv['A3']={t:'s',v:'Litros producidos'};wsEv['B3']=F('SUMPRODUCT(Base!D2:D'+(nBase+1)+',Base!E2:E'+(nBase+1)+')');
+  wsEv['A4']={t:'s',v:'Capacidad normal (L)'};wsEv['B4']={t:'n',v:1200000};
+  wsEv['A5']={t:'s',v:'Horas SQ/Sistemas/Adecco/Manpower'};wsEv['B5']={t:'s',v:'MANUAL - RRHH'};
+  wsEv['!ref']='A1:B5';wsEv['!cols']=[{wch:34},{wch:20}];
+  XLSX.utils.book_append_sheet(wb,wsEv,'Evolucion');
+
+  XLSX.writeFile(wb,'Produccion_Costos_'+new Date().toISOString().slice(0,10)+'.xlsx');
 }
 
 function wire(dzId,inputId,fnId,stId,key){
@@ -338,15 +431,24 @@ function refresh(){const ok=S.prod&&S.ventas;
 document.getElementById('btnRun').addEventListener('click',async()=>{
   const btn=document.getElementById('btnRun'),eb=document.getElementById('errBox');
   eb.style.display='none';btn.disabled=true;btn.textContent='Procesando...';
-  try{const [pr,vr]=await Promise.all([readSheet(S.prod),readSheet(S.ventas)]);
+  try{
+    // Chequear nombres de hoja del archivo de producción para detectar el archivo equivocado
+    const wbCheck=XLSX.read(new Uint8Array(await S.prod.arrayBuffer()),{type:'array'});
+    const anlz=['REsumen para planilla','x cliente','Dif horas diarias','Evolucion'];
+    if(wbCheck.SheetNames.some(n=>anlz.includes(n)))
+      throw new Error('Ese es el Excel de análisis ya procesado (tiene las hojas REsumen, x cliente, etc.), no el cuadro de producción de OneSoft. Subí el export crudo de OneSoft.');
+    const [pr,vr]=await Promise.all([readSheet(S.prod),readSheet(S.ventas)]);
     const prodRows=parseProd(pr),vmap=parseVentas(vr);
     if(!prodRows.length)throw new Error('El archivo de producción no tiene filas válidas. Verificá que sea el export de OneSoft.');
     if(!Object.keys(vmap).length)throw new Error('El archivo de ventas no tiene productos. Verificá que sea la estadística de ventas.');
-    S.result=calcular(prodRows,vmap);render(S.result);
+    const conPeso=prodRows.filter(r=>r.peso>0).length, conTiempo=prodRows.filter(r=>r.tiempo>0).length;
+    if(conPeso===0&&conTiempo===0)
+      throw new Error('El archivo no trae Peso Caja ni Tiempo, así que no se pueden calcular los costos. Verificá que sea el cuadro de producción correcto de OneSoft.');
+    S.prodRows=prodRows;S.vmap=vmap;S.result=calcular(prodRows,vmap);render(S.result);
   }catch(x){eb.textContent=x.message;eb.style.display='block';}
   finally{btn.disabled=false;btn.textContent='Procesar';}});
 
-document.getElementById('btnDl').addEventListener('click',()=>{if(S.result)buildExcel(S.result);});
+document.getElementById('btnDl').addEventListener('click',()=>{if(S.result)buildExcel();});
 document.getElementById('stepRes').addEventListener('click',()=>{
   if(!document.getElementById('results').classList.contains('hidden'))
     document.getElementById('results').scrollIntoView({behavior:'smooth'});});

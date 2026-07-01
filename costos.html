@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Costos de Producción · Portal Contable</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Hanken+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+* { box-sizing: border-box; }
+:root {
+  --blue: #284a78; --blue-2: #2f578c; --blue-3: #2f5a9e;
+  --tint-bg: #e2e9f4; --tint-line: #d2ddee;
+  --cool: #f3f6fa; --paper: #ffffff; --ink: #1c2530; --muted: #61708a; --hair: #e1e7f0;
+  --ok: #1f7a54; --ok-bg: #e3f1ea;
+  --warn: #9a6a1e; --warn-bg: #f6edda;
+  --bad: #a23a3a; --bad-bg: #f6e4e2;
+}
+html, body { margin: 0; }
+body { font-family: 'Hanken Grotesk', system-ui, sans-serif; color: var(--ink); background: var(--cool); min-height: 100vh; }
+.serif { font-family: 'Newsreader', Georgia, serif; }
+.mono { font-family: 'JetBrains Mono', monospace; }
+
+.topbar { background: var(--blue); color: #eef2f9; display: flex; align-items: center; padding: 0 clamp(20px,4vw,52px); height: 76px; }
+.topbar .back { display: flex; align-items: center; gap: 7px; color: #c5d2e6; text-decoration: none; font-size: 15px; padding-right: 22px; transition: color .15s; }
+.topbar .back:hover { color: #fff; }
+.topbar .divide { width: 1px; height: 30px; background: rgba(255,255,255,.18); }
+.topbar .crumb { display: flex; align-items: center; gap: 16px; padding-left: 22px; }
+.topbar .crumb .mark { width: 44px; height: 44px; border-radius: 12px; background: rgba(255,255,255,.13); display: grid; place-items: center; flex: none; }
+.topbar .crumb .ttl { font-family: 'Newsreader', serif; font-size: 26px; font-weight: 600; letter-spacing: .2px; }
+.topbar .org { margin-left: auto; font-size: 15px; color: #bccbe2; }
+
+.wrap { max-width: 1280px; margin: 0 auto; padding: 44px clamp(20px,4vw,52px) 64px; }
+.stepper { display: inline-flex; align-items: center; gap: 4px; background: var(--paper); border: 1px solid var(--hair); border-radius: 999px; padding: 7px; box-shadow: 0 8px 24px -18px rgba(28,40,60,.4); }
+.step { display: flex; align-items: center; gap: 9px; padding: 11px 20px; border-radius: 999px; font-size: 15px; font-weight: 600; color: #9aa6ba; border: none; background: transparent; cursor: default; transition: background .15s, color .15s; }
+.step.on { background: var(--blue); color: #fff; }
+.step.done { color: var(--blue-2); cursor: pointer; }
+.step.done:hover { background: var(--tint-bg); }
+.step svg { flex: none; }
+
+.head { text-align: center; margin: 56px auto 0; max-width: 760px; }
+.head h1 { font-family: 'Newsreader', serif; font-weight: 500; font-size: clamp(38px,4.6vw,52px); margin: 0 0 18px; letter-spacing: -.5px; }
+.head p { font-size: 18px; color: var(--muted); line-height: 1.55; margin: 0 auto; max-width: 620px; }
+.rule-pill { display: inline-flex; align-items: center; gap: 9px; margin-top: 26px; background: var(--tint-bg); color: var(--blue-2); border: 1px solid var(--tint-line); border-radius: 999px; padding: 11px 20px; font-size: 15px; font-weight: 600; }
+
+.uploads { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 52px; }
+@media (max-width: 900px){ .uploads { grid-template-columns: 1fr; } }
+.ucard { background: var(--paper); border: 1px solid var(--hair); border-radius: 20px; padding: 30px 32px; }
+.ucard .uhead { display: flex; align-items: flex-start; gap: 16px; }
+.ucard .uic { width: 48px; height: 48px; border-radius: 12px; background: var(--tint-bg); color: var(--blue-2); display: grid; place-items: center; flex: none; }
+.ucard h3 { font-size: 21px; margin: 2px 0 4px; font-weight: 700; }
+.ucard .sub { font-size: 14px; color: var(--muted); margin: 0; }
+.ustatus { display: flex; align-items: center; gap: 9px; font-size: 14.5px; color: var(--muted); margin: 22px 0 16px; }
+.ustatus.loaded { color: var(--ok); font-weight: 600; }
+.dropzone { border: 2px dashed var(--tint-line); border-radius: 16px; background: var(--cool); padding: 40px 20px; text-align: center; cursor: pointer; transition: border-color .15s, background .15s; }
+.dropzone:hover { border-color: var(--blue-2); background: #eef3fb; }
+.dropzone.drag { border-color: var(--blue); background: #eef3fb; }
+.dropzone .up { width: 34px; height: 34px; margin: 0 auto 14px; color: var(--blue-2); }
+.dropzone .big { font-size: 18px; font-weight: 700; }
+.dropzone .small { font-size: 14px; color: var(--muted); margin-top: 6px; }
+.dropzone .fname { font-size: 14px; color: var(--ok); font-weight: 600; margin-top: 10px; word-break: break-all; }
+.dropzone.filled { border-style: solid; border-color: var(--ok); background: var(--ok-bg); }
+.dropzone.filled .up { color: var(--ok); }
+.dropzone.filled .big { color: var(--ok); }
+.uinput { display: none; }
+
+.actions { display: flex; justify-content: center; align-items: center; gap: 18px; margin-top: 44px; flex-wrap: wrap; }
+.btn { display: inline-flex; align-items: center; gap: 10px; border: none; border-radius: 999px; padding: 16px 38px; font: inherit; font-size: 17px; font-weight: 700; cursor: pointer; transition: background .15s, transform .12s, box-shadow .15s; }
+.btn.primary { background: var(--blue); color: #fff; box-shadow: 0 14px 30px -14px rgba(40,74,120,.7); }
+.btn.primary:hover:not(:disabled) { background: var(--blue-2); transform: translateY(-1px); }
+.btn.primary:disabled { background: #c4cfde; color: #fff; cursor: not-allowed; box-shadow: none; }
+.btn.ghost { background: var(--paper); color: var(--blue-2); border: 1px solid var(--tint-line); }
+.btn.ghost:hover { background: var(--tint-bg); }
+.btn.ok { background: var(--ok); color: #fff; box-shadow: 0 14px 30px -14px rgba(31,122,84,.6); }
+.btn.ok:hover { background: #1a6848; transform: translateY(-1px); }
+.acthint { font-size: 14.5px; color: var(--muted); }
+.errbox { background: var(--bad-bg); color: var(--bad); border: 1px solid #eab8b3; border-radius: 14px; padding: 15px 20px; margin-top: 24px; font-size: 15px; text-align: center; display: none; }
+
+.summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-top: 8px; }
+@media (max-width: 900px){ .summary { grid-template-columns: 1fr 1fr; } }
+.scard { background: var(--paper); border: 1px solid var(--hair); border-radius: 16px; padding: 22px 24px; }
+.scard .lbl { font-size: 13.5px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
+.scard b { font-family: 'Newsreader', serif; font-size: 34px; font-weight: 500; display: block; line-height: 1; margin-top: 12px; }
+.scard .sublbl { font-size: 12.5px; color: var(--muted); margin-top: 8px; display: block; }
+.scard.ok b { color: var(--ok); }
+.dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; }
+.dot.ok { background: var(--ok); } .dot.warn { background: var(--warn); } .dot.bad { background: var(--bad); } .dot.blue { background: var(--blue-2); }
+
+.claude { display: flex; gap: 16px; background: var(--blue); color: #eef2f9; border-radius: 18px; padding: 22px 26px; margin-top: 26px; }
+.claude .av { width: 42px; height: 42px; border-radius: 11px; background: rgba(255,255,255,.14); display: grid; place-items: center; flex: none; }
+.claude h4 { margin: 2px 0 8px; font-size: 16px; }
+.claude p { margin: 0; font-size: 15px; line-height: 1.6; color: #d4ddec; }
+.claude p b { color: #fff; font-weight: 600; }
+
+.tablewrap { background: var(--paper); border: 1px solid var(--hair); border-radius: 18px; overflow: hidden; margin-top: 26px; }
+.tablewrap .thead { display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid var(--hair); flex-wrap: wrap; gap: 8px; }
+.tablewrap .thead h3 { font-size: 17px; margin: 0; font-weight: 700; }
+.tablewrap .thead .cnt { font-size: 13.5px; color: var(--muted); }
+.tscroll { max-height: 520px; overflow: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+thead th { text-align: right; font-size: 12px; letter-spacing: .5px; text-transform: uppercase; color: var(--muted); font-weight: 700; padding: 14px 20px; background: var(--cool); position: sticky; top: 0; z-index: 2; }
+thead th:first-child { text-align: left; }
+td { padding: 13px 20px; border-top: 1px solid var(--hair); text-align: right; }
+td:first-child { text-align: left; }
+td.r { font-variant-numeric: tabular-nums; font-family: 'JetBrains Mono', monospace; }
+tbody tr:hover { background: #f7f9fc; }
+.badge { display: inline-flex; align-items: center; gap: 7px; font-size: 12.5px; font-weight: 700; padding: 5px 11px; border-radius: 999px; }
+.badge.ok { background: var(--ok-bg); color: var(--ok); }
+.badge.warn { background: var(--warn-bg); color: var(--warn); }
+.badge.bad { background: var(--bad-bg); color: var(--bad); }
+.badge.zero { background: #eef0f5; color: var(--muted); }
+.hidden { display: none !important; }
+</style>
+<script src="config.js"></script>
+</head>
+<body>
+<header class="topbar">
+  <a class="back" href="index.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M15 6l-6 6 6 6"/></svg> Portal</a>
+  <span class="divide"></span>
+  <div class="crumb">
+    <span class="mark"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#eef2f9" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg></span>
+    <span class="ttl serif">Costos de Producción</span>
+  </div>
+  <span class="org">Sulfoquímica SA</span>
+</header>
+
+<div class="wrap">
+  <div class="stepper">
+    <button class="step on" id="stepCarga"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 8l5-5 5 5"/><path d="M4 21h16"/></svg> Cargar archivos</button>
+    <button class="step" id="stepRes"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg> Rentabilidad</button>
+  </div>
+
+  <div class="head">
+    <h1 class="serif">Costos de producción</h1>
+    <p>Subí el cuadro de producción de OneSoft y la estadística de ventas. El sistema costea cada producto y calcula la rentabilidad del período.</p>
+    <span class="rule-pill"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M3 12h18"/></svg> Mano de obra + indirecto + elaboración · cruce de ventas por CodArt</span>
+  </div>
+
+  <div class="uploads">
+    <div class="ucard">
+      <div class="uhead">
+        <span class="uic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><path d="M3.27 6.96 12 12.01l8.73-5.05M12 22.08V12"/></svg></span>
+        <div><h3>Cuadro de Producción</h3><p class="sub">Export de OneSoft (hoja "Sheet")</p></div>
+      </div>
+      <div class="ustatus" id="stProd"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg> Sin cargar</div>
+      <div class="dropzone" id="dzProd">
+        <svg class="up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 8l5-5 5 5"/><path d="M4 21h16"/></svg>
+        <div class="big">Elegir Excel de producción</div>
+        <div class="small">Cuadro de producción del mes</div>
+        <div class="fname" id="fnProd"></div>
+      </div>
+      <input class="uinput" type="file" id="fileProd" accept=".xls,.xlsx" />
+    </div>
+
+    <div class="ucard">
+      <div class="uhead">
+        <span class="uic"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20M6 15h4"/></svg></span>
+        <div><h3>Estadística de Ventas</h3><p class="sub">Export de ventas por producto</p></div>
+      </div>
+      <div class="ustatus" id="stVta"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg> Sin cargar</div>
+      <div class="dropzone" id="dzVta">
+        <svg class="up" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 8l5-5 5 5"/><path d="M4 21h16"/></svg>
+        <div class="big">Elegir Excel de ventas</div>
+        <div class="small">Ventas por producto del mes</div>
+        <div class="fname" id="fnVta"></div>
+      </div>
+      <input class="uinput" type="file" id="fileVta" accept=".xls,.xlsx" />
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn primary" id="btnRun" disabled>Procesar</button>
+    <span class="acthint" id="runHint">Faltan los dos archivos.</span>
+  </div>
+  <div class="errbox" id="errBox"></div>
+
+  <div id="results" class="hidden">
+    <div class="head" style="margin-top:64px;">
+      <h1 class="serif">Resumen de rentabilidad</h1>
+    </div>
+
+    <div class="summary" style="margin-top:40px;">
+      <div class="scard"><span class="lbl"><span class="dot blue"></span> Cajas producidas</span><b id="kCajas">—</b><span class="sublbl" id="kCajasSub"></span></div>
+      <div class="scard"><span class="lbl"><span class="dot blue"></span> Costo total</span><b id="kCosto">—</b><span class="sublbl">Mano de obra + indirecto + elaboración</span></div>
+      <div class="scard ok"><span class="lbl"><span class="dot ok"></span> Resultado</span><b id="kRes">—</b><span class="sublbl" id="kResSub"></span></div>
+      <div class="scard ok"><span class="lbl"><span class="dot ok"></span> Margen ponderado</span><b id="kMargen">—</b><span class="sublbl">Objetivo aproximado 25%</span></div>
+    </div>
+
+    <div class="claude">
+      <span class="av"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#eef2f9" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg></span>
+      <div><h4>Lectura del período</h4><p id="claudeNote"></p></div>
+    </div>
+
+    <div class="tablewrap">
+      <div class="thead"><h3>Rentabilidad por producto</h3><span class="cnt" id="skuCount"></span></div>
+      <div class="tscroll">
+        <table id="tbl">
+          <thead><tr>
+            <th>Producto</th><th>Prod.</th><th>Vendido</th><th>Precio</th>
+            <th>Costo/u</th><th>Costo total</th><th>Prod. valoriz.</th><th>Resultado</th><th>Margen</th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn ok" id="btnDl"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 12l5 5 5-5"/><path d="M4 21h16"/></svg> Descargar Excel completo</button>
+      <button class="btn ghost" id="btnReset">Procesar otro mes</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){ try{ var c=window.APP_CONFIG; if(c){ if(c.SECRET_PATH){ sessionStorage.setItem('portal_access',c.SECRET_PATH); var b=document.querySelector('.back'); if(b) b.href='index.html?'+c.SECRET_PATH; } if(c.EMPRESA) document.querySelectorAll('.org').forEach(function(e){e.textContent=c.EMPRESA;}); } }catch(e){} })();
+
+const VH_MO=26565.019985196*1.095, VH_REPROC=18901*1.078*1.095, COSTO_IND=265.43;
+const NO_PROD=new Set([43,45,57,58,59,61,62,63,64,50]), ECO_F=4;
+let S={prod:null,ventas:null,result:null};
+const fmt=n=>(n||0).toLocaleString('es-AR',{maximumFractionDigits:0});
+const num=v=>{const n=parseFloat(v);return isNaN(n)?0:n;};
+
+function readSheet(file){return new Promise((res,rej)=>{const r=new FileReader();
+  r.onload=e=>{try{const wb=XLSX.read(new Uint8Array(e.target.result),{type:'array'});
+    res(XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]],{header:1,raw:true,defval:''}));
+  }catch(x){rej(x);}};r.onerror=()=>rej(new Error('No se pudo leer '+file.name));
+  r.readAsArrayBuffer(file);});}
+
+function parseProd(rows){const d=[];for(let i=2;i<rows.length;i++){const r=rows[i];
+  const art=(r[1]===undefined?'':String(r[1])).trim();if(!art)continue;
+  d.push({fecha:r[0],art,desc:(r[2]||'').toString().trim(),prod:num(r[3]),peso:num(r[4]),
+    turno:r[5],codlinea:num(r[6]),linea:r[7],pers:num(r[8]),tiempo:num(r[14])});}return d;}
+
+function parseVentas(rows){const m={};for(let i=4;i<rows.length;i++){const r=rows[i];
+  let art=(r[0]===undefined?'':String(r[0])).trim();
+  if(!art||art==='999999'||art.startsWith('Total')||art.startsWith('SULFO'))continue;
+  m[art]={imp:num(r[3]),cant:num(r[6])};}return m;}
+
+function calcular(prodRows,vmap){
+  const prod=prodRows.filter(r=>!NO_PROD.has(r.codlinea));
+  const reproc=prodRows.filter(r=>NO_PROD.has(r.codlinea));
+  const g={},order=[];
+  for(const r of prod){const k=r.art+'||'+r.desc;if(!g[k]){g[k]={art:r.art,desc:r.desc,rows:[]};order.push(k);}g[k].rows.push(r);}
+  const skus=[];let T={prod:0,mo:0,ind:0,elab:0,tot:0,val:0,res:0,litp:0};
+  for(const k of order){const grp=g[k];const peso=grp.rows[0].peso;let cajas=0,hh=0;
+    for(const r of grp.rows){cajas+=r.prod;hh+=r.tiempo*r.pers;}
+    const litp=peso*cajas,mo=VH_MO*hh,fi=peso>0?6/peso:0;
+    const ind=litp*COSTO_IND*fi,elab=((VH_MO*1.0833*9)/10000)*litp,ct=mo+ind+elab;
+    let cant=0,precio=0;const v=vmap[grp.art];
+    if(v&&v.cant){cant=v.cant;precio=v.imp/v.cant;if(grp.art.startsWith('ECO')){cant/=ECO_F;precio*=ECO_F;}}
+    const pv=precio*cajas*0.9,res=pv-ct,m=pv>0?res/pv:null;
+    skus.push({art:grp.art,desc:grp.desc,cajas,cant,precio,costoUnit:cajas?ct/cajas:0,mo,ind,elab,ct,litp,pv,res,m});
+    T.prod+=cajas;T.mo+=mo;T.ind+=ind;T.elab+=elab;T.tot+=ct;T.litp+=litp;
+    if(m!==null){T.val+=pv;T.res+=res;}}
+  let rh=0;for(const r of reproc)rh+=r.tiempo*r.pers;const rv=rh*VH_REPROC;
+  const cv=skus.filter(s=>s.m!==null);
+  return {skus,T,rh,rv,margenPond:T.val>0?T.res/T.val:0,neg:cv.filter(s=>s.m<0).length,
+    nSku:skus.length,nCv:cv.length,sinVta:skus.length-cv.length,reproc};
+}
+
+function render(R){
+  document.getElementById('kCajas').textContent=fmt(R.T.prod);
+  document.getElementById('kCajasSub').textContent=R.nSku+' productos';
+  document.getElementById('kCosto').textContent='$'+fmt(R.T.tot);
+  document.getElementById('kRes').textContent='$'+fmt(R.T.res);
+  document.getElementById('kResSub').textContent=R.nCv+' productos con venta';
+  document.getElementById('kMargen').textContent=(R.margenPond*100).toFixed(1)+'%';
+  document.getElementById('skuCount').textContent=R.nSku+' productos · '+R.nCv+' con venta';
+  document.getElementById('claudeNote').innerHTML=
+    'El período cierra con un margen ponderado de <b>'+(R.margenPond*100).toFixed(1)+'%</b> sobre '+
+    '<b>'+fmt(R.T.prod)+'</b> cajas producidas. '+
+    '<b>'+R.sinVta+'</b> productos quedaron sin venta en el rango (stock o facturados fuera del período) y '+
+    '<b>'+R.neg+'</b> con margen negativo. El reproceso sumó <b>'+fmt(R.rh)+'</b> horas-hombre '+
+    '(<b>$'+fmt(R.rv)+'</b> valorizadas). Los productos ECO se ajustaron por unidad (cantidad ÷4, precio ×4).';
+  const sorted=[...R.skus].sort((a,b)=>{if(a.m===null&&b.m===null)return b.cajas-a.cajas;
+    if(a.m===null)return 1;if(b.m===null)return -1;return a.m-b.m;});
+  document.querySelector('#tbl tbody').innerHTML=sorted.map(s=>{let b;
+    if(s.m===null)b='<span class="badge zero">sin venta</span>';
+    else{const c=s.m<0?'bad':(s.m<.1?'warn':'ok');b='<span class="badge '+c+'">'+(s.m*100).toFixed(1)+'%</span>';}
+    return '<tr><td title="'+s.art+'">'+(s.desc||s.art)+'</td>'
+      +'<td class="r">'+fmt(s.cajas)+'</td>'
+      +'<td class="r">'+(s.cant?fmt(s.cant):'—')+'</td>'
+      +'<td class="r">'+(s.precio?'$'+fmt(s.precio):'—')+'</td>'
+      +'<td class="r">$'+fmt(s.costoUnit)+'</td>'
+      +'<td class="r">$'+fmt(s.ct)+'</td>'
+      +'<td class="r">'+(s.pv?'$'+fmt(s.pv):'—')+'</td>'
+      +'<td class="r">'+(s.m!==null?'$'+fmt(s.res):'—')+'</td>'
+      +'<td>'+b+'</td></tr>';}).join('');
+  document.getElementById('results').classList.remove('hidden');
+  document.getElementById('stepRes').classList.add('done');
+  document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function buildExcel(R){const wb=XLSX.utils.book_new();
+  const head=['CodArt','Producto','Cajas producidas','Litros prod','Cant vendida','Precio venta',
+    'Costo unitario','MO Directa','Costo indirecto','Costo elaboración','Costo total',
+    'Prod. valorizada -10%','Resultado','Margen %'];
+  const rows=[head];
+  for(const s of R.skus)rows.push([s.art,s.desc,s.cajas,Math.round(s.litp),s.cant||'',
+    s.precio?+s.precio.toFixed(2):'',+s.costoUnit.toFixed(2),+s.mo.toFixed(2),+s.ind.toFixed(2),
+    +s.elab.toFixed(2),+s.ct.toFixed(2),s.pv?+s.pv.toFixed(2):'',s.m!==null?+s.res.toFixed(2):'',
+    s.m!==null?+(s.m*100).toFixed(1):'']);
+  rows.push(['','TOTAL',R.T.prod,Math.round(R.T.litp),'','','',+R.T.mo.toFixed(2),+R.T.ind.toFixed(2),
+    +R.T.elab.toFixed(2),+R.T.tot.toFixed(2),+R.T.val.toFixed(2),+R.T.res.toFixed(2),+(R.margenPond*100).toFixed(1)]);
+  const w1=XLSX.utils.aoa_to_sheet(rows);w1['!cols']=head.map((h,i)=>({wch:i===1?34:14}));
+  XLSX.utils.book_append_sheet(wb,w1,'Resumen');
+  const rp=[['Fecha','CodArt','CodDesc','Linea','Tiempo','Cant.Pers.','Horas hombre','Valor hora','Horas valorizadas']];
+  for(const r of R.reproc){const hh=r.tiempo*r.pers;rp.push([r.fecha,r.art,r.desc,r.linea,r.tiempo,r.pers,
+    +hh.toFixed(2),+VH_REPROC.toFixed(2),+(hh*VH_REPROC).toFixed(2)]);}
+  rp.push(['','','','','','TOTAL',+R.rh.toFixed(2),'',+R.rv.toFixed(2)]);
+  const w2=XLSX.utils.aoa_to_sheet(rp);
+  w2['!cols']=[{wch:12},{wch:14},{wch:30},{wch:16},{wch:8},{wch:9},{wch:12},{wch:12},{wch:16}];
+  XLSX.utils.book_append_sheet(wb,w2,'Reproceso');
+  XLSX.writeFile(wb,'Costos_Produccion_'+new Date().toISOString().slice(0,10)+'.xlsx');
+}
+
+function wire(dzId,inputId,fnId,stId,key){
+  const dz=document.getElementById(dzId),input=document.getElementById(inputId),
+    fn=document.getElementById(fnId),st=document.getElementById(stId);
+  const okico='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg> ';
+  const set=f=>{S[key]=f;fn.textContent=f.name;dz.classList.add('filled');
+    st.className='ustatus loaded';st.innerHTML=okico+f.name;refresh();};
+  dz.addEventListener('click',()=>input.click());
+  input.addEventListener('change',e=>{if(e.target.files[0])set(e.target.files[0]);});
+  ['dragover','dragenter'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();e.stopPropagation();dz.classList.add('drag');}));
+  ['dragleave','drop'].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();e.stopPropagation();dz.classList.remove('drag');}));
+  dz.addEventListener('drop',e=>{if(e.dataTransfer.files[0])set(e.dataTransfer.files[0]);});
+}
+wire('dzProd','fileProd','fnProd','stProd','prod');
+wire('dzVta','fileVta','fnVta','stVta','ventas');
+
+function refresh(){const ok=S.prod&&S.ventas;
+  document.getElementById('btnRun').disabled=!ok;
+  document.getElementById('runHint').textContent=ok?'Listo para procesar.':'Faltan los dos archivos.';}
+
+document.getElementById('btnRun').addEventListener('click',async()=>{
+  const btn=document.getElementById('btnRun'),eb=document.getElementById('errBox');
+  eb.style.display='none';btn.disabled=true;btn.textContent='Procesando...';
+  try{const [pr,vr]=await Promise.all([readSheet(S.prod),readSheet(S.ventas)]);
+    const prodRows=parseProd(pr),vmap=parseVentas(vr);
+    if(!prodRows.length)throw new Error('El archivo de producción no tiene filas válidas. Verificá que sea el export de OneSoft.');
+    if(!Object.keys(vmap).length)throw new Error('El archivo de ventas no tiene productos. Verificá que sea la estadística de ventas.');
+    S.result=calcular(prodRows,vmap);render(S.result);
+  }catch(x){eb.textContent=x.message;eb.style.display='block';}
+  finally{btn.disabled=false;btn.textContent='Procesar';}});
+
+document.getElementById('btnDl').addEventListener('click',()=>{if(S.result)buildExcel(S.result);});
+document.getElementById('stepRes').addEventListener('click',()=>{
+  if(!document.getElementById('results').classList.contains('hidden'))
+    document.getElementById('results').scrollIntoView({behavior:'smooth'});});
+document.getElementById('btnReset').addEventListener('click',()=>{
+  S={prod:null,ventas:null,result:null};
+  const reset=(fnId,dzId,stId)=>{document.getElementById(fnId).textContent='';
+    document.getElementById(dzId).classList.remove('filled');
+    const st=document.getElementById(stId);st.className='ustatus';
+    st.innerHTML='<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg> Sin cargar';};
+  reset('fnProd','dzProd','stProd');reset('fnVta','dzVta','stVta');
+  document.getElementById('fileProd').value='';document.getElementById('fileVta').value='';
+  document.getElementById('results').classList.add('hidden');
+  document.getElementById('stepRes').classList.remove('done');
+  refresh();window.scrollTo({top:0,behavior:'smooth'});});
+</script>
+</body>
+</html>

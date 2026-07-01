@@ -28,8 +28,6 @@
     display: flex; min-height: 100vh;
   }
   .serif { font-family: 'Newsreader', Georgia, serif; }
-
-  /* ---------- Sidebar ---------- */
   .side {
     width: 248px; flex: none; background: var(--blue); color: #dfe6f2;
     padding: 26px 20px; display: flex; flex-direction: column; gap: 30px;
@@ -52,21 +50,17 @@
   .side .foot .dot { width: 32px; height: 32px; border-radius: 9px; background: rgba(255,255,255,.16); display: grid; place-items: center; flex: none; }
   .side .foot b { font-size: 13px; color: #f1f5fb; display: block; }
   .side .foot span { font-size: 11.5px; color: #93a6c4; }
-
-  /* ---------- Main ---------- */
   .main { flex: 1; padding: 40px clamp(28px, 5vw, 72px) 56px; max-width: 1280px; }
   .topbar { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
   .topbar .org { font-size: 14px; color: var(--muted); }
   .topbar .org b { color: var(--ink); font-weight: 600; }
   h1 { font-family: 'Newsreader', serif; font-weight: 500; font-size: clamp(36px, 4.4vw, 50px); line-height: 1.04; margin: 32px 0 8px; letter-spacing: -.4px; }
   .lede { font-size: 16.5px; color: var(--muted); margin: 0; max-width: 620px; line-height: 1.5; }
-
   .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 34px 0 6px; }
   .kpi { background: var(--paper); border: 1px solid var(--hair); border-radius: 16px; padding: 20px 22px; }
   .kpi b { font-family: 'Newsreader', serif; font-size: 34px; font-weight: 500; display: block; line-height: 1; }
   .kpi span { font-size: 13.5px; color: var(--muted); }
   .kpi.accent b { color: var(--blue-2); }
-
   .sect { font-size: 12px; letter-spacing: 1.8px; text-transform: uppercase; color: var(--muted); margin: 38px 0 16px; }
   .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
   @media (max-width: 1080px) { .grid, .stats { grid-template-columns: 1fr; } }
@@ -83,8 +77,6 @@
   .mod.soon .tag { background: rgba(0,0,0,.04); color: #93a0b6; }
   .mod .arrow { opacity: 0; transition: opacity .16s, transform .16s; color: var(--accent); align-self: center; }
   .mod:not(.soon):hover .arrow { opacity: 1; transform: translateX(2px); }
-
-  /* ---------- Assistant ---------- */
   .assist { margin-top: 18px; display: flex; align-items: center; gap: 16px; background: var(--blue); color: #eef2f9; border-radius: 16px; padding: 18px 22px; flex-wrap: wrap; }
   .assist .av { width: 42px; height: 42px; border-radius: 11px; background: rgba(255,255,255,.14); display: grid; place-items: center; flex: none; }
   .assist .at { flex: 1; min-width: 180px; }
@@ -96,13 +88,11 @@
   .assist input::placeholder { color: #a3b1ca; }
   .assist button { border: none; background: #fff; color: var(--blue); font: inherit; font-weight: 600; font-size: 14px; padding: 11px 18px; border-radius: 10px; cursor: pointer; transition: background .15s; }
   .assist button:hover { background: #e7eefa; }
-
-  /* toast */
   #toast { position: fixed; bottom: 28px; left: 50%; transform: translate(-50%, 20px); background: var(--ink); color: #fff; padding: 12px 20px; border-radius: 12px; font-size: 14px; box-shadow: 0 12px 30px -10px rgba(0,0,0,.4); opacity: 0; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 50; }
   #toast.show { opacity: 1; transform: translate(-50%, 0); }
 </style>
-<script src="config.js">
-// ── Control de acceso por código secreto ──
+<script src="config.js"></script>
+<script>
 (function(){
   try{
     var c=window.APP_CONFIG; if(!c||!c.SECRET_PATH) return;
@@ -115,16 +105,13 @@
       document.body.innerHTML='<div style="display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:Hanken Grotesk,sans-serif;color:#61708a;text-align:center;padding:40px;"><div><h1 style="font-family:Newsreader,serif;color:#1c2530;">Acceso restringido</h1><p>Ingresá con el enlace completo que incluye el código de acceso.</p></div></div>';
       throw new Error('no access');
     }
-    // Preservar el secreto en los links internos
     document.querySelectorAll('a[href$=".html"]').forEach(function(a){
       var h=a.getAttribute('href');
       if(h && h.indexOf('?')<0) a.setAttribute('href', h+'?'+c.SECRET_PATH);
     });
-    // Empresa
     if(c.EMPRESA) document.querySelectorAll('.org b, .org').forEach(function(e){ if(e.tagName==='B'||!e.querySelector('b')) {} });
   }catch(e){ if(e.message==='no access') throw e; }
 })();
-
 </script>
 </head>
 <body>
@@ -137,6 +124,7 @@
     <p class="navlbl">Menú</p>
     <a class="on" data-mod="Inicio"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 12 4l8 7"/><path d="M6 10v9h12v-9"/></svg> Inicio</a>
     <a href="banco.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10 12 4l9 6"/><path d="M5 10v8M19 10v8M9 10v8M15 10v8"/><path d="M3 20h18"/></svg> Banco Credicoop</a>
+    <a href="costos.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="12" width="4" height="8" rx="1"/><rect x="10" y="7" width="4" height="13" rx="1"/><rect x="17" y="3" width="4" height="17" rx="1"/></svg> Costos de Producción</a>
     <a href="iibb.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/></svg> Ingresos Brutos</a>
     <a href="iva.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/></svg> IVA Compras</a>
     <a href="ganancias.html"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg> Retenciones de Ganancias</a>
@@ -156,7 +144,7 @@
   <p class="lede">Seleccioná un módulo para comenzar. Todos los archivos se procesan localmente en tu navegador.</p>
 
   <div class="stats">
-    <div class="kpi accent"><b>6</b><span>módulos disponibles</span></div>
+    <div class="kpi accent"><b>7</b><span>módulos disponibles</span></div>
     <div class="kpi"><b>14</b><span>conciliaciones este mes</span></div>
     <div class="kpi"><b>100%</b><span>procesado local</span></div>
   </div>
@@ -170,6 +158,7 @@
 <script>
   const MODS = [
     { icon:'<path d="M3 10 12 4l9 6"/><path d="M5 10v8M19 10v8M9 10v8M15 10v8"/><path d="M3 20h18"/>', title:'Banco Credicoop', desc:'Cruzá el resumen del banco con el libro banco. Detecta diferencias, partidas pendientes y errores.', tag:'Credicoop PDF · OneSoft CSV', href:'banco.html' },
+    { icon:'<rect x="3" y="12" width="4" height="8" rx="1"/><rect x="10" y="7" width="4" height="13" rx="1"/><rect x="17" y="3" width="4" height="17" rx="1"/>', title:'Costos de Producción', desc:'Costeá cada producto desde la producción de OneSoft y cruzá con ventas para ver la rentabilidad del período.', tag:'Producción + Ventas · OneSoft', href:'costos.html' },
     { icon:'<path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"/>', title:'Ingresos Brutos', desc:'Cruzá retenciones y percepciones de IIBB contra el Excel de ARBA. Analizado por IA.', tag:'CSV OneSoft · Excel ARBA', href:'iibb.html' },
     { icon:'<path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M9 13h6M9 17h6"/>', title:'IVA Compras', desc:'Cruzá el Subdiario IVA en CSV con los comprobantes de ARCA en Excel. Triple verificación por CUIT + N° + monto.', tag:'CSV + Excel · ARCA', href:'iva.html' },
     { icon:'<path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/>', title:'Retenciones de Ganancias', desc:'Cruzá los recibos de OneSoft contra el TXT de ARCA por importe e identificá los CUIT sin conciliar. Analizado por IA.', tag:'CSV OneSoft · TXT ARCA', href:'ganancias.html' },
@@ -189,7 +178,6 @@
       ${m.soon?'':arrow}
     </${tag}>`;
   }).join('');
-
   const toast = document.getElementById('toast');
   let tt;
   function showToast(msg){ toast.textContent = msg; toast.classList.add('show'); clearTimeout(tt); tt = setTimeout(()=>toast.classList.remove('show'), 2200); }
@@ -197,7 +185,6 @@
     const el = e.target.closest('[data-mod]');
     if (el) showToast('Abriendo · ' + el.dataset.mod);
   });
-
   const d = new Date();
   document.getElementById('today').textContent = d.toLocaleDateString('es-AR', { weekday:'long', day:'numeric', month:'long' });
 </script>
